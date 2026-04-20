@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vertere_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vertere}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vertere123}
+      POSTGRES_DB: ${POSTGRES_DB:-vertere_lab}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vertere} -d ${POSTGRES_DB:-vertere_lab}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: vertere_migrate
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vertere}:${POSTGRES_PASSWORD:-vertere123}@postgres:5432/${POSTGRES_DB:-vertere_lab}
+    command: ["npm", "run", "db:migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: vertere_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vertere}:${POSTGRES_PASSWORD:-vertere123}@postgres:5432/${POSTGRES_DB:-vertere_lab}
+      PORT: 3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/api/src:/app/src:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    container_name: vertere_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://api:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web/src:/app/src:ro
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
