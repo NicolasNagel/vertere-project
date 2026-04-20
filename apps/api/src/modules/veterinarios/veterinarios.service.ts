@@ -51,7 +51,7 @@ export class VeterinariosService {
 
   async create(input: CreateVeterinarioInput) {
     const { rows: clinicaRows } = await this.pool.query(
-      `SELECT id FROM clinicas WHERE id = $1`,
+      `SELECT id FROM clinicas WHERE id = $1 AND status = 'ativo'`,
       [input.clinica_id],
     );
     if (!clinicaRows[0]) throw new Error('CLINICA_NOT_FOUND');

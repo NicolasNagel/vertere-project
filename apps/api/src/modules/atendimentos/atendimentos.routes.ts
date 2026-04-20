@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { getPool } from '../../db';
 import { AtendimentosService } from './atendimentos.service';
 import { CreateAtendimentoSchema, UpdateAtendimentoSchema } from './atendimentos.schema';
+import { replyIfInvalidUUID, safeInt } from '../../utils/validate';
 
 export async function atendimentosRoutes(app: FastifyInstance) {
   const svc = new AtendimentosService(getPool());
@@ -9,8 +10,8 @@ export async function atendimentosRoutes(app: FastifyInstance) {
   app.get('/atendimentos', async (req) => {
     const q = req.query as Record<string, string>;
     return svc.list({
-      page: q.page ? Number(q.page) : 1,
-      limit: q.limit ? Number(q.limit) : 20,
+      page: safeInt(q.page, 1),
+      limit: safeInt(q.limit, 20, 1, 100),
       clinica_id: q.clinica_id,
       veterinario_id: q.veterinario_id,
       protocolo: q.protocolo,
@@ -21,6 +22,7 @@ export async function atendimentosRoutes(app: FastifyInstance) {
 
   app.get('/atendimentos/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
+    if (replyIfInvalidUUID(id, reply)) return;
     const atd = await svc.findById(id);
     if (!atd) return reply.status(404).send({ error: 'Atendimento não encontrado' });
     return atd;
@@ -45,6 +47,7 @@ export async function atendimentosRoutes(app: FastifyInstance) {
 
   app.patch('/atendimentos/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
+    if (replyIfInvalidUUID(id, reply)) return;
     const parsed = UpdateAtendimentoSchema.safeParse(req.body);
     if (!parsed.success) return reply.status(422).send({ error: parsed.error.flatten() });
 

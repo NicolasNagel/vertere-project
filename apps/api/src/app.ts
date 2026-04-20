@@ -10,7 +10,11 @@ import { getPool } from './db';
 export function buildApp() {
   const app = Fastify({ logger: true });
 
-  app.register(cors, { origin: true });
+  app.register(cors, {
+    origin: process.env.NODE_ENV === 'production'
+      ? (process.env.CORS_ORIGIN ?? false)
+      : true,
+  });
 
   app.get('/health', async () => {
     const pool = getPool();
@@ -26,7 +30,10 @@ export function buildApp() {
 
   app.setErrorHandler((err, _req, reply) => {
     app.log.error(err);
-    reply.status(500).send({ error: 'Internal Server Error' });
+    reply.status(500).send({
+      error: 'Internal Server Error',
+      ...(process.env.NODE_ENV !== 'production' && { detail: err.message }),
+    });
   });
 
   return app;

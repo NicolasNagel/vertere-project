@@ -1,7 +1,28 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { withTransaction } from '../../db';
 import { gerarProtocolo } from '../../services/protocolo.service';
 import { CreateAtendimentoInput, UpdateAtendimentoInput } from './atendimentos.schema';
+
+const ATENDIMENTO_SELECT = `
+  SELECT a.*, c.nome AS clinica_nome, v.nome AS veterinario_nome, v.crmv AS veterinario_crmv
+  FROM atendimentos a
+  JOIN clinicas c ON c.id = a.clinica_id
+  JOIN veterinarios v ON v.id = a.veterinario_id
+`;
+
+const EXAMES_SELECT = `
+  SELECT ae.*, e.nome AS exame_nome
+  FROM atendimento_exames ae
+  JOIN exames e ON e.id = ae.exame_id
+  WHERE ae.atendimento_id = $1
+`;
+
+async function fetchWithExames(client: PoolClient | Pool, id: string) {
+  const { rows } = await client.query(`${ATENDIMENTO_SELECT} WHERE a.id = $1`, [id]);
+  if (!rows[0]) return null;
+  const { rows: exames } = await client.query(EXAMES_SELECT, [id]);
+  return { ...rows[0], exames };
+}
 
 export class AtendimentosService {
   constructor(private pool: Pool) {}
@@ -28,20 +49,18 @@ export class AtendimentosService {
     if (params.data_fim) { conditions.push(`a.created_at <= $${i++}`); values.push(params.data_fim); }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const countValues = [...values];
+
     values.push(limit, offset);
 
     const { rows } = await this.pool.query(
-      `SELECT a.*, c.nome AS clinica_nome, v.nome AS veterinario_nome, v.crmv AS veterinario_crmv
-       FROM atendimentos a
-       JOIN clinicas c ON c.id = a.clinica_id
-       JOIN veterinarios v ON v.id = a.veterinario_id
+      `${ATENDIMENTO_SELECT}
        ${where}
        ORDER BY a.created_at DESC
-       LIMIT $${i++} OFFSET $${i}`,
+       LIMIT $${i} OFFSET $${i + 1}`,
       values,
     );
 
-    const countValues = values.slice(0, -2);
     const { rows: count } = await this.pool.query(
       `SELECT COUNT(*)::int AS total FROM atendimentos a ${where}`,
       countValues,
@@ -51,25 +70,7 @@ export class AtendimentosService {
   }
 
   async findById(id: string) {
-    const { rows } = await this.pool.query(
-      `SELECT a.*, c.nome AS clinica_nome, v.nome AS veterinario_nome, v.crmv AS veterinario_crmv
-       FROM atendimentos a
-       JOIN clinicas c ON c.id = a.clinica_id
-       JOIN veterinarios v ON v.id = a.veterinario_id
-       WHERE a.id = $1`,
-      [id],
-    );
-    if (!rows[0]) return null;
-
-    const { rows: exames } = await this.pool.query(
-      `SELECT ae.*, e.nome AS exame_nome
-       FROM atendimento_exames ae
-       JOIN exames e ON e.id = ae.exame_id
-       WHERE ae.atendimento_id = $1`,
-      [id],
-    );
-
-    return { ...rows[0], exames };
+    return fetchWithExames(this.pool, id);
   }
 
   async create(input: CreateAtendimentoInput) {
@@ -107,10 +108,9 @@ export class AtendimentosService {
       const atendimento = atdRows[0];
 
       for (const item of input.exames) {
-        const valor = exameMap.get(item.exame_id);
         await trx.query(
           `INSERT INTO atendimento_exames (atendimento_id, exame_id, valor) VALUES ($1, $2, $3)`,
-          [atendimento.id, item.exame_id, valor],
+          [atendimento.id, item.exame_id, exameMap.get(item.exame_id)],
         );
       }
 
@@ -174,7 +174,8 @@ export class AtendimentosService {
         );
       }
 
-      return this.findById(id);
+      // Lê o resultado final dentro da própria transação para evitar dirty read
+      return fetchWithExames(trx, id);
     });
   }
 }
