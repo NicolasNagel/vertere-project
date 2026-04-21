@@ -25,6 +25,7 @@ export interface Exame {
   nome: string;
   descricao?: string | null;
   valor: number;
+  categoria?: string | null;
   status: 'ativo' | 'inativo';
 }
 
@@ -46,6 +47,12 @@ export interface Atendimento {
   especie?: string | null;
   sexo?: 'M' | 'F' | null;
   tipo_atendimento?: string | null;
+  nome_animal?: string | null;
+  raca?: string | null;
+  idade_valor?: number | null;
+  idade_unidade?: 'dias' | 'meses' | 'anos' | null;
+  nome_proprietario?: string | null;
+  metodo_coleta?: string | null;
   valor_total: number;
   created_at: string;
   clinica_nome?: string;

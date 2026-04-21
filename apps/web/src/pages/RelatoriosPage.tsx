@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { BarChart3 } from 'lucide-react';
+
+function fmt(val: number) {
+  return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
 export default function RelatoriosPage() {
   const today = new Date().toISOString().split('T')[0];
@@ -20,89 +25,128 @@ export default function RelatoriosPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Relatórios</h1>
+      <div className="page-header">
+        <h1>Relatórios</h1>
+      </div>
 
-      <div className="flex items-end gap-3 mb-6 bg-white border border-gray-200 rounded-lg p-4">
+      {/* Filter bar */}
+      <div className="card px-5 py-4 mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Data início</label>
-          <input type="date" className="mt-1 block border border-gray-200 rounded-md px-3 py-2 text-sm" value={range.data_inicio} onChange={(e) => setRange((p) => ({ ...p, data_inicio: e.target.value }))} />
+          <label className="label">Data início</label>
+          <input
+            type="date"
+            className="input w-40"
+            value={range.data_inicio}
+            onChange={(e) => setRange((p) => ({ ...p, data_inicio: e.target.value }))}
+          />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">Data fim</label>
-          <input type="date" className="mt-1 block border border-gray-200 rounded-md px-3 py-2 text-sm" value={range.data_fim} onChange={(e) => setRange((p) => ({ ...p, data_fim: e.target.value }))} />
+          <label className="label">Data fim</label>
+          <input
+            type="date"
+            className="input w-40"
+            value={range.data_fim}
+            onChange={(e) => setRange((p) => ({ ...p, data_fim: e.target.value }))}
+          />
         </div>
-        <button onClick={() => setSubmitted(range)} className="px-4 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700">
-          Filtrar
+        <button className="btn-primary" onClick={() => setSubmitted(range)}>
+          <BarChart3 size={14} /> Filtrar
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-medium text-gray-800 mb-3">Receita por Mês</h2>
-          {loadingReceita ? <p className="text-sm text-gray-500">Carregando...</p> : (
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100">
-                <th className="text-left py-1.5 font-medium text-gray-600">Mês</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Atend.</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Receita</th>
-              </tr></thead>
+        {/* Revenue by month */}
+        <section className="card overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100">
+            <h3>Receita por Mês</h3>
+          </div>
+          {loadingReceita ? (
+            <div className="px-5 py-8 text-center text-sm text-slate-400">Carregando...</div>
+          ) : (
+            <table className="w-full">
+              <thead className="table-header">
+                <tr>
+                  <th className="th">Mês</th>
+                  <th className="th text-right">Atend.</th>
+                  <th className="th text-right">Receita</th>
+                </tr>
+              </thead>
               <tbody>
-                {(receita ?? []).map((r: { mes: string; total_atendimentos: number; receita_total: number }) => (
-                  <tr key={r.mes} className="border-b border-gray-50">
-                    <td className="py-1.5">{new Date(r.mes).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}</td>
-                    <td className="py-1.5 text-right">{r.total_atendimentos}</td>
-                    <td className="py-1.5 text-right font-medium text-primary-700">R$ {Number(r.receita_total).toFixed(2)}</td>
+                {(receita ?? []).length === 0 ? (
+                  <tr><td colSpan={3} className="td text-center text-slate-400 py-6">Sem dados no período</td></tr>
+                ) : (receita ?? []).map((r: { mes: string; total_atendimentos: number; receita_total: number }) => (
+                  <tr key={r.mes} className="tr">
+                    <td className="td capitalize">
+                      {new Date(r.mes).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                    </td>
+                    <td className="td text-right tabular-nums">{r.total_atendimentos}</td>
+                    <td className="td text-right font-semibold tabular-nums text-brand-700">{fmt(Number(r.receita_total))}</td>
                   </tr>
                 ))}
-                {!receita?.length && <tr><td colSpan={3} className="text-center text-gray-400 py-4">Sem dados</td></tr>}
               </tbody>
             </table>
           )}
         </section>
 
-        <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-medium text-gray-800 mb-3">Volume por Clínica</h2>
-          {loadingVolume ? <p className="text-sm text-gray-500">Carregando...</p> : (
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100">
-                <th className="text-left py-1.5 font-medium text-gray-600">Clínica</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Atend.</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Receita</th>
-              </tr></thead>
+        {/* Volume by clinic */}
+        <section className="card overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100">
+            <h3>Volume por Clínica</h3>
+          </div>
+          {loadingVolume ? (
+            <div className="px-5 py-8 text-center text-sm text-slate-400">Carregando...</div>
+          ) : (
+            <table className="w-full">
+              <thead className="table-header">
+                <tr>
+                  <th className="th">Clínica</th>
+                  <th className="th text-right">Atend.</th>
+                  <th className="th text-right">Receita</th>
+                </tr>
+              </thead>
               <tbody>
-                {(volume?.por_clinica ?? []).map((r: { clinica: string; total: number; receita: number }) => (
-                  <tr key={r.clinica} className="border-b border-gray-50">
-                    <td className="py-1.5">{r.clinica}</td>
-                    <td className="py-1.5 text-right">{r.total}</td>
-                    <td className="py-1.5 text-right font-medium text-primary-700">R$ {Number(r.receita).toFixed(2)}</td>
+                {(volume?.por_clinica ?? []).length === 0 ? (
+                  <tr><td colSpan={3} className="td text-center text-slate-400 py-6">Sem dados no período</td></tr>
+                ) : (volume?.por_clinica ?? []).map((r: { clinica: string; total: number; receita: number }) => (
+                  <tr key={r.clinica} className="tr">
+                    <td className="td">{r.clinica}</td>
+                    <td className="td text-right tabular-nums">{r.total}</td>
+                    <td className="td text-right font-semibold tabular-nums text-brand-700">{fmt(Number(r.receita))}</td>
                   </tr>
                 ))}
-                {!volume?.por_clinica?.length && <tr><td colSpan={3} className="text-center text-gray-400 py-4">Sem dados</td></tr>}
               </tbody>
             </table>
           )}
         </section>
 
-        <section className="bg-white border border-gray-200 rounded-lg p-4 lg:col-span-2">
-          <h2 className="font-medium text-gray-800 mb-3">Volume por Veterinário</h2>
-          {loadingVolume ? <p className="text-sm text-gray-500">Carregando...</p> : (
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100">
-                <th className="text-left py-1.5 font-medium text-gray-600">Veterinário</th>
-                <th className="text-left py-1.5 font-medium text-gray-600">CRMV</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Atend.</th>
-                <th className="text-right py-1.5 font-medium text-gray-600">Receita</th>
-              </tr></thead>
+        {/* Volume by vet */}
+        <section className="card overflow-hidden lg:col-span-2">
+          <div className="px-5 py-3.5 border-b border-slate-100">
+            <h3>Volume por Veterinário</h3>
+          </div>
+          {loadingVolume ? (
+            <div className="px-5 py-8 text-center text-sm text-slate-400">Carregando...</div>
+          ) : (
+            <table className="w-full">
+              <thead className="table-header">
+                <tr>
+                  <th className="th">Veterinário</th>
+                  <th className="th">CRMV</th>
+                  <th className="th text-right">Atend.</th>
+                  <th className="th text-right">Receita</th>
+                </tr>
+              </thead>
               <tbody>
-                {(volume?.por_veterinario ?? []).map((r: { veterinario: string; crmv: string; total: number; receita: number }) => (
-                  <tr key={r.crmv} className="border-b border-gray-50">
-                    <td className="py-1.5">{r.veterinario}</td>
-                    <td className="py-1.5 text-gray-600">{r.crmv}</td>
-                    <td className="py-1.5 text-right">{r.total}</td>
-                    <td className="py-1.5 text-right font-medium text-primary-700">R$ {Number(r.receita).toFixed(2)}</td>
+                {(volume?.por_veterinario ?? []).length === 0 ? (
+                  <tr><td colSpan={4} className="td text-center text-slate-400 py-6">Sem dados no período</td></tr>
+                ) : (volume?.por_veterinario ?? []).map((r: { veterinario: string; crmv: string; total: number; receita: number }) => (
+                  <tr key={r.crmv} className="tr">
+                    <td className="td font-medium text-slate-900">{r.veterinario}</td>
+                    <td className="td font-mono text-xs">{r.crmv}</td>
+                    <td className="td text-right tabular-nums">{r.total}</td>
+                    <td className="td text-right font-semibold tabular-nums text-brand-700">{fmt(Number(r.receita))}</td>
                   </tr>
                 ))}
-                {!volume?.por_veterinario?.length && <tr><td colSpan={4} className="text-center text-gray-400 py-4">Sem dados</td></tr>}
               </tbody>
             </table>
           )}

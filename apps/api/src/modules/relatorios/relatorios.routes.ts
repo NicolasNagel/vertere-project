@@ -1,15 +1,19 @@
 import { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { getPool } from '../../db';
+
+const dateRangeSchema = z.object({
+  data_inicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato esperado: YYYY-MM-DD'),
+  data_fim: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato esperado: YYYY-MM-DD'),
+});
 
 export async function relatoriosRoutes(app: FastifyInstance) {
   const pool = getPool();
 
   app.get('/relatorios/receita', async (req, reply) => {
-    const { data_inicio, data_fim } = req.query as { data_inicio?: string; data_fim?: string };
-
-    if (!data_inicio || !data_fim) {
-      return reply.status(422).send({ error: 'data_inicio e data_fim são obrigatórios' });
-    }
+    const parsed = dateRangeSchema.safeParse(req.query);
+    if (!parsed.success) return reply.status(422).send({ error: parsed.error.flatten() });
+    const { data_inicio, data_fim } = parsed.data;
 
     const { rows } = await pool.query(
       `SELECT
@@ -17,7 +21,7 @@ export async function relatoriosRoutes(app: FastifyInstance) {
          COUNT(*)::int AS total_atendimentos,
          SUM(valor_total)::numeric AS receita_total
        FROM atendimentos
-       WHERE created_at BETWEEN $1 AND $2
+       WHERE created_at >= $1 AND created_at < ($2::date + interval '1 day')
        GROUP BY 1
        ORDER BY 1`,
       [data_inicio, data_fim],
@@ -27,18 +31,16 @@ export async function relatoriosRoutes(app: FastifyInstance) {
   });
 
   app.get('/relatorios/volume', async (req, reply) => {
-    const { data_inicio, data_fim } = req.query as { data_inicio?: string; data_fim?: string };
-
-    if (!data_inicio || !data_fim) {
-      return reply.status(422).send({ error: 'data_inicio e data_fim são obrigatórios' });
-    }
+    const parsed = dateRangeSchema.safeParse(req.query);
+    if (!parsed.success) return reply.status(422).send({ error: parsed.error.flatten() });
+    const { data_inicio, data_fim } = parsed.data;
 
     const [clinicasResult, vetsResult] = await Promise.all([
       pool.query(
         `SELECT c.nome AS clinica, COUNT(a.id)::int AS total, SUM(a.valor_total)::numeric AS receita
          FROM atendimentos a
          JOIN clinicas c ON c.id = a.clinica_id
-         WHERE a.created_at BETWEEN $1 AND $2
+         WHERE a.created_at >= $1 AND a.created_at < ($2::date + interval '1 day')
          GROUP BY c.nome ORDER BY total DESC`,
         [data_inicio, data_fim],
       ),
@@ -46,7 +48,7 @@ export async function relatoriosRoutes(app: FastifyInstance) {
         `SELECT v.nome AS veterinario, v.crmv, COUNT(a.id)::int AS total, SUM(a.valor_total)::numeric AS receita
          FROM atendimentos a
          JOIN veterinarios v ON v.id = a.veterinario_id
-         WHERE a.created_at BETWEEN $1 AND $2
+         WHERE a.created_at >= $1 AND a.created_at < ($2::date + interval '1 day')
          GROUP BY v.nome, v.crmv ORDER BY total DESC`,
         [data_inicio, data_fim],
       ),

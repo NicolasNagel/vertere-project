@@ -17,6 +17,9 @@ export async function atendimentosRoutes(app: FastifyInstance) {
       protocolo: q.protocolo,
       data_inicio: q.data_inicio,
       data_fim: q.data_fim,
+      mes: q.mes ? safeInt(q.mes, 0) : undefined,
+      ano_filtro: q.ano_filtro ? safeInt(q.ano_filtro, 0) : undefined,
+      tipo_plantao: q.tipo_plantao,
     });
   });
 

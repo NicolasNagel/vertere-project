@@ -4,6 +4,7 @@ export const CreateExameSchema = z.object({
   nome: z.string().min(2).max(150),
   descricao: z.string().max(500).optional(),
   valor: z.number().min(0),
+  categoria: z.string().max(100).optional(),
 });
 
 export const UpdateExameSchema = CreateExameSchema.partial().extend({

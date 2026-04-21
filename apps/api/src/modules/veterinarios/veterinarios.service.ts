@@ -74,6 +74,7 @@ export class VeterinariosService {
     if (input.crmv !== undefined) { fields.push(`crmv = $${i++}`); values.push(input.crmv); }
     if (input.telefone !== undefined) { fields.push(`telefone = $${i++}`); values.push(input.telefone); }
     if (input.email !== undefined) { fields.push(`email = $${i++}`); values.push(input.email); }
+    if (input.status !== undefined) { fields.push(`status = $${i++}`); values.push(input.status); }
 
     if (fields.length === 0) return this.findById(id);
 

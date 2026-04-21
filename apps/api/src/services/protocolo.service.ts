@@ -1,6 +1,6 @@
 import { PoolClient } from 'pg';
 
-export async function gerarProtocolo(ano: number, trx: PoolClient): Promise<string> {
+export async function gerarProtocolo(ano: number, trx: PoolClient): Promise<{ protocolo: string; numero: number }> {
   // Advisory lock serializes concurrent protocol generation for the same year
   await trx.query(`SELECT pg_advisory_xact_lock($1)`, [ano]);
 
@@ -10,5 +10,6 @@ export async function gerarProtocolo(ano: number, trx: PoolClient): Promise<stri
   );
 
   const numero: number = rows[0].proximo;
-  return `${ano}-${String(numero).padStart(4, '0')}`;
+  const protocolo = `P${String(numero).padStart(4, '0')}/${ano}`;
+  return { protocolo, numero };
 }

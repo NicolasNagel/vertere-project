@@ -7,7 +7,7 @@ export class ExamesService {
   async list(apenasAtivos = false) {
     const where = apenasAtivos ? `WHERE status = 'ativo'` : '';
     const { rows } = await this.pool.query(
-      `SELECT * FROM exames ${where} ORDER BY nome ASC`,
+      `SELECT * FROM exames ${where} ORDER BY categoria ASC, nome ASC`,
     );
     return rows;
   }
@@ -19,8 +19,8 @@ export class ExamesService {
 
   async create(input: CreateExameInput) {
     const { rows } = await this.pool.query(
-      `INSERT INTO exames (nome, descricao, valor) VALUES ($1, $2, $3) RETURNING *`,
-      [input.nome, input.descricao ?? null, input.valor],
+      `INSERT INTO exames (nome, descricao, valor, categoria) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [input.nome, input.descricao ?? null, input.valor, input.categoria ?? null],
     );
     return rows[0];
   }
@@ -33,6 +33,7 @@ export class ExamesService {
     if (input.nome !== undefined) { fields.push(`nome = $${i++}`); values.push(input.nome); }
     if (input.descricao !== undefined) { fields.push(`descricao = $${i++}`); values.push(input.descricao); }
     if (input.valor !== undefined) { fields.push(`valor = $${i++}`); values.push(input.valor); }
+    if (input.categoria !== undefined) { fields.push(`categoria = $${i++}`); values.push(input.categoria); }
     if (input.status !== undefined) { fields.push(`status = $${i++}`); values.push(input.status); }
 
     if (fields.length === 0) return this.findById(id);

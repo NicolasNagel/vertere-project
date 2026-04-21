@@ -8,7 +8,9 @@ export const CreateVeterinarioSchema = z.object({
   email: z.string().email().max(100).optional(),
 });
 
-export const UpdateVeterinarioSchema = CreateVeterinarioSchema.partial().omit({ clinica_id: true });
+export const UpdateVeterinarioSchema = CreateVeterinarioSchema.partial().omit({ clinica_id: true }).extend({
+  status: z.enum(['ativo', 'inativo']).optional(),
+});
 
 export type CreateVeterinarioInput = z.infer<typeof CreateVeterinarioSchema>;
 export type UpdateVeterinarioInput = z.infer<typeof UpdateVeterinarioSchema>;
