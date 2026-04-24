@@ -37,6 +37,35 @@ export interface AtendimentoExame {
   exame_nome?: string;
 }
 
+export interface FechamentoRow {
+  clinica: string;
+  data: string;
+  protocolo: string;
+  veterinario: string;
+  paciente: string;
+  especie: string;
+  proprietario: string;
+  tipo_exame: string;
+  exame: string;
+  tipo: 'Normal' | 'Plantão';
+  valor: string;
+  desconto: string;
+  adicional: string;
+  valor_total: string;
+}
+
+export interface FechamentoTotais {
+  valor_bruto: number;
+  adicionais: number;
+  descontos: number;
+  valor_total: number;
+}
+
+export interface FechamentoResponse {
+  rows: FechamentoRow[];
+  totais: FechamentoTotais;
+}
+
 export interface Atendimento {
   id: string;
   protocolo: string;
