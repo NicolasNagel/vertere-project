@@ -6,15 +6,17 @@ export class ClinicasService {
 
   async list(page = 1, limit = 20, search?: string) {
     const offset = (page - 1) * limit;
-    const params: unknown[] = [`%${search ?? ''}%`, limit, offset];
-    const { rows } = await this.pool.query(
-      `SELECT * FROM clinicas WHERE nome ILIKE $1 ORDER BY nome ASC LIMIT $2 OFFSET $3`,
-      params,
-    );
-    const { rows: count } = await this.pool.query(
-      `SELECT COUNT(*)::int AS total FROM clinicas WHERE nome ILIKE $1`,
-      [`%${search ?? ''}%`],
-    );
+    const searchTerm = `%${search ?? ''}%`;
+    const [{ rows }, { rows: count }] = await Promise.all([
+      this.pool.query(
+        `SELECT * FROM clinicas WHERE nome ILIKE $1 ORDER BY nome ASC LIMIT $2 OFFSET $3`,
+        [searchTerm, limit, offset],
+      ),
+      this.pool.query(
+        `SELECT COUNT(*)::int AS total FROM clinicas WHERE nome ILIKE $1`,
+        [searchTerm],
+      ),
+    ]);
     return { data: rows, total: count[0].total, page, limit };
   }
 
@@ -28,7 +30,7 @@ export class ClinicasService {
       `INSERT INTO clinicas (nome, cnpj, endereco, telefone, email)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [input.nome, input.cnpj, input.endereco ?? null, input.telefone ?? null, input.email ?? null],
+      [input.nome, input.cnpj ?? null, input.endereco ?? null, input.telefone ?? null, input.email ?? null],
     );
     return rows[0];
   }

@@ -6,3 +6,7 @@ dist/
 coverage/
 .nyc_output/
 .claude/
+assets/
+assests/
+# Added by code-review-graph
+.code-review-graph/

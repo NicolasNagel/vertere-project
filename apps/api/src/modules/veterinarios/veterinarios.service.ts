@@ -6,34 +6,27 @@ export class VeterinariosService {
 
   async list(page = 1, limit = 20, clinica_id?: string) {
     const offset = (page - 1) * limit;
-    const conditions = ['1=1'];
-    const params: unknown[] = [];
-    let i = 1;
-
-    if (clinica_id) {
-      conditions.push(`v.clinica_id = $${i++}`);
-      params.push(clinica_id);
-    }
-
-    params.push(limit, offset);
-    const where = conditions.join(' AND ');
-
-    const { rows } = await this.pool.query(
-      `SELECT v.*, c.nome AS clinica_nome
-       FROM veterinarios v
-       JOIN clinicas c ON c.id = v.clinica_id
-       WHERE ${where}
-       ORDER BY v.nome ASC
-       LIMIT $${i++} OFFSET $${i}`,
-      params,
-    );
-
+    const clinicaFilter = clinica_id ? `AND v.clinica_id = $1` : '';
+    const listParams = clinica_id ? [clinica_id, limit, offset] : [limit, offset];
+    const limitIdx = clinica_id ? 2 : 1;
     const countParams = clinica_id ? [clinica_id] : [];
     const countWhere = clinica_id ? `WHERE clinica_id = $1` : '';
-    const { rows: count } = await this.pool.query(
-      `SELECT COUNT(*)::int AS total FROM veterinarios ${countWhere}`,
-      countParams,
-    );
+
+    const [{ rows }, { rows: count }] = await Promise.all([
+      this.pool.query(
+        `SELECT v.*, c.nome AS clinica_nome
+         FROM veterinarios v
+         JOIN clinicas c ON c.id = v.clinica_id
+         WHERE 1=1 ${clinicaFilter}
+         ORDER BY v.nome ASC
+         LIMIT $${limitIdx} OFFSET $${limitIdx + 1}`,
+        listParams,
+      ),
+      this.pool.query(
+        `SELECT COUNT(*)::int AS total FROM veterinarios ${countWhere}`,
+        countParams,
+      ),
+    ]);
 
     return { data: rows, total: count[0].total, page, limit };
   }

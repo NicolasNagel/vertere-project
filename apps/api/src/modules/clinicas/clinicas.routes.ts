@@ -6,13 +6,15 @@ import { replyIfInvalidUUID, safeInt } from '../../utils/validate';
 
 export async function clinicasRoutes(app: FastifyInstance) {
   const svc = new ClinicasService(getPool());
+  const authAll = [app.authenticate];
+  const adminOnly = [app.authorize(['superadmin', 'admin'])];
 
-  app.get('/clinicas', async (req) => {
+  app.get('/clinicas', { preHandler: authAll }, async (req) => {
     const q = req.query as Record<string, string>;
     return svc.list(safeInt(q.page, 1), safeInt(q.limit, 20, 1, 100), q.search);
   });
 
-  app.get('/clinicas/:id', async (req, reply) => {
+  app.get('/clinicas/:id', { preHandler: authAll }, async (req, reply) => {
     const { id } = req.params as { id: string };
     if (replyIfInvalidUUID(id, reply)) return;
     const clinica = await svc.findById(id);
@@ -20,7 +22,7 @@ export async function clinicasRoutes(app: FastifyInstance) {
     return clinica;
   });
 
-  app.post('/clinicas', async (req, reply) => {
+  app.post('/clinicas', { preHandler: adminOnly }, async (req, reply) => {
     const parsed = CreateClinicaSchema.safeParse(req.body);
     if (!parsed.success) return reply.status(422).send({ error: parsed.error.flatten() });
 
@@ -33,7 +35,7 @@ export async function clinicasRoutes(app: FastifyInstance) {
     }
   });
 
-  app.patch('/clinicas/:id', async (req, reply) => {
+  app.patch('/clinicas/:id', { preHandler: adminOnly }, async (req, reply) => {
     const { id } = req.params as { id: string };
     if (replyIfInvalidUUID(id, reply)) return;
     const parsed = UpdateClinicaSchema.safeParse(req.body);
@@ -49,7 +51,7 @@ export async function clinicasRoutes(app: FastifyInstance) {
     }
   });
 
-  app.patch('/clinicas/:id/status', async (req, reply) => {
+  app.patch('/clinicas/:id/status', { preHandler: adminOnly }, async (req, reply) => {
     const { id } = req.params as { id: string };
     if (replyIfInvalidUUID(id, reply)) return;
     const parsed = UpdateStatusSchema.safeParse(req.body);

@@ -12,6 +12,7 @@ export default function VeterinariosPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [clinicaFiltro, setClinicaFiltro] = useState('');
+  const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Veterinario | null>(null);
   const [confirmToggle, setConfirmToggle] = useState<Veterinario | null>(null);
@@ -22,10 +23,12 @@ export default function VeterinariosPage() {
     queryFn: () => api.get('/clinicas', { params: { limit: 200 } }).then((r) => r.data.data),
   });
 
+  const LIMIT = 20;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['veterinarios', clinicaFiltro],
+    queryKey: ['veterinarios', clinicaFiltro, page],
     queryFn: () =>
-      api.get('/veterinarios', { params: { clinica_id: clinicaFiltro || undefined, limit: 100 } }).then((r) => r.data),
+      api.get('/veterinarios', { params: { clinica_id: clinicaFiltro || undefined, limit: LIMIT, page } }).then((r) => r.data),
   });
 
   const upsert = useMutation({
@@ -80,7 +83,7 @@ export default function VeterinariosPage() {
         <select
           className="input"
           value={clinicaFiltro}
-          onChange={(e) => setClinicaFiltro(e.target.value)}
+          onChange={(e) => { setClinicaFiltro(e.target.value); setPage(1); }}
         >
           <option value="">Todas as clínicas</option>
           {(clinicas ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -144,6 +147,33 @@ export default function VeterinariosPage() {
           </tbody>
         </table>
       </div>
+
+      {data && data.total > LIMIT && (
+        <div className="flex items-center justify-between mt-4 px-1">
+          <span className="text-xs text-slate-500">
+            {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, data.total)} de {data.total.toLocaleString('pt-BR')} veterinários
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              className="btn-ghost px-3 py-1.5 text-xs disabled:opacity-40"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              ← Anterior
+            </button>
+            <span className="text-xs text-slate-600 font-medium">
+              Página {page} de {Math.ceil(data.total / LIMIT)}
+            </span>
+            <button
+              className="btn-ghost px-3 py-1.5 text-xs disabled:opacity-40"
+              disabled={page * LIMIT >= data.total}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Próxima →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit/Create modal */}
       <Modal

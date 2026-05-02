@@ -12,6 +12,18 @@ export class ExamesService {
     return rows;
   }
 
+  async listPaginated(page = 1, limit = 50) {
+    const offset = (page - 1) * limit;
+    const [{ rows }, { rows: count }] = await Promise.all([
+      this.pool.query(
+        `SELECT * FROM exames ORDER BY categoria ASC, nome ASC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.pool.query(`SELECT COUNT(*)::int AS total FROM exames`),
+    ]);
+    return { data: rows, total: count[0].total, page, limit };
+  }
+
   async findById(id: string) {
     const { rows } = await this.pool.query(`SELECT * FROM exames WHERE id = $1`, [id]);
     return rows[0] ?? null;

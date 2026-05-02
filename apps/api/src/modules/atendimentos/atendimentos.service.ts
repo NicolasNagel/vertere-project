@@ -33,13 +33,26 @@ export class AtendimentosService {
     clinica_id?: string;
     veterinario_id?: string;
     protocolo?: string;
+    busca?: string;
     data_inicio?: string;
     data_fim?: string;
     mes?: number;
     ano_filtro?: number;
     tipo_plantao?: string;
+    sort_by?: string;
+    sort_order?: string;
   }) {
     const { page = 1, limit = 20 } = params;
+
+    const SORT_COLUMNS: Record<string, string> = {
+      protocolo: 'a.protocolo',
+      clinica: 'c.nome',
+      veterinario: 'v.nome',
+      valor_total: 'a.valor_total',
+      created_at: 'a.created_at',
+    };
+    const sortCol = SORT_COLUMNS[params.sort_by ?? ''] ?? 'a.created_at';
+    const sortDir = params.sort_order === 'ASC' ? 'ASC' : 'DESC';
     const offset = (page - 1) * limit;
     const conditions: string[] = [];
     const values: unknown[] = [];
@@ -48,8 +61,13 @@ export class AtendimentosService {
     if (params.clinica_id) { conditions.push(`a.clinica_id = $${i++}`); values.push(params.clinica_id); }
     if (params.veterinario_id) { conditions.push(`a.veterinario_id = $${i++}`); values.push(params.veterinario_id); }
     if (params.protocolo) { conditions.push(`a.protocolo ILIKE $${i++}`); values.push(`%${params.protocolo}%`); }
+    if (params.busca) {
+      const term = `%${params.busca.trim().slice(0, 100)}%`;
+      conditions.push(`(a.nome_animal ILIKE $${i} OR a.nome_proprietario ILIKE $${i} OR v.nome ILIKE $${i})`);
+      values.push(term); i++;
+    }
     if (params.data_inicio) { conditions.push(`a.created_at >= $${i++}`); values.push(params.data_inicio); }
-    if (params.data_fim) { conditions.push(`a.created_at <= $${i++}`); values.push(params.data_fim); }
+    if (params.data_fim) { conditions.push(`a.created_at < ($${i++}::date + interval '1 day')`); values.push(params.data_fim); }
     if (params.mes) { conditions.push(`EXTRACT(MONTH FROM a.created_at) = $${i++}`); values.push(params.mes); }
     if (params.ano_filtro) { conditions.push(`EXTRACT(YEAR FROM a.created_at) = $${i++}`); values.push(params.ano_filtro); }
     if (params.tipo_plantao === 'plantao') {
@@ -65,18 +83,23 @@ export class AtendimentosService {
 
     values.push(limit, offset);
 
-    const { rows } = await this.pool.query(
-      `${ATENDIMENTO_SELECT}
-       ${where}
-       ORDER BY a.created_at DESC
-       LIMIT $${i} OFFSET $${i + 1}`,
-      values,
-    );
-
-    const { rows: count } = await this.pool.query(
-      `SELECT COUNT(*)::int AS total FROM atendimentos a ${where}`,
-      countValues,
-    );
+    const [{ rows }, { rows: count }] = await Promise.all([
+      this.pool.query(
+        `${ATENDIMENTO_SELECT}
+         ${where}
+         ORDER BY ${sortCol} ${sortDir}
+         LIMIT $${i} OFFSET $${i + 1}`,
+        values,
+      ),
+      this.pool.query(
+        `SELECT COUNT(*)::int AS total
+         FROM atendimentos a
+         JOIN clinicas c ON c.id = a.clinica_id
+         JOIN veterinarios v ON v.id = a.veterinario_id
+         ${where}`,
+        countValues,
+      ),
+    ]);
 
     return { data: rows, total: count[0].total, page, limit };
   }
@@ -85,7 +108,7 @@ export class AtendimentosService {
     return fetchWithExames(this.pool, id);
   }
 
-  async create(input: CreateAtendimentoInput) {
+  async create(input: CreateAtendimentoInput, user?: { id: string; nome: string }) {
     return withTransaction(async (trx) => {
       const { rows: vetRows } = await trx.query(
         `SELECT id FROM veterinarios WHERE id = $1 AND clinica_id = $2 AND status = 'ativo'`,
@@ -105,9 +128,11 @@ export class AtendimentosService {
       const ano = new Date().getFullYear();
       const { protocolo, numero } = await gerarProtocolo(ano, trx);
 
+      const desconto = input.desconto ?? 0;
+
       const { rows: atdRows } = await trx.query(
-        `INSERT INTO atendimentos (protocolo, numero, ano, clinica_id, veterinario_id, especie, sexo, tipo_atendimento, nome_animal, raca, idade_valor, idade_unidade, nome_proprietario, metodo_coleta, valor_total)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0)
+        `INSERT INTO atendimentos (protocolo, numero, ano, clinica_id, veterinario_id, especie, sexo, tipo_atendimento, nome_animal, raca, idade_valor, idade_unidade, nome_proprietario, metodo_coleta, hora_protocolo, criado_por_id, criado_por_nome, desconto, valor_total)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 0)
          RETURNING *`,
         [
           protocolo, numero, ano,
@@ -116,6 +141,9 @@ export class AtendimentosService {
           input.nome_animal ?? null, input.raca ?? null,
           input.idade_valor ?? null, input.idade_unidade ?? null,
           input.nome_proprietario ?? null, input.metodo_coleta ?? null,
+          input.hora_protocolo ?? null,
+          user?.id ?? null, user?.nome ?? null,
+          desconto,
         ],
       );
 
@@ -133,21 +161,45 @@ export class AtendimentosService {
 
       const { rows: totalRows } = await trx.query(
         `UPDATE atendimentos
-         SET valor_total = (SELECT COALESCE(SUM(valor), 0) FROM atendimento_exames WHERE atendimento_id = $1)
+         SET valor_total = GREATEST(0, (SELECT COALESCE(SUM(valor), 0) FROM atendimento_exames WHERE atendimento_id = $1) - desconto)
          WHERE id = $1
          RETURNING valor_total`,
         [atendimento.id],
       );
 
       atendimento.valor_total = totalRows[0].valor_total;
+
+      await trx.query(
+        `INSERT INTO atendimento_logs (atendimento_id, usuario_id, usuario_nome, acao) VALUES ($1, $2, $3, 'criado')`,
+        [atendimento.id, user?.id ?? null, user?.nome ?? 'Sistema'],
+      );
+
       return atendimento;
     });
   }
 
-  async update(id: string, input: UpdateAtendimentoInput) {
+  async getLogs(atendimentoId: string) {
+    const { rows } = await this.pool.query(
+      `SELECT id, usuario_nome, acao, campos_alterados, created_at
+       FROM atendimento_logs
+       WHERE atendimento_id = $1
+       ORDER BY created_at ASC`,
+      [atendimentoId],
+    );
+    return rows;
+  }
+
+  async update(id: string, input: UpdateAtendimentoInput, user?: { id: string; nome: string }) {
     return withTransaction(async (trx) => {
-      const { rows: exists } = await trx.query(`SELECT id FROM atendimentos WHERE id = $1`, [id]);
+      const { rows: exists } = await trx.query(
+        `SELECT id, especie, sexo, tipo_atendimento, nome_animal, raca,
+                idade_valor, idade_unidade, nome_proprietario, metodo_coleta,
+                hora_protocolo, desconto
+         FROM atendimentos WHERE id = $1`,
+        [id],
+      );
       if (!exists[0]) return null;
+      const before = exists[0] as Record<string, unknown>;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;
@@ -161,6 +213,8 @@ export class AtendimentosService {
       if (input.idade_unidade !== undefined) { fields.push(`idade_unidade = $${i++}`); values.push(input.idade_unidade); }
       if (input.nome_proprietario !== undefined) { fields.push(`nome_proprietario = $${i++}`); values.push(input.nome_proprietario); }
       if (input.metodo_coleta !== undefined) { fields.push(`metodo_coleta = $${i++}`); values.push(input.metodo_coleta); }
+      if (input.hora_protocolo !== undefined) { fields.push(`hora_protocolo = $${i++}`); values.push(input.hora_protocolo); }
+      if (input.desconto !== undefined) { fields.push(`desconto = $${i++}`); values.push(input.desconto); }
 
       if (fields.length > 0) {
         values.push(id);
@@ -190,16 +244,28 @@ export class AtendimentosService {
           `INSERT INTO atendimento_exames (atendimento_id, exame_id, valor) VALUES ${updPlaceholders}`,
           updValues,
         );
+      }
 
+      if (input.exames || input.desconto !== undefined) {
         await trx.query(
           `UPDATE atendimentos
-           SET valor_total = (SELECT COALESCE(SUM(valor), 0) FROM atendimento_exames WHERE atendimento_id = $1)
+           SET valor_total = GREATEST(0, (SELECT COALESCE(SUM(valor), 0) FROM atendimento_exames WHERE atendimento_id = $1) - desconto)
            WHERE id = $1`,
           [id],
         );
       }
 
-      // Lê o resultado final dentro da própria transação para evitar dirty read
+      const camposAlterados = [
+        ...(Object.keys(input) as (keyof typeof input)[])
+          .filter((k) => k !== 'exames' && input[k] !== undefined && String(input[k] ?? '') !== String(before[k] ?? ''))
+          .map((k) => String(k)),
+        ...(input.exames ? ['exames'] : []),
+      ].join(', ') || 'nenhuma alteração';
+      await trx.query(
+        `INSERT INTO atendimento_logs (atendimento_id, usuario_id, usuario_nome, acao, campos_alterados) VALUES ($1, $2, $3, 'atualizado', $4)`,
+        [id, user?.id ?? null, user?.nome ?? 'Sistema', camposAlterados],
+      );
+
       return fetchWithExames(trx, id);
     });
   }

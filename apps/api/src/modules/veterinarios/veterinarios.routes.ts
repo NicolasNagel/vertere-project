@@ -6,13 +6,15 @@ import { replyIfInvalidUUID, safeInt } from '../../utils/validate';
 
 export async function veterinariosRoutes(app: FastifyInstance) {
   const svc = new VeterinariosService(getPool());
+  const authAll = [app.authenticate];
+  const adminOnly = [app.authorize(['superadmin', 'admin'])];
 
-  app.get('/veterinarios', async (req) => {
+  app.get('/veterinarios', { preHandler: authAll }, async (req) => {
     const q = req.query as Record<string, string>;
     return svc.list(safeInt(q.page, 1), safeInt(q.limit, 20, 1, 100), q.clinica_id);
   });
 
-  app.get('/veterinarios/:id', async (req, reply) => {
+  app.get('/veterinarios/:id', { preHandler: authAll }, async (req, reply) => {
     const { id } = req.params as { id: string };
     if (replyIfInvalidUUID(id, reply)) return;
     const vet = await svc.findById(id);
@@ -20,7 +22,7 @@ export async function veterinariosRoutes(app: FastifyInstance) {
     return vet;
   });
 
-  app.post('/veterinarios', async (req, reply) => {
+  app.post('/veterinarios', { preHandler: adminOnly }, async (req, reply) => {
     const parsed = CreateVeterinarioSchema.safeParse(req.body);
     if (!parsed.success) return reply.status(422).send({ error: parsed.error.flatten() });
 
@@ -36,7 +38,7 @@ export async function veterinariosRoutes(app: FastifyInstance) {
     }
   });
 
-  app.patch('/veterinarios/:id', async (req, reply) => {
+  app.patch('/veterinarios/:id', { preHandler: adminOnly }, async (req, reply) => {
     const { id } = req.params as { id: string };
     if (replyIfInvalidUUID(id, reply)) return;
     const parsed = UpdateVeterinarioSchema.safeParse(req.body);

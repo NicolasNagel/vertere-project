@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import type { Exame } from '../types';
-import { Plus, FlaskConical } from 'lucide-react';
+import { Plus, FlaskConical, PowerOff, Power } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonTable } from '../components/ui/Skeleton';
@@ -23,12 +23,16 @@ export default function ExamesPage() {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Exame | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<Exame | null>(null);
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const [page, setPage] = useState(1);
   const [form, setForm] = useState({ nome: '', descricao: '', valor: '', categoria: '' });
 
-  const { data: exames, isLoading } = useQuery<Exame[]>({
-    queryKey: ['exames'],
-    queryFn: () => api.get('/exames').then((r) => r.data),
+  const LIMIT = 50;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['exames', page],
+    queryFn: () => api.get('/exames', { params: { page, limit: LIMIT } }).then((r) => r.data),
   });
 
   const upsert = useMutation({
@@ -46,12 +50,17 @@ export default function ExamesPage() {
   });
 
   const toggleStatus = useMutation({
-    mutationFn: (e: Exame) =>
-      api.patch(`/exames/${e.id}`, { status: e.status === 'ativo' ? 'inativo' : 'ativo' }),
-    onSuccess: () => {
+    mutationFn: ({ id, status }: { id: string; status: 'ativo' | 'inativo' }) =>
+      api.patch(`/exames/${id}`, { status }),
+    onSuccess: (_, { status }) => {
       qc.invalidateQueries({ queryKey: ['exames'] });
       qc.invalidateQueries({ queryKey: ['exames-ativos'] });
-      toast('success', 'Status atualizado.');
+      toast('success', status === 'inativo' ? 'Exame inativado.' : 'Exame reativado.');
+      setConfirmToggle(null);
+    },
+    onError: (err: { response?: { data?: { error?: string } } }) => {
+      toast('error', err?.response?.data?.error ?? 'Erro ao alterar status');
+      setConfirmToggle(null);
     },
   });
 
@@ -65,7 +74,7 @@ export default function ExamesPage() {
 
   function closeForm() { setShowForm(false); setEditTarget(null); }
 
-  const allRows = exames ?? [];
+  const allRows: Exame[] = data?.data ?? [];
   const filtered = categoriaFiltro
     ? allRows.filter((e) => e.categoria === categoriaFiltro)
     : allRows;
@@ -96,7 +105,7 @@ export default function ExamesPage() {
         <select
           className="input"
           value={categoriaFiltro}
-          onChange={(e) => setCategoriaFiltro(e.target.value)}
+          onChange={(e) => { setCategoriaFiltro(e.target.value); setPage(1); }}
         >
           <option value="">Todas as categorias</option>
           {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -119,6 +128,7 @@ export default function ExamesPage() {
           />
         </div>
       ) : (
+        <>
         <div className="space-y-6">
           {sortedCategories.map((cat) => (
             <div key={cat} className="table-wrapper">
@@ -147,14 +157,18 @@ export default function ExamesPage() {
                         </span>
                       </td>
                       <td className="td">
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-1">
                           <button className="btn-ghost px-2 py-1 text-xs" onClick={() => openForm(e)}>Editar</button>
                           <button
-                            className={`btn-ghost px-2 py-1 text-xs ${e.status === 'ativo' ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                            onClick={() => toggleStatus.mutate(e)}
-                            disabled={toggleStatus.isPending}
+                            className={`btn-ghost px-2 py-1 text-xs flex items-center gap-1 ${
+                              e.status === 'ativo' ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            onClick={() => setConfirmToggle(e)}
                           >
-                            {e.status === 'ativo' ? 'Inativar' : 'Ativar'}
+                            {e.status === 'ativo'
+                              ? <><PowerOff size={11} /> Inativar</>
+                              : <><Power size={11} /> Ativar</>
+                            }
                           </button>
                         </div>
                       </td>
@@ -164,6 +178,78 @@ export default function ExamesPage() {
               </table>
             </div>
           ))}
+        </div>
+
+        {data && data.total > LIMIT && (
+          <div className="flex items-center justify-between mt-4 px-1">
+            <span className="text-xs text-slate-500">
+              {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, data.total)} de {data.total.toLocaleString('pt-BR')} exames
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                className="btn-ghost px-3 py-1.5 text-xs disabled:opacity-40"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                ← Anterior
+              </button>
+              <span className="text-xs text-slate-600 font-medium">
+                Página {page} de {Math.ceil(data.total / LIMIT)}
+              </span>
+              <button
+                className="btn-ghost px-3 py-1.5 text-xs disabled:opacity-40"
+                disabled={page * LIMIT >= data.total}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Próxima →
+              </button>
+            </div>
+          </div>
+        )}
+        </>
+      )}
+
+      {confirmToggle && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={(e) => e.target === e.currentTarget && setConfirmToggle(null)}
+        >
+          <div className="bg-white rounded-2xl shadow-modal w-full max-w-sm p-6">
+            <h2 className="text-base font-semibold text-slate-900 mb-2">
+              {confirmToggle.status === 'ativo' ? 'Inativar exame?' : 'Reativar exame?'}
+            </h2>
+            <p className="text-sm text-slate-500 mb-6">
+              {confirmToggle.status === 'ativo'
+                ? <>O exame <strong>{confirmToggle.nome}</strong> não aparecerá na seleção de novos atendimentos.</>
+                : <>O exame <strong>{confirmToggle.nome}</strong> voltará a estar disponível para seleção.</>
+              }
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                className="btn-secondary"
+                onClick={() => setConfirmToggle(null)}
+                disabled={toggleStatus.isPending}
+              >
+                Cancelar
+              </button>
+              <button
+                className={confirmToggle.status === 'ativo'
+                  ? 'btn-primary bg-red-600 hover:bg-red-700 border-red-600'
+                  : 'btn-primary bg-green-600 hover:bg-green-700 border-green-600'
+                }
+                onClick={() => toggleStatus.mutate({
+                  id: confirmToggle.id,
+                  status: confirmToggle.status === 'ativo' ? 'inativo' : 'ativo',
+                })}
+                disabled={toggleStatus.isPending}
+              >
+                {toggleStatus.isPending
+                  ? 'Aguarde...'
+                  : confirmToggle.status === 'ativo' ? 'Inativar' : 'Reativar'
+                }
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
