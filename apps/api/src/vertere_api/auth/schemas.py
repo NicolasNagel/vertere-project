@@ -19,3 +19,18 @@ class UsuarioResponse(BaseModel):
     papel: Papel
     ativo: bool
     clinica_id: str | None = None
+
+
+class CriarUsuarioRequest(BaseModel):
+    email: EmailStr
+    senha: str
+    papel: Papel
+    clinica_id: str | None = None
+
+
+class EditarPapelRequest(BaseModel):
+    papel: Papel
+
+
+class ResetarSenhaRequest(BaseModel):
+    nova_senha: str

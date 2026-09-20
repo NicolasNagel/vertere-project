@@ -59,7 +59,7 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 - [x] T5 — Reset de senha administrativo (User Stories: 9) — commit `feat(s1): reset de senha administrativo`
 - [x] T6 — Sessão com expiração por inatividade (User Stories: 8) — commit `feat(s1): lógica de expiração de sessão por inatividade`
 - [x] T7 — Endpoint HTTP de login (FastAPI), sessão persistida (store + `sid` num JWT) e dependency de autorização reutilizável aplicando `authorize()`, demonstrada num endpoint admin-only (User Stories: 5, 6, 7, 8, 10, 11) — commit `feat(s1): endpoint de login, sessão via JWT e enforcement de authorize() em HTTP`
-- [ ] T8 — Endpoints HTTP de gestão de usuário (criar, editar papel, desativar, reativar, resetar senha), todos admin-only via a dependency de T7 (User Stories: 1, 2, 3, 4, 9)
+- [x] T8 — Endpoints HTTP de gestão de usuário (criar, editar papel, desativar, reativar, resetar senha), todos admin-only via a dependency de T7 (User Stories: 1, 2, 3, 4, 9) — commit `feat(s1): endpoints HTTP de gestão de usuário (admin-only)`
 
 ## Out of Scope
 
