@@ -99,7 +99,7 @@ laudos do veterinário).
 
 - [x] T1 — Domínio (`Veterinario`) e `VeterinarioRepository` (interface) com implementação fake
       em memória para os testes (User Stories: base para todas)
-- [ ] T2 — Testes da seam (`veterinarios/service.py`) cobrindo criação, validação de clínica
+- [x] T2 — Testes da seam (`veterinarios/service.py`) cobrindo criação, validação de clínica
       existente, CRMV duplicado, edição, inativação/reativação, busca por nome (com filtro de
       clínica) e listagem (User Stories: 1, 2, 3, 4, 5, 6)
 - [ ] T3 — Implementação de `cadastrar_veterinario` (validando `clinica_id` via
