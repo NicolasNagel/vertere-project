@@ -145,7 +145,7 @@ reimplementar a decisão em nenhum outro lugar.
       de T2 passarem (User Stories: 6, 7, 8)
 - [x] T4 — Testes de `cadastrar_exame`, `editar_exame`, `inativar_exame`, `reativar_exame`,
       `listar_exames` (com filtro de categoria e de ativos) (User Stories: 1, 2, 3, 4, 5)
-- [ ] T5 — Implementação dessas funções em `exames/service.py`, fazendo os testes de T4 passarem
+- [x] T5 — Implementação dessas funções em `exames/service.py`, fazendo os testes de T4 passarem
       (User Stories: 1, 2, 3, 4, 5)
 - [ ] T6 — Testes de `cadastrar_regra_plantao`, `editar_regra_plantao`, `inativar_regra_plantao`,
       `reativar_regra_plantao`, `listar_regras_plantao` (com filtro de ativos) (User Stories: 6, 7)

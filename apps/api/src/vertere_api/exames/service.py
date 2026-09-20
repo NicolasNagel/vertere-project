@@ -1,4 +1,7 @@
+import uuid
+from dataclasses import replace
 from datetime import datetime
+from decimal import Decimal
 from typing import Protocol
 
 from vertere_api.exames.domain import Exame, RegraPlantao
@@ -48,3 +51,65 @@ def calcular_adicional_plantao(
     if not candidatas:
         return None
     return max(candidatas, key=lambda regra: regra.valor_adicional)
+
+
+class ExameNaoEncontrado(Exception):
+    def __init__(self, exame_id: str) -> None:
+        super().__init__(f"Exame {exame_id} não encontrado")
+
+
+def cadastrar_exame(
+    categoria: str, nome: str, preco_base: Decimal, repo: ExameRepository
+) -> Exame:
+    """Cadastra um exame no catálogo."""
+    exame = Exame(
+        id=str(uuid.uuid4()), categoria=categoria, nome=nome, preco_base=preco_base, ativo=True
+    )
+    repo.salvar(exame)
+    return exame
+
+
+def _buscar_exame_ou_levantar(exame_id: str, repo: ExameRepository) -> Exame:
+    exame = repo.buscar_por_id(exame_id)
+    if exame is None:
+        raise ExameNaoEncontrado(exame_id)
+    return exame
+
+
+def editar_exame(
+    exame_id: str, categoria: str, nome: str, preco_base: Decimal, repo: ExameRepository
+) -> Exame:
+    """Edita categoria, nome e preço-base de um exame existente."""
+    exame = _buscar_exame_ou_levantar(exame_id, repo)
+    atualizado = replace(exame, categoria=categoria, nome=nome, preco_base=preco_base)
+    repo.salvar(atualizado)
+    return atualizado
+
+
+def inativar_exame(exame_id: str, repo: ExameRepository) -> Exame:
+    """Inativa um exame, preservando histórico associado a ele."""
+    return _definir_exame_ativo(exame_id, ativo=False, repo=repo)
+
+
+def reativar_exame(exame_id: str, repo: ExameRepository) -> Exame:
+    """Reativa um exame previamente inativado."""
+    return _definir_exame_ativo(exame_id, ativo=True, repo=repo)
+
+
+def _definir_exame_ativo(exame_id: str, ativo: bool, repo: ExameRepository) -> Exame:
+    exame = _buscar_exame_ou_levantar(exame_id, repo)
+    atualizado = replace(exame, ativo=ativo)
+    repo.salvar(atualizado)
+    return atualizado
+
+
+def listar_exames(
+    repo: ExameRepository, *, categoria: str | None = None, apenas_ativos: bool = False
+) -> list[Exame]:
+    """Lista os exames cadastrados, opcionalmente filtrando por categoria e/ou ativos."""
+    exames = repo.listar_todas()
+    if categoria is not None:
+        exames = [e for e in exames if e.categoria == categoria]
+    if apenas_ativos:
+        exames = [e for e in exames if e.ativo]
+    return exames
