@@ -1,0 +1,9 @@
+from typing import Protocol
+
+from vertere_api.pacientes.domain import Paciente
+
+
+class PacienteRepository(Protocol):
+    def buscar_por_id(self, paciente_id: str) -> Paciente | None: ...
+    def listar_todas(self) -> list[Paciente]: ...
+    def salvar(self, paciente: Paciente) -> None: ...

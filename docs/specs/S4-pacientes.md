@@ -2,7 +2,7 @@
 codigo: S4
 modulo: Pacientes
 issue: https://github.com/NicolasNagel/vertere-project/issues/8
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -71,12 +71,15 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
   - `inativar_paciente`, `reativar_paciente`: exigem
     `authorize(papel, Acao.PACIENTE_INATIVAR)`, só `admin` — inativação é decisão administrativa
     (US3/US4), separada de cadastro/edição do dia a dia.
-  - `buscar_pacientes`, `listar_pacientes`: exigem `authorize(papel, Acao.PACIENTE_VER)`,
-    concedida aos 4 papéis (mesmo padrão de `Acao.VETERINARIO_VER` em S3 — leitura sempre passa
-    por `authorize()`, nunca por uma dependency que só checa autenticação).
-  - Novas ações `Acao.PACIENTE_GERENCIAR`, `Acao.PACIENTE_INATIVAR` e `Acao.PACIENTE_VER`
-    adicionadas em `auth/service.py`, seguindo o padrão de `Acao.VETERINARIO_GERENCIAR`/
-    `Acao.VETERINARIO_VER`.
+  - `buscar_pacientes`, `listar_pacientes`: exigem `authorize(papel, Acao.PACIENTE_VER)`.
+    **`Acao.PACIENTE_VER` já existe** em `auth/service.py` desde S1 — antecipada com escopo de
+    clínica (`_ACOES_COM_ESCOPO_DE_CLINICA`) e já concedida aos 4 papéis, com testes próprios em
+    `test_auth_service.py`. Esta spec reaproveita a ação existente, sem redefini-la; o endpoint
+    HTTP usa `exigir_acao(Acao.PACIENTE_VER)` no mesmo padrão simples de S3 (sem passar
+    `clinica_usuario`/`clinica_recurso` — enforcement de escopo por clínica no papel `CLINICA`
+    fica para quando o Portal da Clínica for especificado, ver "Out of Scope").
+  - Novas ações desta spec: só `Acao.PACIENTE_GERENCIAR` e `Acao.PACIENTE_INATIVAR`, adicionadas
+    em `auth/service.py` seguindo o padrão de `Acao.VETERINARIO_GERENCIAR`.
 - **Inativação preserva histórico**: inativar um paciente não apaga nem desvincula atendimentos
   já associados a ele (essa entidade ainda não existe nesta spec, mas a decisão de não deletar é
   definida aqui para ser seguida pelas specs seguintes — mesma decisão já tomada para Clínicas em
@@ -109,7 +112,7 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Paciente`) e `PacienteRepository` (interface) com implementação fake em
+- [x] T1 — Domínio (`Paciente`) e `PacienteRepository` (interface) com implementação fake em
       memória para os testes (User Stories: base para todas)
 - [ ] T2 — Testes da seam (`pacientes/service.py`) cobrindo criação, validação de clínica
       existente, edição, inativação/reativação, busca por nome (com filtro de clínica e de
@@ -120,9 +123,9 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
       (User Stories: 1, 2, 3, 4, 5, 6)
 - [ ] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas`)
       implementando `PacienteRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T5 — Novas ações `Acao.PACIENTE_GERENCIAR`, `Acao.PACIENTE_INATIVAR` e `Acao.PACIENTE_VER`
-      em `auth/service.py` (`_PERMISSOES`: `PACIENTE_GERENCIAR` admin+atendente;
-      `PACIENTE_INATIVAR` só admin; `PACIENTE_VER` todos os papéis) (User Stories: 7)
+- [ ] T5 — Novas ações `Acao.PACIENTE_GERENCIAR` e `Acao.PACIENTE_INATIVAR` em `auth/service.py`
+      (`_PERMISSOES`: `PACIENTE_GERENCIAR` admin+atendente; `PACIENTE_INATIVAR` só admin);
+      `Acao.PACIENTE_VER` já existe desde S1 e não é alterada (User Stories: 7)
 - [ ] T6 — Endpoints HTTP (`pacientes/router.py` + `schemas.py`): criar/editar (via
       `Depends(exigir_acao(Acao.PACIENTE_GERENCIAR))`), inativar/reativar (via
       `Depends(exigir_acao(Acao.PACIENTE_INATIVAR))`) e buscar/listar (via
