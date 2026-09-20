@@ -158,3 +158,9 @@ Corrigido na mesma branch: `CrmvVazio` adicionada em `veterinarios/service.py`, 
 em `veterinarios/router.py`, com testes na seam (parametrizado, 2 casos) e via HTTP. Duplicação
 de filtro também corrigida: `_filtrar` compartilhado por `buscar_veterinarios`/
 `listar_veterinarios`. Suíte completa: 121 passed.
+
+**Reverificação final (2026-09-20)**, por segurança após as correções do `/code-review`: ✅
+APROVADA. Relatório completo em `docs/specs/relatorios/S3-verificacao.md`. Reauditoria do zero
+no commit `99340f3` (posterior a todas as correções acima) — 121/121 testes, fluxo HTTP validado
+ao vivo (incluindo CRMV vazio → 422), 6/6 tasks e 7/7 user stories com evidência real, sem scope
+creep, sem desvio de ADR. Sem pendências. Pronta para PR.
