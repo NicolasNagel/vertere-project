@@ -117,7 +117,7 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
 - [x] T2 — Testes da seam (`pacientes/service.py`) cobrindo criação, validação de clínica
       existente, edição, inativação/reativação, busca por nome (com filtro de clínica e de
       proprietário) e listagem (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T3 — Implementação de `cadastrar_paciente` (validando `clinica_id` via `ClinicaRepository`),
+- [x] T3 — Implementação de `cadastrar_paciente` (validando `clinica_id` via `ClinicaRepository`),
       `editar_paciente`, `inativar_paciente`, `reativar_paciente`, `buscar_pacientes`,
       `listar_pacientes` em `pacientes/service.py`, fazendo os testes de T2 passarem
       (User Stories: 1, 2, 3, 4, 5, 6)
