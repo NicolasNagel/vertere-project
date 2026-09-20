@@ -121,7 +121,7 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
       `editar_paciente`, `inativar_paciente`, `reativar_paciente`, `buscar_pacientes`,
       `listar_pacientes` em `pacientes/service.py`, fazendo os testes de T2 passarem
       (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas`)
+- [x] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas`)
       implementando `PacienteRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
 - [ ] T5 — Novas ações `Acao.PACIENTE_GERENCIAR` e `Acao.PACIENTE_INATIVAR` em `auth/service.py`
       (`_PERMISSOES`: `PACIENTE_GERENCIAR` admin+atendente; `PACIENTE_INATIVAR` só admin);
