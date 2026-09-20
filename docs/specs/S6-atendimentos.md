@@ -171,7 +171,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 - [x] T11 — Novas ações `Acao.ATENDIMENTO_GERENCIAR`, `Acao.ATENDIMENTO_VER` em `auth/service.py`
       (`_PERMISSOES`: `ATENDIMENTO_GERENCIAR` para `admin` e `atendente`; `ATENDIMENTO_VER` para
       `admin`, `atendente`, `tecnico` e `clinica`) (User Stories: todas, via checagem de acesso)
-- [ ] T12 — Endpoints HTTP (`atendimentos/router.py` + `schemas.py`): registrar, editar, cancelar
+- [x] T12 — Endpoints HTTP (`atendimentos/router.py` + `schemas.py`): registrar, editar, cancelar
       e listar/filtrar atendimento (via `Depends(exigir_acao(...))` nas ações correspondentes,
       incluindo o filtro automático por clínica para o papel `clinica`), com mapeamento de erros
       de domínio (recurso inexistente → 404, referência inativa/desconto inválido → 400/422)
