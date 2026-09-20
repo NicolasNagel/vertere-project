@@ -158,7 +158,7 @@ reimplementar a decisão em nenhum outro lugar.
       `Acao.REGRA_PLANTAO_VER` em `auth/service.py` (`_PERMISSOES`: `EXAME_GERENCIAR` e
       `REGRA_PLANTAO_GERENCIAR` só admin; `EXAME_VER` todos os 4 papéis; `REGRA_PLANTAO_VER`
       admin + atendente) (User Stories: 9)
-- [ ] T10 — Endpoints HTTP (`exames/router.py` + `schemas.py`): CRUD de exame e regra de plantão
+- [x] T10 — Endpoints HTTP (`exames/router.py` + `schemas.py`): CRUD de exame e regra de plantão
       (via `Depends(exigir_acao(...))` nas ações correspondentes) e endpoint de sugestão de
       adicional (`calcular_adicional_plantao` sobre as regras ativas carregadas), incluindo
       mapeamento de erros de domínio (recurso inexistente → 404) (User Stories: 1, 2, 3, 4, 5, 6,
