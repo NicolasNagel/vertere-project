@@ -69,6 +69,16 @@ class TestCalcularAdicionalPlantao:
 
         assert resultado is None
 
+    def test_dia_totalmente_diferente_da_janela_cruzando_meia_noite(self) -> None:
+        # regra: sexta (4) 18:00 até sábado 06:00; domingo não pertence a nenhum dos dois dias
+        regra = _regra(dia_semana=4, hora_inicio=time(18, 0), hora_fim=time(6, 0))
+        # 2026-09-27 é domingo, 10:00
+        data_hora = datetime(2026, 9, 27, 10, 0)
+
+        resultado = calcular_adicional_plantao(data_hora, [regra])
+
+        assert resultado is None
+
     def test_regra_inativa_e_ignorada(self) -> None:
         regra = _regra(dia_semana=2, hora_inicio=time(12, 0), hora_fim=time(14, 0), ativo=False)
         data_hora = datetime(2026, 9, 23, 13, 0)

@@ -141,7 +141,7 @@ reimplementar a decisão em nenhum outro lugar.
 - [x] T2 — Testes de `calcular_adicional_plantao` (função pura, sem repositório): janela simples,
       fora da janela, janela cruzando meia-noite, regra inativa ignorada, nenhuma regra aplicável,
       regras sobrepostas (User Stories: 6, 7, 8)
-- [ ] T3 — Implementação de `calcular_adicional_plantao` em `exames/service.py`, fazendo os testes
+- [x] T3 — Implementação de `calcular_adicional_plantao` em `exames/service.py`, fazendo os testes
       de T2 passarem (User Stories: 6, 7, 8)
 - [ ] T4 — Testes de `cadastrar_exame`, `editar_exame`, `inativar_exame`, `reativar_exame`,
       `listar_exames` (com filtro de categoria e de ativos) (User Stories: 1, 2, 3, 4, 5)
