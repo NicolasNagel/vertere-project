@@ -1,12 +1,16 @@
+# Node/pnpm (apps/web)
 node_modules/
 dist/
+.pnpm-store/
+
+# Python (apps/api tem seu próprio .gitignore mais específico)
+.venv/
+__pycache__/
+*.pyc
+
+# Ambiente
 .env
-*.log
+.env.local
+
+# Editor/SO
 .DS_Store
-coverage/
-.nyc_output/
-.claude/
-assets/
-assests/
-# Added by code-review-graph
-.code-review-graph/

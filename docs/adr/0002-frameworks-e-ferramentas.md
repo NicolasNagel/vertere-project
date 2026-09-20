@@ -12,7 +12,8 @@ O ADR-0001 fixou Python no backend e Node.js/TypeScript no frontend. Para começ
 
 - **Backend web framework**: FastAPI — tipagem via Pydantic, async nativo, gera OpenAPI automaticamente (contrato explícito com o frontend TS), boa integração com LangChain na fase de IA.
 - **Frontend framework**: React + Vite — mesmo padrão usado antes da remoção do código anterior; SPA estática, custo de hospedagem baixo.
-- **Gerenciador de dependências Python**: `uv` — resolução e instalação rápidas, lockfile determinístico.
+- **Gerenciador de dependências Python**: `uv` — resolução e instalação rápidas, lockfile determinístico. Já em uso em `apps/api` desde a spec de Auth (S1).
+- **Gerenciador de pacotes do frontend**: `pnpm` — instalação mais rápida e eficiente em disco que `npm`/`yarn` (store global com hardlinks), suporte nativo a workspaces caso o monorepo `apps/*` cresça.
 - **Banco de dados**: PostgreSQL — mesmo SGBD usado na versão anterior do projeto; atende bem o volume da planilha (milhares de atendimentos) com baixo custo em provedores gerenciados.
 - **ORM/migrações**: SQLAlchemy 2.x + Alembic.
 - **Testes backend**: `pytest`.

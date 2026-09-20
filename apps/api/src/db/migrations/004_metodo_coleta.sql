@@ -1,1 +1,0 @@
-ALTER TABLE atendimentos ADD COLUMN IF NOT EXISTS metodo_coleta VARCHAR(100);
