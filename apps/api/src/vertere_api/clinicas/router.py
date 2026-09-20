@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from vertere_api.auth.deps import exigir_admin, obter_db, obter_usuario_atual
+from vertere_api.auth.deps import exigir_acao, obter_db, obter_usuario_atual
 from vertere_api.auth.domain import Usuario
+from vertere_api.auth.service import Acao
 from vertere_api.clinicas.domain import Clinica
 from vertere_api.clinicas.repository import SQLAlchemyClinicaRepository
 from vertere_api.clinicas.schemas import (
@@ -12,6 +13,7 @@ from vertere_api.clinicas.schemas import (
 )
 from vertere_api.clinicas.service import (
     ClinicaNaoEncontrada,
+    CnpjInvalido,
     CnpjJaCadastrado,
     buscar_por_nome,
     criar_clinica,
@@ -40,7 +42,7 @@ def _para_response(clinica: Clinica) -> ClinicaResponse:
     "",
     response_model=ClinicaResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(exigir_admin)],
+    dependencies=[Depends(exigir_acao(Acao.CLINICA_GERENCIAR))],
 )
 def criar(dados: CriarClinicaRequest, db: Session = Depends(obter_db)) -> ClinicaResponse:
     repo = SQLAlchemyClinicaRepository(db)
@@ -53,6 +55,8 @@ def criar(dados: CriarClinicaRequest, db: Session = Depends(obter_db)) -> Clinic
             email=dados.email,
             repo=repo,
         )
+    except CnpjInvalido as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     except CnpjJaCadastrado as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     return _para_response(clinica)
@@ -61,7 +65,7 @@ def criar(dados: CriarClinicaRequest, db: Session = Depends(obter_db)) -> Clinic
 @router.patch(
     "/{clinica_id}",
     response_model=ClinicaResponse,
-    dependencies=[Depends(exigir_admin)],
+    dependencies=[Depends(exigir_acao(Acao.CLINICA_GERENCIAR))],
 )
 def editar(
     clinica_id: str, dados: EditarClinicaRequest, db: Session = Depends(obter_db)
@@ -84,7 +88,7 @@ def editar(
 @router.post(
     "/{clinica_id}/inativar",
     response_model=ClinicaResponse,
-    dependencies=[Depends(exigir_admin)],
+    dependencies=[Depends(exigir_acao(Acao.CLINICA_GERENCIAR))],
 )
 def inativar(clinica_id: str, db: Session = Depends(obter_db)) -> ClinicaResponse:
     repo = SQLAlchemyClinicaRepository(db)
@@ -98,7 +102,7 @@ def inativar(clinica_id: str, db: Session = Depends(obter_db)) -> ClinicaRespons
 @router.post(
     "/{clinica_id}/reativar",
     response_model=ClinicaResponse,
-    dependencies=[Depends(exigir_admin)],
+    dependencies=[Depends(exigir_acao(Acao.CLINICA_GERENCIAR))],
 )
 def reativar(clinica_id: str, db: Session = Depends(obter_db)) -> ClinicaResponse:
     repo = SQLAlchemyClinicaRepository(db)

@@ -92,6 +92,18 @@ class TestCriarClinicaEndpoint:
 
         assert resposta.status_code == 409
 
+    def test_cnpj_com_formato_invalido_retorna_422(self, cliente: TestClient, session: Session) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token = _token(cliente, "admin@vertere.com")
+
+        resposta = cliente.post(
+            "/clinicas",
+            json=_payload_clinica(cnpj="123"),
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert resposta.status_code == 422
+
     def test_atendente_nao_pode_criar_clinica(self, cliente: TestClient, session: Session) -> None:
         _criar_usuario_db(session, "atendente@vertere.com", Papel.ATENDENTE)
         token = _token(cliente, "atendente@vertere.com")

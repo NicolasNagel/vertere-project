@@ -2,6 +2,7 @@ import pytest
 
 from vertere_api.clinicas.domain import Clinica
 from vertere_api.clinicas.service import (
+    CnpjInvalido,
     CnpjJaCadastrado,
     ClinicaNaoEncontrada,
     buscar_por_nome,
@@ -49,6 +50,20 @@ class TestCriarClinica:
         assert clinica.nome == "Clínica Central"
         assert clinica.ativo is True
         assert repo.buscar_por_id(clinica.id) == clinica
+
+    @pytest.mark.parametrize("cnpj_invalido", ["123", "1122233300018a", "112223330001811"])
+    def test_cnpj_com_formato_invalido_e_rejeitado(self, cnpj_invalido: str) -> None:
+        repo = RepositorioFake()
+
+        with pytest.raises(CnpjInvalido):
+            criar_clinica(
+                nome="Clínica X",
+                cnpj=cnpj_invalido,
+                endereco="Rua X",
+                telefone="123",
+                email="x@x.com",
+                repo=repo,
+            )
 
     def test_cnpj_duplicado_e_rejeitado(self) -> None:
         existente = Clinica(

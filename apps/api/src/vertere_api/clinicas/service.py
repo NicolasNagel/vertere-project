@@ -11,6 +11,11 @@ class ClinicaRepository(Protocol):
     def salvar(self, clinica: Clinica) -> None: ...
 
 
+class CnpjInvalido(Exception):
+    def __init__(self, cnpj: str) -> None:
+        super().__init__(f"CNPJ inválido: {cnpj!r} — esperado 14 dígitos")
+
+
 class CnpjJaCadastrado(Exception):
     def __init__(self, cnpj: str) -> None:
         super().__init__(f"Já existe uma clínica com o CNPJ {cnpj}")
@@ -29,7 +34,9 @@ def criar_clinica(
     email: str,
     repo: ClinicaRepository,
 ) -> Clinica:
-    """Cadastra uma clínica. Rejeita CNPJ já cadastrado."""
+    """Cadastra uma clínica. Rejeita CNPJ com formato inválido ou já cadastrado."""
+    if not (len(cnpj) == 14 and cnpj.isdigit()):
+        raise CnpjInvalido(cnpj)
     if repo.buscar_por_cnpj(cnpj) is not None:
         raise CnpjJaCadastrado(cnpj)
 

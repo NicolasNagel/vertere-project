@@ -44,9 +44,9 @@ Um módulo de cadastro de clínicas parceiras, com CRUD administrado por `admin`
 
 - [x] T1 — Domínio (`Clinica`) e `ClinicaRepository` (interface) com implementação fake em memória para os testes (User Stories: base para todas)
 - [x] T2 — Testes da seam (`clinicas/service.py`) cobrindo criação, edição, inativação/reativação, CNPJ duplicado, busca por nome e listagem (User Stories: 1, 2, 3, 4, 5, 6)
-- [x] T3 — Implementação de `criar_clinica`, `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6). Nota: autorização (story 7) fica na camada HTTP em T5, reusando `exigir_admin` já estabelecido em S1 (`auth/deps.py`) para as rotas admin-only — mesmo padrão de `usuarios_router.py`, não uma checagem nova por conta própria.
+- [x] T3 — Implementação de `criar_clinica` (com validação de formato de CNPJ — 14 dígitos), `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6)
 - [x] T4 — Persistência real: modelo SQLAlchemy + migração Alembic implementando `ClinicaRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
-- [x] T5 — Endpoints HTTP (`clinicas/router.py` + `schemas.py`): criar, editar, inativar, reativar (admin-only, reusando a dependency de autorização de S1) e buscar/listar (qualquer usuário autenticado) (User Stories: 1, 2, 3, 4, 5, 6, 7)
+- [x] T5 — Endpoints HTTP (`clinicas/router.py` + `schemas.py`): criar, editar, inativar, reativar (via `authorize(papel, Acao.CLINICA_GERENCIAR)`, ação nova adicionada em `auth/service.py`, exigida com `exigir_acao` de `auth/deps.py` — mesmo ponto único de decisão de S1, não `exigir_admin`) e buscar/listar (qualquer usuário autenticado) (User Stories: 1, 2, 3, 4, 5, 6, 7)
 
 ## Out of Scope
 
@@ -84,3 +84,14 @@ da própria spec) e o código:
    `criar_clinica` (rejeitar com uma exceção de domínio, testada na seam).
 
 Pendente resolver na mesma branch (`spec/s2-clinicas`) antes de reabrir `/fechar-spec S2`.
+
+**Correção aplicada (2026-09-19)**, mesma branch, antes de reabrir a verificação:
+
+1. Adicionado `Acao.CLINICA_GERENCIAR` em `auth/service.py` (permitido só para `Papel.ADMIN`);
+   `clinicas/router.py` agora usa `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` em vez de
+   `exigir_admin` nas quatro rotas de escrita.
+2. `criar_clinica` valida CNPJ (14 dígitos, só numérico) e levanta `CnpjInvalido`; endpoint
+   HTTP mapeia para 422. Testado na seam (3 formatos inválidos) e via HTTP.
+
+Suíte completa: 85 passed (4 testes novos: 1 na seam de CNPJ inválido parametrizado em 3
+casos, 1 HTTP de CNPJ inválido). Pronta para reabrir `/fechar-spec S2`.
