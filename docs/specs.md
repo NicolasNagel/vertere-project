@@ -11,5 +11,6 @@
 | S3 | Veterinários | [docs/specs/S3-veterinarios.md](specs/S3-veterinarios.md) | [#6](https://github.com/NicolasNagel/vertere-project/issues/6) | entregue |
 | S4 | Pacientes | [docs/specs/S4-pacientes.md](specs/S4-pacientes.md) | [#8](https://github.com/NicolasNagel/vertere-project/issues/8) | entregue |
 | S5 | Exames & Precificação | [docs/specs/S5-exames-precificacao.md](specs/S5-exames-precificacao.md) | [#10](https://github.com/NicolasNagel/vertere-project/issues/10) | entregue |
+| S6 | Atendimentos | [docs/specs/S6-atendimentos.md](specs/S6-atendimentos.md) | [#12](https://github.com/NicolasNagel/vertere-project/issues/12) | pronta |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
