@@ -2,7 +2,7 @@
 codigo: S4
 modulo: Pacientes
 issue: https://github.com/NicolasNagel/vertere-project/issues/8
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -160,3 +160,9 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
 ## Descobertas
 
 ## Verificação
+
+Resultado do `/fechar-spec S4` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S4-verificacao.md`. 154/154 testes passam; as 6 tasks marcadas `[x]` têm
+evidência real (1 commit por task); 7/7 user stories atendidas; sem scope creep; aderente aos
+ADRs 0001/0002. Validação funcional de ponta a ponta contra Postgres de dev real (login, criar
+clínica, criar/listar/buscar/inativar paciente via HTTP puro, sem token → 401). Sem pendências.
