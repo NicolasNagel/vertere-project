@@ -154,7 +154,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       Stories: 1, 2, 6)
 - [x] T5 — Implementação de `registrar_atendimento` em `atendimentos/service.py`, fazendo os
       testes de T4 passarem (User Stories: 1, 2, 6)
-- [ ] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
+- [x] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
       `valor_total`, permitida com `status=ativo`, rejeitada com `status=cancelado`) e de
       `cancelar_atendimento` (User Stories: 5, 7)
 - [ ] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
