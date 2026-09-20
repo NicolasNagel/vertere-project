@@ -2,7 +2,7 @@
 codigo: S7
 modulo: Laudos
 issue: https://github.com/NicolasNagel/vertere-project/issues/15
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -285,4 +285,15 @@ service testável sem infraestrutura real.
 
 ## Verificação
 
-<!-- Preenchido por /fechar-spec -->
+Resultado do `/fechar-spec S7` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S7-verificacao.md`. 326/326 testes passam; as 17 tasks marcadas `[x]` têm
+evidência real; 7/7 user stories atendidas; sem scope creep (nenhum item de "Out of Scope"
+implementado, incluindo a lacuna de `authorize()` para filtro de lista — issue #13 — deixada como
+está). Uso de `fpdf2`/`smtplib` fora dos ADRs 0001/0002 está documentado na própria spec como
+primeira decisão dessa natureza. Validação funcional de ponta a ponta contra Postgres de dev real
+(login, fluxo completo clínica→veterinário→paciente→exame→atendimento→template→laudo, incluindo
+finalizar com SMTP indisponível confirmando `erro_envio` gravado sem bloquear a finalização, e
+reenviar). Observação não bloqueante: a seção "Testing Decisions" descreve o caso de escopo de
+clínica divergente como retornando 403; o código retorna 404 (não revela existência do laudo a
+quem não tem acesso) — comportamento mais seguro, já coberto por teste, divergência textual
+pontual sem impacto no veredito. Sem pendências bloqueantes.
