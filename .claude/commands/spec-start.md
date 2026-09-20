@@ -38,7 +38,7 @@ Argumento (`$ARGUMENTS`): o código da spec, ex: `S1`. Se vazio, pergunte ao usu
 
 8. **Cada task concluída = um commit** via `/commit` (tipo apropriado, escopo `s<n>`) — não acumule várias tasks num commit só, e não espere terminar a spec inteira para o primeiro commit. **Marcar `[x]` no arquivo da spec faz parte do commit daquela task**, não uma atualização separada depois.
 
-9. **Rode a suíte de testes do módulo a cada task**, não só no final. Se algo já existente quebrar, pare e resolva antes de continuar.
+9. **Rode a suíte de testes do módulo a cada task, com cobertura** (`uv run pytest --cov=vertere_api --cov-report=term-missing`, não só `pytest`), não só no final. Cobertura visível a cada task pega linha não exercitada (ex: um branch de erro só testado na seam, não no router) no momento em que ela aparece, em vez de só num `/code-review` manual depois — não substitui julgamento sobre a qualidade do teste, só reduz o ponto cego de "não testei isso ainda". Se algo já existente quebrar, pare e resolva antes de continuar.
 
 10. **Se descobrir uma necessidade nova fora do escopo da spec**, não implemente: anote na seção "Descobertas" do arquivo da spec e pare para decisão do usuário (guardrail do projeto). Se a necessidade implica uma task nova dentro do escopo já aprovado (não uma expansão de escopo), adicione a task ao checklist com uma nota de por que surgiu, em vez de só mencionar em texto solto.
 
@@ -47,3 +47,13 @@ Argumento (`$ARGUMENTS`): o código da spec, ex: `S1`. Se vazio, pergunte ao usu
 ## Se a spec depender de algo ainda não implementado
 
 Se a spec presume um módulo anterior que ainda não existe no código, pare e avise o usuário em vez de mockar ou assumir a dependência — sinalize o bloqueio explicitamente.
+
+## Ajuste apontado por um dev numa spec já entregue/em desenvolvimento
+
+Quando um desenvolvedor aponta um ajuste necessário numa spec (após as tasks/spec já concluídas, ou durante `/fechar-spec`):
+
+1. **Localize onde foi implementado** via `git log --oneline` (commits referenciam `Spec: docs/specs/S<N>-*.md (T<N>)` — não assumir, confirmar no histórico) e `docs/adr/` quando o ajuste tocar uma decisão arquitetural.
+2. **Aplique o fix na branch da spec correspondente** (`spec/s<n>-*`), nunca numa branch solta nova — mesmo que a spec já esteja `entregue`, reabra/continue na mesma branch.
+3. **Referencie no commit qual task/etapa continha o erro original** (ex: `fix(s<n>): corrige X (achado na T<N>)`), para manter rastreabilidade de onde o comportamento nasceu.
+
+Vale tanto para achados de `/code-review`/`verificador-de-spec` quanto para qualquer ajuste ad-hoc pedido depois.
