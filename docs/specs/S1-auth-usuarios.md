@@ -46,6 +46,20 @@ Um módulo de autenticação e autorização que identifica cada usuário do sis
 - Módulo testado: `auth` (funções `authenticate` e `authorize`), incluindo casos de: login válido, login com senha errada, login em conta inativa, autorização de admin em ação financeira, negação de atendente/técnico em ação financeira, negação de clínica tentando acessar registro de outra clínica.
 - Seam única (`authenticate`/`authorize`), sem mocks de HTTP/DB — padrão de teste inicial do projeto (não há prior art anterior no repositório).
 
+## Tasks
+
+<!-- Backfill retroativo: esta seção não existia quando T1/T2 foram implementadas (convenção
+adotada depois). Marcadas [x] com base no código e nos testes já existentes no repo, auditados
+pela verificação de /fechar-spec S1 (ver seção Verificação). -->
+
+- [x] T1 — Domínio (`Papel`, `Usuario`) e scaffold do projeto `apps/api` com `uv` (User Stories: base para todas) — commit `feat(s1): implementa authenticate/authorize com testes` (13d4f4f)
+- [x] T2 — `authenticate()`/`authorize()` com testes na seam (repositório fake em memória) e hash de senha com `bcrypt` (User Stories: 6, 7, 10, 13; parcial: 11, 12 — lógica correta e testada, falta enforcement em endpoint real) — mesmo commit de T1
+- [ ] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9)
+- [ ] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4)
+- [ ] T5 — Reset de senha administrativo (User Stories: 9)
+- [ ] T6 — Sessão com expiração por inatividade (User Stories: 8)
+- [ ] T7 — Endpoint HTTP de login (FastAPI) + dependency/middleware aplicando `authorize()` nas rotas, fechando de ponta a ponta as stories que hoje só têm lógica testada isoladamente (User Stories: 5, 11, 12)
+
 ## Out of Scope
 
 - Cadastro/edição de Clínicas, Veterinários, Pacientes, Exames — specs separadas que dependem desta.

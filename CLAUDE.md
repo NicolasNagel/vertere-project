@@ -34,7 +34,13 @@ de dúvidas para clientes, suporte a análise, e dashboard analítico — sob os
 2. Cada spec = uma branch `spec/s-XX-nome` a partir da `main`, idealmente numa sessão nova do
    Claude Code (o subagente de verificação já cobre a independência de contexto; a sessão nova
    por spec evita que a sessão de implementação vire a mesma que decide se terminou).
-3. Cada task da spec = um commit (`tipo(escopo): mensagem`, ver Convenções).
+3. Toda spec tem uma seção **"## Tasks"** — um checklist (`- [ ] T<N> — descrição (User Stories: ...)`)
+   escrito por `/spec-write` e seguido por `/spec-start`. É a fonte de verdade de progresso entre
+   sessões, não um TodoWrite efêmero: uma sessão nova retomando a spec lê o checklist para saber
+   exatamente o que já foi feito, e `/fechar-spec` audita cada `[x]` contra o código de verdade
+   (task marcada sem evidência real é motivo de bloqueio). Cada task da spec = um commit
+   (`tipo(escopo): mensagem`, ver Convenções); marcar `[x]` no arquivo faz parte do commit da
+   task, não uma atualização separada.
 4. **Verificação independente ANTES do PR, não antes do merge.** Terminada a implementação, a
    sessão autora para e roda **`/fechar-spec S-XX`**, que dispara o subagente
    **`verificador-de-spec`** passando só o código da spec — nada além disso. Ele gera

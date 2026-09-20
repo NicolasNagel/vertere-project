@@ -17,22 +17,25 @@ Argumento (`$ARGUMENTS`): o código da spec, ex: `S1`. Se vazio, pergunte ao usu
 
 4. **Marque em desenvolvimento.** Atualize o frontmatter (`status: em-desenvolvimento`) do arquivo da spec, se ainda não estiver, e a linha correspondente em `docs/specs.md`.
 
-5. **Planeje antes de codar.** Quebre a spec (User Stories + Implementation Decisions) em uma lista de tasks com o TodoWrite, na ordem que respeita dependências internas do módulo. Não pule esta etapa mesmo para specs pequenas.
+5. **A lista de tasks é a seção "## Tasks" do arquivo da spec, não um TodoWrite solto.** TodoWrite ainda é útil como visão de progresso *desta sessão*, mas a fonte de verdade entre sessões é o checklist no arquivo — é isso que permite a outra pessoa (ou você mesmo, numa sessão nova) retomar a spec sabendo exatamente o que já foi feito, e é isso que `/fechar-spec` audita.
+   - **Se a seção "## Tasks" já existe e tem itens**, carregue-a no TodoWrite e continue dali — não reinvente a quebra.
+   - **Se a seção está vazia ou não existe** (spec escrita antes desta convenção, ou saída incompleta de `/spec-write`), quebre a spec (User Stories + Implementation Decisions) em tasks agora, seguindo as mesmas regras do `/spec-write` (uma task = um commit, ordenada por dependência, teste antes da implementação que testa), e **escreva a lista no arquivo antes de começar a codar**. Não pule esta etapa mesmo para specs pequenas.
+   - **Se algumas tasks já foram implementadas antes desta convenção existir** (código já no repo, sem checklist correspondente), marque-as retroativamente como `[x]` com uma nota do commit que já fez aquilo, em vez de reimplementar ou fingir que não existem.
 
-6. **Desenvolva test-first, pela seam definida na spec** (seção "Testing Decisions"):
+6. **Desenvolva test-first, pela seam definida na spec** (seção "Testing Decisions"), uma task por vez, na ordem do checklist:
    - Escreva o teste que descreve o comportamento esperado antes do código de produção.
    - Implemente o mínimo para o teste passar.
-   - Só então trate a próxima task.
+   - Só então marque a task como `[x]` no arquivo e passe pra próxima.
    - Siga os padrões já estabelecidos no código existente (ex: `apps/api/src/vertere_api/auth`); consulte antes de inventar um padrão novo.
    - Não implemente nada listado em "Out of Scope" — isso é escopo de outra spec.
 
-7. **Cada task concluída = um commit** via `/commit` (tipo apropriado, escopo `s<n>`) — não acumule várias tasks num commit só, e não espere terminar a spec inteira para o primeiro commit.
+7. **Cada task concluída = um commit** via `/commit` (tipo apropriado, escopo `s<n>`) — não acumule várias tasks num commit só, e não espere terminar a spec inteira para o primeiro commit. **Marcar `[x]` no arquivo da spec faz parte do commit daquela task**, não uma atualização separada depois.
 
 8. **Rode a suíte de testes do módulo a cada task**, não só no final. Se algo já existente quebrar, pare e resolva antes de continuar.
 
-9. **Se descobrir uma necessidade nova fora do escopo da spec**, não implemente: anote na seção "Descobertas" do arquivo da spec e pare para decisão do usuário (guardrail do projeto).
+9. **Se descobrir uma necessidade nova fora do escopo da spec**, não implemente: anote na seção "Descobertas" do arquivo da spec e pare para decisão do usuário (guardrail do projeto). Se a necessidade implica uma task nova dentro do escopo já aprovado (não uma expansão de escopo), adicione a task ao checklist com uma nota de por que surgiu, em vez de só mencionar em texto solto.
 
-10. **Ao concluir todas as tasks**, não declare a spec "pronta" sozinho: diga ao usuário que a implementação está completa nesta branch e recomende rodar `/fechar-spec S<N>` — esse comando é a única forma de encerrar uma spec neste projeto.
+10. **Ao concluir todas as tasks do checklist**, não declare a spec "pronta" sozinho: diga ao usuário que a implementação está completa nesta branch e recomende rodar `/fechar-spec S<N>` — esse comando é a única forma de encerrar uma spec neste projeto. Se restar task não marcada, diga isso explicitamente em vez de sugerir `/fechar-spec` antes da hora.
 
 ## Se a spec depender de algo ainda não implementado
 
