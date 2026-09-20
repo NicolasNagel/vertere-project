@@ -15,6 +15,7 @@ from vertere_api.veterinarios.schemas import (
 from vertere_api.veterinarios.service import (
     ClinicaInexistente,
     CrmvJaCadastrado,
+    CrmvVazio,
     VeterinarioNaoEncontrado,
     buscar_veterinarios,
     cadastrar_veterinario,
@@ -58,6 +59,8 @@ def criar(dados: CriarVeterinarioRequest, db: Session = Depends(obter_db)) -> Ve
             repo=repo,
             clinicas=clinicas,
         )
+    except CrmvVazio as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     except ClinicaInexistente as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     except CrmvJaCadastrado as erro:

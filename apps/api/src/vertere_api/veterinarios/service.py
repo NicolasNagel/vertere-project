@@ -18,6 +18,11 @@ class ClinicaInexistente(Exception):
         super().__init__(f"Clínica {clinica_id} não encontrada")
 
 
+class CrmvVazio(Exception):
+    def __init__(self) -> None:
+        super().__init__("CRMV não pode ser vazio")
+
+
 class CrmvJaCadastrado(Exception):
     def __init__(self, crmv: str) -> None:
         super().__init__(f"Já existe um veterinário com o CRMV {crmv}")
@@ -39,9 +44,12 @@ def cadastrar_veterinario(
 ) -> Veterinario:
     """Cadastra um veterinário vinculado a uma clínica existente.
 
-    Rejeita `clinica_id` que não corresponde a uma clínica cadastrada, e CRMV
-    já cadastrado (único em todo o cadastro, independente de clínica).
+    Rejeita CRMV vazio, `clinica_id` que não corresponde a uma clínica
+    cadastrada, e CRMV já cadastrado (único em todo o cadastro, independente
+    de clínica).
     """
+    if not crmv.strip():
+        raise CrmvVazio()
     if clinicas.buscar_por_id(clinica_id) is None:
         raise ClinicaInexistente(clinica_id)
     if repo.buscar_por_crmv(crmv) is not None:
@@ -100,6 +108,16 @@ def _definir_estado_ativo(
     return atualizado
 
 
+def _filtrar(
+    veterinarios: list[Veterinario], *, clinica_id: str | None, apenas_ativos: bool
+) -> list[Veterinario]:
+    if clinica_id is not None:
+        veterinarios = [v for v in veterinarios if v.clinica_id == clinica_id]
+    if apenas_ativos:
+        veterinarios = [v for v in veterinarios if v.ativo]
+    return veterinarios
+
+
 def buscar_veterinarios(
     nome: str,
     repo: VeterinarioRepository,
@@ -110,11 +128,7 @@ def buscar_veterinarios(
     """Busca veterinários cujo nome contém `nome` (case-insensitive, substring)."""
     alvo = nome.casefold()
     resultado = [v for v in repo.listar_todas() if alvo in v.nome.casefold()]
-    if clinica_id is not None:
-        resultado = [v for v in resultado if v.clinica_id == clinica_id]
-    if apenas_ativos:
-        resultado = [v for v in resultado if v.ativo]
-    return resultado
+    return _filtrar(resultado, clinica_id=clinica_id, apenas_ativos=apenas_ativos)
 
 
 def listar_veterinarios(
@@ -124,9 +138,4 @@ def listar_veterinarios(
     apenas_ativos: bool = False,
 ) -> list[Veterinario]:
     """Lista todos os veterinários cadastrados, opcionalmente filtrando por clínica e/ou ativos."""
-    veterinarios = repo.listar_todas()
-    if clinica_id is not None:
-        veterinarios = [v for v in veterinarios if v.clinica_id == clinica_id]
-    if apenas_ativos:
-        veterinarios = [v for v in veterinarios if v.ativo]
-    return veterinarios
+    return _filtrar(repo.listar_todas(), clinica_id=clinica_id, apenas_ativos=apenas_ativos)

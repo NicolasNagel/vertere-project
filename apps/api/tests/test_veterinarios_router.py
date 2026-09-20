@@ -96,6 +96,19 @@ class TestCriarVeterinarioEndpoint:
         assert resposta.json()["nome"] == "Dr. João Silva"
         assert resposta.json()["ativo"] is True
 
+    def test_crmv_vazio_retorna_422(self, cliente: TestClient, session: Session) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token = _token(cliente, "admin@vertere.com")
+        clinica_id = _criar_clinica_db(session)
+
+        resposta = cliente.post(
+            "/veterinarios",
+            json=_payload_veterinario(clinica_id, crmv="   "),
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert resposta.status_code == 422
+
     def test_clinica_inexistente_retorna_422(self, cliente: TestClient, session: Session) -> None:
         _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
         token = _token(cliente, "admin@vertere.com")

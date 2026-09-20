@@ -147,3 +147,14 @@ evidência real (1 commit por task); 7/7 user stories atendidas; sem scope creep
 ADR-0002. Validação funcional de ponta a ponta contra Postgres de dev real (criar/editar/
 inativar/reativar/listar/buscar, CRMV duplicado → 409, clínica inexistente → 422, atendente
 bloqueado em escrita → 403 e liberado em leitura → 200, sem token → 401). Sem pendências.
+
+**`/code-review` (2026-09-20)**, gate adicional antes do PR (ver `CLAUDE.md`): eixo Standards
+sem violação dura (2 smells de julgamento não bloqueantes — duplicação de filtro em
+`buscar_veterinarios`/`listar_veterinarios`, corrigida abaixo; e o esqueleto repo+try/except dos
+4 endpoints de mutação, padrão pré-existente herdado de S2, não é regressão). Eixo Spec encontrou
+1 requisito faltando confirmado contra o texto — a linha 54 decidia "Formato validado apenas
+quanto a não ser vazio [...]", mas `cadastrar_veterinario` não rejeitava CRMV vazio/whitespace.
+Corrigido na mesma branch: `CrmvVazio` adicionada em `veterinarios/service.py`, mapeada para 422
+em `veterinarios/router.py`, com testes na seam (parametrizado, 2 casos) e via HTTP. Duplicação
+de filtro também corrigida: `_filtrar` compartilhado por `buscar_veterinarios`/
+`listar_veterinarios`. Suíte completa: 121 passed.

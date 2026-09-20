@@ -5,6 +5,7 @@ from vertere_api.veterinarios.domain import Veterinario
 from vertere_api.veterinarios.service import (
     ClinicaInexistente,
     CrmvJaCadastrado,
+    CrmvVazio,
     VeterinarioNaoEncontrado,
     buscar_veterinarios,
     cadastrar_veterinario,
@@ -86,6 +87,22 @@ class TestCadastrarVeterinario:
         assert veterinario.clinica_id == "clinica-1"
         assert veterinario.ativo is True
         assert repo.buscar_por_id(veterinario.id) == veterinario
+
+    @pytest.mark.parametrize("crmv_vazio", ["", "   "])
+    def test_rejeita_crmv_vazio(self, crmv_vazio: str) -> None:
+        clinicas = ClinicaRepositorioFake([_clinica()])
+        repo = VeterinarioRepositorioFake()
+
+        with pytest.raises(CrmvVazio):
+            cadastrar_veterinario(
+                nome="Dr. João Silva",
+                crmv=crmv_vazio,
+                telefone="4799990000",
+                email="joao@laudos.com",
+                clinica_id="clinica-1",
+                repo=repo,
+                clinicas=clinicas,
+            )
 
     def test_rejeita_clinica_inexistente(self) -> None:
         clinicas = ClinicaRepositorioFake()
