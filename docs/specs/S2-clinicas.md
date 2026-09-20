@@ -2,7 +2,7 @@
 codigo: S2
 modulo: Clínicas
 issue: https://github.com/NicolasNagel/vertere-project/issues/4
-status: pronta
+status: entregue
 ---
 
 ## Problem Statement
@@ -42,11 +42,11 @@ Um módulo de cadastro de clínicas parceiras, com CRUD administrado por `admin`
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Clinica`) e `ClinicaRepository` (interface) com implementação fake em memória para os testes (User Stories: base para todas)
-- [ ] T2 — Testes da seam (`clinicas/service.py`) cobrindo criação, edição, inativação/reativação, CNPJ duplicado, busca por nome e listagem (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T3 — Implementação de `criar_clinica`, `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem, com `authorize(papel, "gerenciar_clinica")` aplicado nas operações de escrita (User Stories: 1, 2, 3, 4, 5, 6, 7)
-- [ ] T4 — Persistência real: modelo SQLAlchemy + migração Alembic implementando `ClinicaRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T5 — Endpoints HTTP (`clinicas/router.py` + `schemas.py`): criar, editar, inativar, reativar (admin-only, reusando a dependency de autorização de S1) e buscar/listar (qualquer usuário autenticado) (User Stories: 1, 2, 3, 4, 5, 6, 7)
+- [x] T1 — Domínio (`Clinica`) e `ClinicaRepository` (interface) com implementação fake em memória para os testes (User Stories: base para todas)
+- [x] T2 — Testes da seam (`clinicas/service.py`) cobrindo criação, edição, inativação/reativação, CNPJ duplicado, busca por nome e listagem (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T3 — Implementação de `criar_clinica` (com validação de formato de CNPJ — 14 dígitos), `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T4 — Persistência real: modelo SQLAlchemy + migração Alembic implementando `ClinicaRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T5 — Endpoints HTTP (`clinicas/router.py` + `schemas.py`): criar, editar, inativar, reativar (via `authorize(papel, Acao.CLINICA_GERENCIAR)`, ação nova adicionada em `auth/service.py`, exigida com `exigir_acao` de `auth/deps.py` — mesmo ponto único de decisão de S1, não `exigir_admin`) e buscar/listar (qualquer usuário autenticado) (User Stories: 1, 2, 3, 4, 5, 6, 7)
 
 ## Out of Scope
 
@@ -63,3 +63,73 @@ Um módulo de cadastro de clínicas parceiras, com CRUD administrado por `admin`
 ## Descobertas
 
 ## Verificação
+
+Resultado do último `/fechar-spec S2` (2026-09-19): ❌ BLOQUEADA. Relatório completo em
+`docs/specs/relatorios/S2-verificacao.md`. 81/81 testes passam e o fluxo HTTP foi validado
+de ponta a ponta (admin e atendente reais contra Postgres de dev); as 5 tasks marcadas `[x]`
+têm evidência real. Bloqueio por duas divergências entre "Implementation Decisions" (texto
+da própria spec) e o código:
+
+1. **Autorização de escrita não usa `authorize()`**: os endpoints de criar/editar/inativar/
+   reativar clínica usam `exigir_admin` (checagem direta de papel em `auth/deps.py`) em vez
+   de `authorize(papel, "gerenciar_clinica")` como a spec decide textualmente — a ação
+   `gerenciar_clinica` nem existe em `Acao` (`auth/service.py`). Comportamento observável
+   (403/201) está correto, mas o mecanismo contradiz o guardrail "authorize() é o único
+   ponto de decisão de permissão" (CLAUDE.md). Corrigir: adicionar `Acao.CLINICA_GERENCIAR`
+   (ou nome equivalente) em `_PERMISSOES` (admin apenas) e trocar `exigir_admin` por
+   `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` nas rotas de escrita de `clinicas/router.py`.
+2. **Falta validação de formato de CNPJ (14 dígitos)**: a spec decide que isso está dentro do
+   escopo do MVP (só o dígito verificador é out of scope). Confirmado ao vivo:
+   `POST /clinicas` com `cnpj: "123"` retornou 201. Corrigir: validar 14 dígitos em
+   `criar_clinica` (rejeitar com uma exceção de domínio, testada na seam).
+
+Pendente resolver na mesma branch (`spec/s2-clinicas`) antes de reabrir `/fechar-spec S2`.
+
+**Correção aplicada (2026-09-19)**, mesma branch, antes de reabrir a verificação:
+
+1. Adicionado `Acao.CLINICA_GERENCIAR` em `auth/service.py` (permitido só para `Papel.ADMIN`);
+   `clinicas/router.py` agora usa `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` em vez de
+   `exigir_admin` nas quatro rotas de escrita.
+2. `criar_clinica` valida CNPJ (14 dígitos, só numérico) e levanta `CnpjInvalido`; endpoint
+   HTTP mapeia para 422. Testado na seam (3 formatos inválidos) e via HTTP.
+
+Suíte completa: 85 passed (4 testes novos: 1 na seam de CNPJ inválido parametrizado em 3
+casos, 1 HTTP de CNPJ inválido). Pronta para reabrir `/fechar-spec S2`.
+
+**Reverificação (2026-09-19)**: ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S2-verificacao.md`. As duas divergências foram confirmadas corrigidas
+(seam + HTTP ao vivo contra Postgres real). 5/5 tasks com evidência real, 7/7 user stories
+atendidas, sem scope creep, sem desvio de ADR. Sem pendências.
+
+**`/code-review` (2026-09-19)**, gate adicional antes do PR (ver `CLAUDE.md`): eixo Standards
+sem violação dura (3 smells de julgamento não bloqueantes, mesmo padrão já usado em `auth/`);
+eixo Spec encontrou 1 requisito faltando confirmado contra o texto — bullet "Busca por nome"
+decidia que "a função de serviço aceita o parâmetro" (`apenas_ativas`), mas `buscar_por_nome`
+não tinha esse parâmetro nem o endpoint `/clinicas/busca` o expunha. Corrigido na mesma branch:
+`apenas_ativas` adicionado a `buscar_por_nome` (`clinicas/service.py`) e ao endpoint
+`GET /clinicas/busca` (`clinicas/router.py`), com testes na seam e via HTTP. Suíte completa:
+87 passed.
+
+**Correção adicional dos achados de julgamento do `/code-review` (2026-09-19)**:
+
+1. Leitura (`GET /clinicas`, `GET /clinicas/busca`) agora também passa por `authorize()`: nova
+   `Acao.CLINICA_VER` (`auth/service.py`), concedida aos 4 papéis (mesmo efeito observável de
+   "qualquer usuário autenticado" que a spec pede, mas modelado como decisão de `authorize()`,
+   não mais uma dependency que só checa autenticação sem checar ação nenhuma). Endpoints usam
+   `Depends(exigir_acao(Acao.CLINICA_VER))`.
+2. Duplicated Code: `editar_clinica`/`_definir_estado_ativo` (`clinicas/service.py`) passaram a
+   usar `dataclasses.replace(clinica, ...)` em vez de reconstruir `Clinica` campo a campo.
+3. Não aplicado (decisão consciente): Primitive Obsession (`cnpj: str`) e Data Clumps
+   (nome/cnpj/endereco/telefone/email viajando juntos) — introduzir um Value Object para 1-2
+   campos de uma entidade de 6 campos seria abstração além do necessário (mesmo padrão primitivo
+   já usado em `auth/domain.py::Usuario.email`); revisitar se o número de regras sobre esses
+   campos crescer em specs futuras.
+
+Suíte completa após esta correção: 87 passed (mesmo total; nenhum teste novo, é
+refino/modelagem de decisão já testada).
+
+**Reverificação final (2026-09-19)**, por segurança após as correções do `/code-review`: ✅
+APROVADA. Relatório completo em `docs/specs/relatorios/S2-verificacao.md`. Reauditoria do zero
+no commit `ce87cb7` (posterior a todas as correções acima) — 87/87 testes, fluxo HTTP validado
+ao vivo (201/200/403/422/409/401 conferidos com usuários reais), 5/5 tasks e 7/7 user stories
+com evidência real, sem scope creep, sem desvio de ADR. Sem pendências. Pronta para PR.

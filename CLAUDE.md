@@ -34,14 +34,20 @@ de dúvidas para clientes, suporte a análise, e dashboard analítico — sob os
 2. Cada spec = uma branch `spec/s-XX-nome` a partir da `main`, idealmente numa sessão nova do
    Claude Code (o subagente de verificação já cobre a independência de contexto; a sessão nova
    por spec evita que a sessão de implementação vire a mesma que decide se terminou).
-3. Toda spec tem uma seção **"## Tasks"** — um checklist (`- [ ] T<N> — descrição (User Stories: ...)`)
+3. **Antes de começar cada task de `/spec-start`, consultar `dev-router`** (`.claude/skills/dev-router/SKILL.md`)
+   para identificar se a fase que está prestes a começar bate com alguma skill especializada já
+   instalada (`codebase-design` ao desenhar um módulo/seam novo, `security-review` antes de
+   `/fechar-spec` numa spec sensível — auth/financeiro/paciente —, `tdd`, `diagnosing-bugs`, etc.).
+   Não é opcional nem "só se lembrar": pular esse passo é a forma mais comum de repetir um erro de
+   design que a skill já preveniria.
+4. Toda spec tem uma seção **"## Tasks"** — um checklist (`- [ ] T<N> — descrição (User Stories: ...)`)
    escrito por `/spec-write` e seguido por `/spec-start`. É a fonte de verdade de progresso entre
    sessões, não um TodoWrite efêmero: uma sessão nova retomando a spec lê o checklist para saber
    exatamente o que já foi feito, e `/fechar-spec` audita cada `[x]` contra o código de verdade
    (task marcada sem evidência real é motivo de bloqueio). Cada task da spec = um commit
    (`tipo(escopo): mensagem`, ver Convenções); marcar `[x]` no arquivo faz parte do commit da
    task, não uma atualização separada.
-4. **Verificação independente ANTES do PR, não antes do merge.** Terminada a implementação, a
+5. **Verificação independente ANTES do PR, não antes do merge.** Terminada a implementação, a
    sessão autora para e roda **`/fechar-spec S-XX`**, que dispara o subagente
    **`verificador-de-spec`** passando só o código da spec — nada além disso. Ele gera
    `docs/specs/relatorios/S-XX-verificacao.md`. Quem implementou já sabe que está certo: é esse
@@ -51,10 +57,17 @@ de dúvidas para clientes, suporte a análise, e dashboard analítico — sob os
    > chama passa o id da spec e mais nada: instrução escrita à mão pelo autor não é verificação
    > independente, é o autor se avaliando com outra voz. Enviesar a revisão passa a exigir um
    > commit naquele arquivo — no diff, onde fica visível depois.
-5. Corrigir o que a verificação apontou **na mesma branch, antes do PR** — o PR nasce já com a
-   correção dentro. Só então: PR para `main` com `Closes #N` e o relatório de verificação
-   anexado/linkado.
-6. Merge por squash. O squash fecha a issue-ponteiro.
+6. Corrigir o que a verificação apontou **na mesma branch, antes do PR** — o PR nasce já com a
+   correção dentro.
+7. **Rodar `/code-review` na branch antes de abrir o PR** — gate independente do `verificador-de-spec`:
+   este audita aderência à spec e roda a suíte real; `/code-review` audita padrão de código
+   (Standards) e aderência à issue/spec (Spec) via dois sub-agentes em paralelo, pegando o que um
+   revisor de PR pegaria e o `verificador-de-spec` não foi desenhado para cobrir (duplicação,
+   simplificação, convenções de estilo). Achado bloqueante: corrigir na mesma branch antes do PR,
+   igual ao passo anterior — não abrir o PR com um achado bloqueante pendente.
+8. Só então: PR para `main` com `Closes #N`, o relatório de verificação (`/fechar-spec`) e o
+   resultado do `/code-review` anexados/linkados.
+9. Merge por squash. O squash fecha a issue-ponteiro.
 
 ## Convenções
 - Backend: Python 3.13, `uv`, FastAPI, SQLAlchemy 2.x + Alembic, PostgreSQL, `pytest`.
@@ -93,3 +106,9 @@ Issues e specs deste repo vivem como GitHub Issues em `NicolasNagel/vertere-proj
 ### Domain docs
 
 Single-context: `CONTEXT.md` (ainda não criado) + `docs/adr/` na raiz do repo. See `docs/agents/domain.md`.
+
+### Dev router
+
+Antes de cada fase de `/spec-start` (design de módulo novo, TDD, debug, UI, merge conflict, IA),
+consultar `dev-router` (`.claude/skills/dev-router/SKILL.md`) para disparar a skill especializada
+certa no momento certo, em vez de confiar em lembrar sozinho.

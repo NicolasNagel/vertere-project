@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from vertere_api.auth import models  # noqa: F401 - registra UsuarioModel em Base.metadata
+from vertere_api.clinicas import models as clinicas_models  # noqa: F401 - registra ClinicaModel em Base.metadata
 from vertere_api.db import Base
 from vertere_api.settings import settings
 
