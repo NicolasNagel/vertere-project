@@ -54,7 +54,7 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 
 - [x] T1 — Domínio (`Papel`, `Usuario`) e scaffold do projeto `apps/api` com `uv` (User Stories: base para todas) — commit `feat(s1): implementa authenticate/authorize com testes` (13d4f4f)
 - [x] T2 — `authenticate()`/`authorize()` com testes na seam (repositório fake em memória) e hash de senha com `bcrypt` (User Stories: 6, 7, 10, 13; parcial: 11, 12 — lógica correta e testada, falta enforcement em endpoint real) — mesmo commit de T1
-- [ ] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9)
+- [x] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9) — commit `feat(s1): persistência real de usuário via SQLAlchemy/PostgreSQL`
 - [ ] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4)
 - [ ] T5 — Reset de senha administrativo (User Stories: 9)
 - [ ] T6 — Sessão com expiração por inatividade (User Stories: 8)
@@ -68,6 +68,8 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 - Auditoria detalhada de ações por usuário (log de quem fez o quê) — pode ser considerado em spec futura se necessário.
 
 ## Further Notes
+
+- **Banco de dev/testes local**: `docker run -d --name vertere_postgres_dev -e POSTGRES_USER=vertere -e POSTGRES_PASSWORD=vertere -e POSTGRES_DB=vertere -p 5434:5432 postgres:16-alpine`. Porta 5434 (não 5433/5432) porque a máquina de desenvolvimento já tinha um PostgreSQL nativo do Windows ocupando 5433 — verifique portas livres antes de assumir uma. `apps/api/.env.example` documenta a `DATABASE_URL` esperada. Os testes em `test_usuario_repository.py` rodam contra esse Postgres real (sem mocks de DB), criando/limpando a tabela a cada teste.
 
 - Esta spec depende do PRD em `issues/prd.md` (módulo "Auth/Usuários"). Os guardrails de IA do PRD (nunca expor dado financeiro/de paciente sem permissão) dependem diretamente da correção deste módulo — qualquer feature de IA futura deve reutilizar `authorize()`, não reimplementar checagem de acesso.
 - Ordem de specs sugerida a partir daqui: Clínicas → Veterinários → Pacientes → Exames & Precificação → Atendimentos → Laudos → Fechamento Financeiro → Portal da Clínica → Importação de Dados Históricos.
