@@ -69,6 +69,24 @@ def reativar_usuario(usuario_id: str, repo: UsuarioRepository) -> Usuario:
     return _definir_estado_ativo(usuario_id, ativo=True, repo=repo)
 
 
+def resetar_senha(usuario_id: str, nova_senha: str, repo: UsuarioRepository) -> Usuario:
+    """Reset administrativo: define uma nova senha (temporária) para o usuário.
+
+    Operação do admin, sem depender de e-mail transacional (fora do MVP).
+    """
+    usuario = _buscar_ou_levantar(usuario_id, repo)
+    atualizado = Usuario(
+        id=usuario.id,
+        email=usuario.email,
+        senha_hash=hash_senha(nova_senha),
+        papel=usuario.papel,
+        ativo=usuario.ativo,
+        clinica_id=usuario.clinica_id,
+    )
+    repo.salvar(atualizado)
+    return atualizado
+
+
 def _definir_estado_ativo(usuario_id: str, ativo: bool, repo: UsuarioRepository) -> Usuario:
     usuario = _buscar_ou_levantar(usuario_id, repo)
     atualizado = Usuario(

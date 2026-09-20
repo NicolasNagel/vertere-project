@@ -8,6 +8,7 @@ from vertere_api.auth.usuarios_service import (
     desativar_usuario,
     editar_papel,
     reativar_usuario,
+    resetar_senha,
 )
 
 
@@ -116,3 +117,23 @@ class TestDesativarReativarUsuario:
 
         with pytest.raises(UsuarioNaoEncontrado):
             desativar_usuario(usuario_id="inexistente", repo=repo)
+
+
+class TestResetarSenha:
+    def test_reseta_senha_de_usuario_existente(self) -> None:
+        usuario = Usuario(
+            id="1", email="a@vertere.com", senha_hash="hash-antigo", papel=Papel.ATENDENTE, ativo=True
+        )
+        repo = RepositorioFake([usuario])
+
+        atualizado = resetar_senha(usuario_id="1", nova_senha="senha-temporaria", repo=repo)
+
+        assert atualizado.senha_hash != "hash-antigo"
+        assert atualizado.senha_hash != "senha-temporaria"
+        assert repo.buscar_por_id("1").senha_hash == atualizado.senha_hash
+
+    def test_resetar_senha_de_usuario_inexistente_levanta_erro(self) -> None:
+        repo = RepositorioFake()
+
+        with pytest.raises(UsuarioNaoEncontrado):
+            resetar_senha(usuario_id="inexistente", nova_senha="qualquer-coisa", repo=repo)
