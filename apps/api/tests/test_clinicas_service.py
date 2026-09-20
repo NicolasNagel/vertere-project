@@ -186,6 +186,14 @@ class TestBuscaELista:
         nomes = {c.nome for c in resultado}
         assert nomes == {"Clínica Central", "Clínica Sul"}
 
+    def test_busca_por_nome_apenas_ativas(self) -> None:
+        repo = self._repo_com_tres_clinicas()
+
+        resultado = buscar_por_nome("clínica", repo, apenas_ativas=True)
+
+        nomes = {c.nome for c in resultado}
+        assert nomes == {"Clínica Central"}
+
     def test_listar_clinicas_sem_filtro_retorna_todas(self) -> None:
         repo = self._repo_com_tres_clinicas()
 

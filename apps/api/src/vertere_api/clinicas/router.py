@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from vertere_api.auth.deps import exigir_acao, obter_db, obter_usuario_atual
+from vertere_api.auth.deps import exigir_acao, obter_db
 from vertere_api.auth.domain import Usuario
 from vertere_api.auth.service import Acao
 from vertere_api.clinicas.domain import Clinica
@@ -117,7 +117,7 @@ def reativar(clinica_id: str, db: Session = Depends(obter_db)) -> ClinicaRespons
 def listar(
     apenas_ativas: bool = Query(default=False),
     db: Session = Depends(obter_db),
-    _usuario: Usuario = Depends(obter_usuario_atual),
+    _usuario: Usuario = Depends(exigir_acao(Acao.CLINICA_VER)),
 ) -> list[ClinicaResponse]:
     repo = SQLAlchemyClinicaRepository(db)
     clinicas = listar_clinicas(repo, apenas_ativas=apenas_ativas)
@@ -127,9 +127,10 @@ def listar(
 @router.get("/busca", response_model=list[ClinicaResponse])
 def buscar(
     nome: str = Query(...),
+    apenas_ativas: bool = Query(default=False),
     db: Session = Depends(obter_db),
-    _usuario: Usuario = Depends(obter_usuario_atual),
+    _usuario: Usuario = Depends(exigir_acao(Acao.CLINICA_VER)),
 ) -> list[ClinicaResponse]:
     repo = SQLAlchemyClinicaRepository(db)
-    clinicas = buscar_por_nome(nome, repo)
+    clinicas = buscar_por_nome(nome, repo, apenas_ativas=apenas_ativas)
     return [_para_response(c) for c in clinicas]

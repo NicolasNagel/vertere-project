@@ -100,3 +100,30 @@ casos, 1 HTTP de CNPJ inválido). Pronta para reabrir `/fechar-spec S2`.
 `docs/specs/relatorios/S2-verificacao.md`. As duas divergências foram confirmadas corrigidas
 (seam + HTTP ao vivo contra Postgres real). 5/5 tasks com evidência real, 7/7 user stories
 atendidas, sem scope creep, sem desvio de ADR. Sem pendências.
+
+**`/code-review` (2026-09-19)**, gate adicional antes do PR (ver `CLAUDE.md`): eixo Standards
+sem violação dura (3 smells de julgamento não bloqueantes, mesmo padrão já usado em `auth/`);
+eixo Spec encontrou 1 requisito faltando confirmado contra o texto — bullet "Busca por nome"
+decidia que "a função de serviço aceita o parâmetro" (`apenas_ativas`), mas `buscar_por_nome`
+não tinha esse parâmetro nem o endpoint `/clinicas/busca` o expunha. Corrigido na mesma branch:
+`apenas_ativas` adicionado a `buscar_por_nome` (`clinicas/service.py`) e ao endpoint
+`GET /clinicas/busca` (`clinicas/router.py`), com testes na seam e via HTTP. Suíte completa:
+87 passed.
+
+**Correção adicional dos achados de julgamento do `/code-review` (2026-09-19)**:
+
+1. Leitura (`GET /clinicas`, `GET /clinicas/busca`) agora também passa por `authorize()`: nova
+   `Acao.CLINICA_VER` (`auth/service.py`), concedida aos 4 papéis (mesmo efeito observável de
+   "qualquer usuário autenticado" que a spec pede, mas modelado como decisão de `authorize()`,
+   não mais uma dependency que só checa autenticação sem checar ação nenhuma). Endpoints usam
+   `Depends(exigir_acao(Acao.CLINICA_VER))`.
+2. Duplicated Code: `editar_clinica`/`_definir_estado_ativo` (`clinicas/service.py`) passaram a
+   usar `dataclasses.replace(clinica, ...)` em vez de reconstruir `Clinica` campo a campo.
+3. Não aplicado (decisão consciente): Primitive Obsession (`cnpj: str`) e Data Clumps
+   (nome/cnpj/endereco/telefone/email viajando juntos) — introduzir um Value Object para 1-2
+   campos de uma entidade de 6 campos seria abstração além do necessário (mesmo padrão primitivo
+   já usado em `auth/domain.py::Usuario.email`); revisitar se o número de regras sobre esses
+   campos crescer em specs futuras.
+
+Suíte completa após esta correção: 87 passed (mesmo total; nenhum teste novo, é
+refino/modelagem de decisão já testada).

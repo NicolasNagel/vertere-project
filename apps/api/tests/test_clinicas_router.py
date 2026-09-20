@@ -222,6 +222,27 @@ class TestListarEBuscarClinicaEndpoint:
         assert resposta.status_code == 200
         assert len(resposta.json()) == 1
 
+    def test_busca_com_apenas_ativas_exclui_inativas(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token_admin = _token(cliente, "admin@vertere.com")
+        criada = cliente.post(
+            "/clinicas", json=_payload_clinica(), headers={"Authorization": f"Bearer {token_admin}"}
+        ).json()
+        cliente.post(
+            f"/clinicas/{criada['id']}/inativar", headers={"Authorization": f"Bearer {token_admin}"}
+        )
+
+        resposta = cliente.get(
+            "/clinicas/busca",
+            params={"nome": "central", "apenas_ativas": True},
+            headers={"Authorization": f"Bearer {token_admin}"},
+        )
+
+        assert resposta.status_code == 200
+        assert resposta.json() == []
+
     def test_listar_sem_autenticacao_retorna_401(self, cliente: TestClient, session: Session) -> None:
         resposta = cliente.get("/clinicas")
 

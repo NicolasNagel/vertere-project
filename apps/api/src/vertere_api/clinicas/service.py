@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 from typing import Protocol
 
 from vertere_api.clinicas.domain import Clinica
@@ -70,15 +71,7 @@ def editar_clinica(
 ) -> Clinica:
     """Edita os dados cadastrais de uma clínica existente. CNPJ não é editável aqui."""
     clinica = _buscar_ou_levantar(clinica_id, repo)
-    atualizada = Clinica(
-        id=clinica.id,
-        nome=nome,
-        cnpj=clinica.cnpj,
-        endereco=endereco,
-        telefone=telefone,
-        email=email,
-        ativo=clinica.ativo,
-    )
+    atualizada = replace(clinica, nome=nome, endereco=endereco, telefone=telefone, email=email)
     repo.salvar(atualizada)
     return atualizada
 
@@ -95,23 +88,20 @@ def reativar_clinica(clinica_id: str, repo: ClinicaRepository) -> Clinica:
 
 def _definir_estado_ativo(clinica_id: str, ativo: bool, repo: ClinicaRepository) -> Clinica:
     clinica = _buscar_ou_levantar(clinica_id, repo)
-    atualizada = Clinica(
-        id=clinica.id,
-        nome=clinica.nome,
-        cnpj=clinica.cnpj,
-        endereco=clinica.endereco,
-        telefone=clinica.telefone,
-        email=clinica.email,
-        ativo=ativo,
-    )
+    atualizada = replace(clinica, ativo=ativo)
     repo.salvar(atualizada)
     return atualizada
 
 
-def buscar_por_nome(nome: str, repo: ClinicaRepository) -> list[Clinica]:
+def buscar_por_nome(
+    nome: str, repo: ClinicaRepository, *, apenas_ativas: bool = False
+) -> list[Clinica]:
     """Busca clínicas cujo nome contém `nome` (case-insensitive, substring)."""
     alvo = nome.casefold()
-    return [c for c in repo.listar_todas() if alvo in c.nome.casefold()]
+    resultado = [c for c in repo.listar_todas() if alvo in c.nome.casefold()]
+    if apenas_ativas:
+        return [c for c in resultado if c.ativo]
+    return resultado
 
 
 def listar_clinicas(repo: ClinicaRepository, *, apenas_ativas: bool = False) -> list[Clinica]:
