@@ -143,7 +143,7 @@ reimplementar a decisão em nenhum outro lugar.
       regras sobrepostas (User Stories: 6, 7, 8)
 - [x] T3 — Implementação de `calcular_adicional_plantao` em `exames/service.py`, fazendo os testes
       de T2 passarem (User Stories: 6, 7, 8)
-- [ ] T4 — Testes de `cadastrar_exame`, `editar_exame`, `inativar_exame`, `reativar_exame`,
+- [x] T4 — Testes de `cadastrar_exame`, `editar_exame`, `inativar_exame`, `reativar_exame`,
       `listar_exames` (com filtro de categoria e de ativos) (User Stories: 1, 2, 3, 4, 5)
 - [ ] T5 — Implementação dessas funções em `exames/service.py`, fazendo os testes de T4 passarem
       (User Stories: 1, 2, 3, 4, 5)
