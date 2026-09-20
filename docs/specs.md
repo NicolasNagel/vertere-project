@@ -12,6 +12,6 @@
 | S4 | Pacientes | [docs/specs/S4-pacientes.md](specs/S4-pacientes.md) | [#8](https://github.com/NicolasNagel/vertere-project/issues/8) | entregue |
 | S5 | Exames & Precificação | [docs/specs/S5-exames-precificacao.md](specs/S5-exames-precificacao.md) | [#10](https://github.com/NicolasNagel/vertere-project/issues/10) | entregue |
 | S6 | Atendimentos | [docs/specs/S6-atendimentos.md](specs/S6-atendimentos.md) | [#12](https://github.com/NicolasNagel/vertere-project/issues/12) | entregue |
-| S7 | Laudos | [docs/specs/S7-laudos.md](specs/S7-laudos.md) | [#15](https://github.com/NicolasNagel/vertere-project/issues/15) | pronta |
+| S7 | Laudos | [docs/specs/S7-laudos.md](specs/S7-laudos.md) | [#15](https://github.com/NicolasNagel/vertere-project/issues/15) | em-desenvolvimento |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->

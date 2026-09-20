@@ -242,7 +242,7 @@ service testável sem infraestrutura real.
       `Acao.LAUDO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: `TEMPLATE_LAUDO_GERENCIAR` só
       admin; `TEMPLATE_LAUDO_VER` admin + tecnico; `LAUDO_GERENCIAR` admin + tecnico) (User
       Stories: todas, via checagem de acesso)
-- [ ] T17 — Endpoints HTTP (`laudos/router.py` + `schemas.py`): CRUD de template de laudo, criar/
+- [x] T17 — Endpoints HTTP (`laudos/router.py` + `schemas.py`): CRUD de template de laudo, criar/
       salvar rascunho/finalizar/reenviar/listar/ver laudo (via `Depends(exigir_acao(...))` nas
       ações correspondentes, incluindo `clinica_recurso` real em `ver_laudo` e o filtro automático
       por clínica em `listar_laudos`), com mapeamento de erros de domínio (recurso inexistente →
