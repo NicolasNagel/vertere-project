@@ -12,7 +12,8 @@ class Acao(StrEnum):
     forem implementados."""
 
     FINANCEIRO_VER = "financeiro:ver"
-    ATENDIMENTO_CRIAR = "atendimento:criar"
+    ATENDIMENTO_GERENCIAR = "atendimento:gerenciar"
+    ATENDIMENTO_VER = "atendimento:ver"
     PACIENTE_VER = "paciente:ver"
     LAUDO_VER = "laudo:ver"
     CLINICA_GERENCIAR = "clinica:gerenciar"
@@ -33,7 +34,8 @@ _ACOES_COM_ESCOPO_DE_CLINICA = {Acao.PACIENTE_VER, Acao.LAUDO_VER}
 _PERMISSOES: dict[Papel, set[Acao]] = {
     Papel.ADMIN: {
         Acao.FINANCEIRO_VER,
-        Acao.ATENDIMENTO_CRIAR,
+        Acao.ATENDIMENTO_GERENCIAR,
+        Acao.ATENDIMENTO_VER,
         Acao.PACIENTE_VER,
         Acao.LAUDO_VER,
         Acao.CLINICA_GERENCIAR,
@@ -48,7 +50,8 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.REGRA_PLANTAO_VER,
     },
     Papel.ATENDENTE: {
-        Acao.ATENDIMENTO_CRIAR,
+        Acao.ATENDIMENTO_GERENCIAR,
+        Acao.ATENDIMENTO_VER,
         Acao.PACIENTE_VER,
         Acao.CLINICA_VER,
         Acao.VETERINARIO_VER,
@@ -57,6 +60,7 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.REGRA_PLANTAO_VER,
     },
     Papel.TECNICO: {
+        Acao.ATENDIMENTO_VER,
         Acao.PACIENTE_VER,
         Acao.LAUDO_VER,
         Acao.CLINICA_VER,
@@ -64,6 +68,7 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.EXAME_VER,
     },
     Papel.CLINICA: {
+        Acao.ATENDIMENTO_VER,
         Acao.PACIENTE_VER,
         Acao.LAUDO_VER,
         Acao.CLINICA_VER,

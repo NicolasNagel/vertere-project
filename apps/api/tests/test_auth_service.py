@@ -90,8 +90,8 @@ class TestAuthorize:
     def test_tecnico_nao_pode_ver_financeiro(self) -> None:
         assert authorize(Papel.TECNICO, Acao.FINANCEIRO_VER) is False
 
-    def test_atendente_pode_criar_atendimento(self) -> None:
-        assert authorize(Papel.ATENDENTE, Acao.ATENDIMENTO_CRIAR) is True
+    def test_atendente_pode_gerenciar_atendimento(self) -> None:
+        assert authorize(Papel.ATENDENTE, Acao.ATENDIMENTO_GERENCIAR) is True
 
     def test_clinica_pode_ver_paciente_da_propria_clinica(self) -> None:
         assert (

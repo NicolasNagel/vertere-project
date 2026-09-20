@@ -168,7 +168,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       relacionada ou campo JSON — decisão de implementação, `Numeric` para valores monetários) +
       migração Alembic, implementando `AtendimentoRepository` contra PostgreSQL (User Stories: 1,
       2, 3, 4, 5, 6, 7)
-- [ ] T11 — Novas ações `Acao.ATENDIMENTO_GERENCIAR`, `Acao.ATENDIMENTO_VER` em `auth/service.py`
+- [x] T11 — Novas ações `Acao.ATENDIMENTO_GERENCIAR`, `Acao.ATENDIMENTO_VER` em `auth/service.py`
       (`_PERMISSOES`: `ATENDIMENTO_GERENCIAR` para `admin` e `atendente`; `ATENDIMENTO_VER` para
       `admin`, `atendente`, `tecnico` e `clinica`) (User Stories: todas, via checagem de acesso)
 - [ ] T12 — Endpoints HTTP (`atendimentos/router.py` + `schemas.py`): registrar, editar, cancelar
