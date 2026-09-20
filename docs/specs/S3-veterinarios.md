@@ -102,7 +102,7 @@ laudos do veterinário).
 - [x] T2 — Testes da seam (`veterinarios/service.py`) cobrindo criação, validação de clínica
       existente, CRMV duplicado, edição, inativação/reativação, busca por nome (com filtro de
       clínica) e listagem (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T3 — Implementação de `cadastrar_veterinario` (validando `clinica_id` via
+- [x] T3 — Implementação de `cadastrar_veterinario` (validando `clinica_id` via
       `ClinicaRepository` e CRMV único), `editar_veterinario`, `inativar_veterinario`,
       `reativar_veterinario`, `buscar_veterinarios`, `listar_veterinarios` em
       `veterinarios/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6)
