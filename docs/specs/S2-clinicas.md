@@ -63,3 +63,24 @@ Um módulo de cadastro de clínicas parceiras, com CRUD administrado por `admin`
 ## Descobertas
 
 ## Verificação
+
+Resultado do último `/fechar-spec S2` (2026-09-19): ❌ BLOQUEADA. Relatório completo em
+`docs/specs/relatorios/S2-verificacao.md`. 81/81 testes passam e o fluxo HTTP foi validado
+de ponta a ponta (admin e atendente reais contra Postgres de dev); as 5 tasks marcadas `[x]`
+têm evidência real. Bloqueio por duas divergências entre "Implementation Decisions" (texto
+da própria spec) e o código:
+
+1. **Autorização de escrita não usa `authorize()`**: os endpoints de criar/editar/inativar/
+   reativar clínica usam `exigir_admin` (checagem direta de papel em `auth/deps.py`) em vez
+   de `authorize(papel, "gerenciar_clinica")` como a spec decide textualmente — a ação
+   `gerenciar_clinica` nem existe em `Acao` (`auth/service.py`). Comportamento observável
+   (403/201) está correto, mas o mecanismo contradiz o guardrail "authorize() é o único
+   ponto de decisão de permissão" (CLAUDE.md). Corrigir: adicionar `Acao.CLINICA_GERENCIAR`
+   (ou nome equivalente) em `_PERMISSOES` (admin apenas) e trocar `exigir_admin` por
+   `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` nas rotas de escrita de `clinicas/router.py`.
+2. **Falta validação de formato de CNPJ (14 dígitos)**: a spec decide que isso está dentro do
+   escopo do MVP (só o dígito verificador é out of scope). Confirmado ao vivo:
+   `POST /clinicas` com `cnpj: "123"` retornou 201. Corrigir: validar 14 dígitos em
+   `criar_clinica` (rejeitar com uma exceção de domínio, testada na seam).
+
+Pendente resolver na mesma branch (`spec/s2-clinicas`) antes de reabrir `/fechar-spec S2`.
