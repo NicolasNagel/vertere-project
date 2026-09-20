@@ -112,7 +112,7 @@ laudos do veterinário).
 - [x] T5 — Novas ações `Acao.VETERINARIO_GERENCIAR` e `Acao.VETERINARIO_VER` em
       `auth/service.py` (`_PERMISSOES`: `VETERINARIO_GERENCIAR` só `admin`; `VETERINARIO_VER`
       todos os papéis) (User Stories: 7)
-- [ ] T6 — Endpoints HTTP (`veterinarios/router.py` + `schemas.py`): criar, editar, inativar,
+- [x] T6 — Endpoints HTTP (`veterinarios/router.py` + `schemas.py`): criar, editar, inativar,
       reativar (via `Depends(exigir_acao(Acao.VETERINARIO_GERENCIAR))`) e buscar/listar (via
       `Depends(exigir_acao(Acao.VETERINARIO_VER))`), incluindo mapeamento de erros de domínio
       (clínica inexistente → 422, CRMV duplicado → 409, veterinário inexistente → 404)
