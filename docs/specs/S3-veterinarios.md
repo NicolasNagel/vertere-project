@@ -106,7 +106,7 @@ laudos do veterinário).
       `ClinicaRepository` e CRMV único), `editar_veterinario`, `inativar_veterinario`,
       `reativar_veterinario`, `buscar_veterinarios`, `listar_veterinarios` em
       `veterinarios/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas` e
+- [x] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas` e
       índice único em `crmv`) implementando `VeterinarioRepository` contra PostgreSQL
       (User Stories: 1, 2, 3, 4, 5, 6)
 - [ ] T5 — Novas ações `Acao.VETERINARIO_GERENCIAR` e `Acao.VETERINARIO_VER` em
