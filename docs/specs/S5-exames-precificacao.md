@@ -2,7 +2,7 @@
 codigo: S5
 modulo: Exames & Precificação
 issue: https://github.com/NicolasNagel/vertere-project/issues/10
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -192,3 +192,10 @@ reimplementar a decisão em nenhum outro lugar.
 ## Descobertas
 
 ## Verificação
+
+Resultado do `/fechar-spec S5` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S5-verificacao.md`. 211/211 testes passam; as 10 tasks marcadas `[x]` têm
+evidência real (1 commit por task); 9/9 user stories atendidas; sem scope creep; aderente aos
+ADRs 0001/0002. Validação funcional de ponta a ponta contra Postgres de dev real (login, criar/
+listar exame e regra de plantão, endpoint de sugestão de adicional confirmando o cálculo de janela
+cruzando meia-noite via HTTP real). Sem pendências.

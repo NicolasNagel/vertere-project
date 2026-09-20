@@ -10,6 +10,6 @@
 | S2 | Clínicas | [docs/specs/S2-clinicas.md](specs/S2-clinicas.md) | [#4](https://github.com/NicolasNagel/vertere-project/issues/4) | entregue |
 | S3 | Veterinários | [docs/specs/S3-veterinarios.md](specs/S3-veterinarios.md) | [#6](https://github.com/NicolasNagel/vertere-project/issues/6) | entregue |
 | S4 | Pacientes | [docs/specs/S4-pacientes.md](specs/S4-pacientes.md) | [#8](https://github.com/NicolasNagel/vertere-project/issues/8) | entregue |
-| S5 | Exames & Precificação | [docs/specs/S5-exames-precificacao.md](specs/S5-exames-precificacao.md) | [#10](https://github.com/NicolasNagel/vertere-project/issues/10) | em-desenvolvimento |
+| S5 | Exames & Precificação | [docs/specs/S5-exames-precificacao.md](specs/S5-exames-precificacao.md) | [#10](https://github.com/NicolasNagel/vertere-project/issues/10) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
