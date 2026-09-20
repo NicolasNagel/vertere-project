@@ -2,7 +2,7 @@
 codigo: S1
 modulo: Auth/Usuários
 issue: https://github.com/NicolasNagel/vertere-project/issues/2
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -81,4 +81,7 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 
 ## Verificação
 
-Resultado do último `/fechar-spec S1`: ❌ BLOQUEADA (ver `docs/specs/relatorios/S1-verificacao.md` quando existir). Pendências: CRUD de usuário (stories 1-4), reset de senha (story 9), sessão com expiração (story 8), persistência real, e endpoint HTTP expondo login/authorize (stories 5, 11, 12) — ver histórico da sessão para o relatório detalhado até este arquivo ser criado.
+Resultado do último `/fechar-spec S1` (2026-09-19): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S1-verificacao.md`. Sem pendências bloqueantes; nota não bloqueante:
+story 12 (escopo de clínica) só poderá ser demonstrada via HTTP quando a spec de
+Pacientes/Laudos existir e reusar `authorize()`.

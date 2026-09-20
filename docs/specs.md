@@ -6,6 +6,6 @@
 
 | Código | Módulo | Spec | Issue | Status |
 |--------|--------|------|-------|--------|
-| S1 | Auth/Usuários | [docs/specs/S1-auth-usuarios.md](specs/S1-auth-usuarios.md) | [#2](https://github.com/NicolasNagel/vertere-project/issues/2) | em-desenvolvimento |
+| S1 | Auth/Usuários | [docs/specs/S1-auth-usuarios.md](specs/S1-auth-usuarios.md) | [#2](https://github.com/NicolasNagel/vertere-project/issues/2) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
