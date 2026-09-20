@@ -204,6 +204,30 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 
 ## Descobertas
 
+- **Mecanismo de escopo de clínica em `authorize()` é código morto desde S1.** O `/code-review`
+  desta spec (Standards) apontou que `listar_atendimentos` filtra por
+  `usuario.papel == Papel.CLINICA` diretamente no service em vez de usar
+  `_ACOES_COM_ESCOPO_DE_CLINICA`/`clinica_usuario`/`clinica_recurso` de `authorize()` (S1),
+  aparentemente violando a regra de ouro do `CLAUDE.md` ("`authorize()` é o único ponto de decisão
+  de permissão por papel"). Investigação: não é possível corrigir isso usando `authorize()` como
+  está, porque `exigir_acao()` (`auth/deps.py`) chama `authorize(papel, acao)` sem
+  `clinica_recurso` no gate do endpoint — um endpoint de listagem não tem um recurso único no
+  momento do gate. Se `Acao.ATENDIMENTO_VER` entrar em `_ACOES_COM_ESCOPO_DE_CLINICA`, o próprio
+  gate bloqueia usuários `clinica` com 403 antes de chegar ao `listar_atendimentos`, quebrando o
+  acesso que a spec pede. Testei também: `Acao.PACIENTE_VER` já está em
+  `_ACOES_COM_ESCOPO_DE_CLINICA` desde S1, mas `pacientes/router.py` usa
+  `exigir_acao(Acao.PACIENTE_VER)` como gate simples, sem nunca passar `clinica_recurso` — ou seja,
+  um usuário `clinica` tentando listar pacientes hoje também tomaria 403. **Essa lacuna já existe
+  desde S1/S4, não foi introduzida por esta spec** — `authorize()` cobre bem checagem de acesso a
+  um recurso único, mas nunca foi estendido para filtro de lista.
+  - **Decisão do usuário**: não corrigir agora (fora do escopo de S6, mexe em código de S1 já
+    entregue/verificado). Documentar como pendência e tratar depois pelo fluxo padrão de "ajuste
+    apontado por um dev numa spec já entregue" (`CLAUDE.md`): localizar via `git log` os commits
+    de S1 que introduziram `_ACOES_COM_ESCOPO_DE_CLINICA`/`exigir_acao`, reabrir a branch
+    `spec/s1-auth-usuarios`, corrigir lá, rodar a suíte completa e mergear — não implementar como
+    parte de S6. Issue de rastreamento:
+    [#13](https://github.com/NicolasNagel/vertere-project/issues/13).
+
 ## Verificação
 
 Resultado do `/fechar-spec S6` (2026-09-20): ✅ APROVADA. Relatório completo em
