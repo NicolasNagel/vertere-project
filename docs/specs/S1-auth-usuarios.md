@@ -2,7 +2,7 @@
 codigo: S1
 modulo: Auth/Usuários
 issue: https://github.com/NicolasNagel/vertere-project/issues/2
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -54,11 +54,12 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 
 - [x] T1 — Domínio (`Papel`, `Usuario`) e scaffold do projeto `apps/api` com `uv` (User Stories: base para todas) — commit `feat(s1): implementa authenticate/authorize com testes` (13d4f4f)
 - [x] T2 — `authenticate()`/`authorize()` com testes na seam (repositório fake em memória) e hash de senha com `bcrypt` (User Stories: 6, 7, 10, 13; parcial: 11, 12 — lógica correta e testada, falta enforcement em endpoint real) — mesmo commit de T1
-- [ ] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9)
-- [ ] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4)
-- [ ] T5 — Reset de senha administrativo (User Stories: 9)
-- [ ] T6 — Sessão com expiração por inatividade (User Stories: 8)
-- [ ] T7 — Endpoint HTTP de login (FastAPI) + dependency/middleware aplicando `authorize()` nas rotas, fechando de ponta a ponta as stories que hoje só têm lógica testada isoladamente (User Stories: 5, 11, 12)
+- [x] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9) — commit `feat(s1): persistência real de usuário via SQLAlchemy/PostgreSQL`
+- [x] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4) — commit `feat(s1): CRUD de usuário (criar/editar papel/desativar/reativar)`
+- [x] T5 — Reset de senha administrativo (User Stories: 9) — commit `feat(s1): reset de senha administrativo`
+- [x] T6 — Sessão com expiração por inatividade (User Stories: 8) — commit `feat(s1): lógica de expiração de sessão por inatividade`
+- [x] T7 — Endpoint HTTP de login (FastAPI), sessão persistida (store + `sid` num JWT) e dependency de autorização reutilizável aplicando `authorize()`, demonstrada num endpoint admin-only (User Stories: 5, 6, 7, 8, 10, 11) — commit `feat(s1): endpoint de login, sessão via JWT e enforcement de authorize() em HTTP`
+- [x] T8 — Endpoints HTTP de gestão de usuário (criar, editar papel, desativar, reativar, resetar senha), todos admin-only via a dependency de T7 (User Stories: 1, 2, 3, 4, 9) — commit `feat(s1): endpoints HTTP de gestão de usuário (admin-only)`
 
 ## Out of Scope
 
@@ -69,13 +70,18 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 
 ## Further Notes
 
+- **Banco de dev/testes local**: `docker run -d --name vertere_postgres_dev -e POSTGRES_USER=vertere -e POSTGRES_PASSWORD=vertere -e POSTGRES_DB=vertere -p 5434:5432 postgres:16-alpine`. Porta 5434 (não 5433/5432) porque a máquina de desenvolvimento já tinha um PostgreSQL nativo do Windows ocupando 5433 — verifique portas livres antes de assumir uma. `apps/api/.env.example` documenta a `DATABASE_URL` esperada. Os testes em `test_usuario_repository.py` rodam contra esse Postgres real (sem mocks de DB), criando/limpando a tabela a cada teste.
+
 - Esta spec depende do PRD em `issues/prd.md` (módulo "Auth/Usuários"). Os guardrails de IA do PRD (nunca expor dado financeiro/de paciente sem permissão) dependem diretamente da correção deste módulo — qualquer feature de IA futura deve reutilizar `authorize()`, não reimplementar checagem de acesso.
 - Ordem de specs sugerida a partir daqui: Clínicas → Veterinários → Pacientes → Exames & Precificação → Atendimentos → Laudos → Fechamento Financeiro → Portal da Clínica → Importação de Dados Históricos.
 
 ## Descobertas
 
-<!-- Anotar aqui qualquer necessidade nova descoberta durante a implementação que esteja fora do escopo acima. Não implementar — parar e decidir com o PO. -->
+- **Story 12 (clínica só vê dado da própria clínica) não tem como ser demonstrada de ponta a ponta via HTTP dentro do escopo desta spec**: o mecanismo (`authorize()` com escopo de clínica) já está implementado e testado (T2), mas não existe nenhum recurso de dado real pertencente a uma clínica ainda (Pacientes/Laudos são specs futuras). Criar um endpoint fake só para "fechar" essa story seria inventar escopo fora do que foi decidido. Tratando como: mecanismo pronto, demonstração de ponta a ponta fica pendente até a spec de Pacientes ou Laudos existir e reusar `authorize()`. Não implementar um recurso fake para contornar isso — decisão do PO se algo diferente for necessário.
 
 ## Verificação
 
-Resultado do último `/fechar-spec S1`: ❌ BLOQUEADA (ver `docs/specs/relatorios/S1-verificacao.md` quando existir). Pendências: CRUD de usuário (stories 1-4), reset de senha (story 9), sessão com expiração (story 8), persistência real, e endpoint HTTP expondo login/authorize (stories 5, 11, 12) — ver histórico da sessão para o relatório detalhado até este arquivo ser criado.
+Resultado do último `/fechar-spec S1` (2026-09-19): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S1-verificacao.md`. Sem pendências bloqueantes; nota não bloqueante:
+story 12 (escopo de clínica) só poderá ser demonstrada via HTTP quando a spec de
+Pacientes/Laudos existir e reusar `authorize()`.
