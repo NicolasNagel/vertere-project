@@ -58,7 +58,8 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 - [x] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4) — commit `feat(s1): CRUD de usuário (criar/editar papel/desativar/reativar)`
 - [x] T5 — Reset de senha administrativo (User Stories: 9) — commit `feat(s1): reset de senha administrativo`
 - [x] T6 — Sessão com expiração por inatividade (User Stories: 8) — commit `feat(s1): lógica de expiração de sessão por inatividade`
-- [ ] T7 — Endpoint HTTP de login (FastAPI) + dependency/middleware aplicando `authorize()` nas rotas, fechando de ponta a ponta as stories que hoje só têm lógica testada isoladamente (User Stories: 5, 11, 12)
+- [x] T7 — Endpoint HTTP de login (FastAPI), sessão persistida (store + `sid` num JWT) e dependency de autorização reutilizável aplicando `authorize()`, demonstrada num endpoint admin-only (User Stories: 5, 6, 7, 8, 10, 11) — commit `feat(s1): endpoint de login, sessão via JWT e enforcement de authorize() em HTTP`
+- [ ] T8 — Endpoints HTTP de gestão de usuário (criar, editar papel, desativar, reativar, resetar senha), todos admin-only via a dependency de T7 (User Stories: 1, 2, 3, 4, 9)
 
 ## Out of Scope
 
@@ -76,7 +77,7 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 
 ## Descobertas
 
-<!-- Anotar aqui qualquer necessidade nova descoberta durante a implementação que esteja fora do escopo acima. Não implementar — parar e decidir com o PO. -->
+- **Story 12 (clínica só vê dado da própria clínica) não tem como ser demonstrada de ponta a ponta via HTTP dentro do escopo desta spec**: o mecanismo (`authorize()` com escopo de clínica) já está implementado e testado (T2), mas não existe nenhum recurso de dado real pertencente a uma clínica ainda (Pacientes/Laudos são specs futuras). Criar um endpoint fake só para "fechar" essa story seria inventar escopo fora do que foi decidido. Tratando como: mecanismo pronto, demonstração de ponta a ponta fica pendente até a spec de Pacientes ou Laudos existir e reusar `authorize()`. Não implementar um recurso fake para contornar isso — decisão do PO se algo diferente for necessário.
 
 ## Verificação
 
