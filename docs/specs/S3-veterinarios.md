@@ -109,7 +109,7 @@ laudos do veterinário).
 - [x] T4 — Persistência real: modelo SQLAlchemy + migração Alembic (com FK para `clinicas` e
       índice único em `crmv`) implementando `VeterinarioRepository` contra PostgreSQL
       (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T5 — Novas ações `Acao.VETERINARIO_GERENCIAR` e `Acao.VETERINARIO_VER` em
+- [x] T5 — Novas ações `Acao.VETERINARIO_GERENCIAR` e `Acao.VETERINARIO_VER` em
       `auth/service.py` (`_PERMISSOES`: `VETERINARIO_GERENCIAR` só `admin`; `VETERINARIO_VER`
       todos os papéis) (User Stories: 7)
 - [ ] T6 — Endpoints HTTP (`veterinarios/router.py` + `schemas.py`): criar, editar, inativar,
