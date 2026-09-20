@@ -162,7 +162,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 - [x] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
       incluindo o filtro automático por clínica quando o papel do usuário é `clinica` (User
       Stories: 4)
-- [ ] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
+- [x] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
       de T8 passarem (User Stories: 4)
 - [ ] T10 — Persistência real: modelo SQLAlchemy (`Atendimento` com `itens_exame` como tabela
       relacionada ou campo JSON — decisão de implementação, `Numeric` para valores monetários) +

@@ -10,6 +10,7 @@ from vertere_api.atendimentos.domain import (
     ItemExameEntrada,
     StatusAtendimento,
 )
+from vertere_api.auth.domain import Papel, Usuario
 from vertere_api.clinicas.service import ClinicaRepository
 from vertere_api.exames.service import (
     ExameRepository,
@@ -258,3 +259,39 @@ def cancelar_atendimento(atendimento_id: str, repo: AtendimentoRepository) -> At
     cancelado = replace(atual, status=StatusAtendimento.CANCELADO)
     repo.salvar(cancelado)
     return cancelado
+
+
+def listar_atendimentos(
+    repo: AtendimentoRepository,
+    usuario: Usuario,
+    *,
+    clinica_id: str | None = None,
+    veterinario_id: str | None = None,
+    status: StatusAtendimento | None = None,
+    data_inicio: datetime | None = None,
+    data_fim: datetime | None = None,
+) -> list[Atendimento]:
+    """Lista atendimentos, filtrando por período, clínica, veterinário e status.
+
+    Um usuário com `papel=clinica` só enxerga atendimentos da própria
+    clínica (`usuario.clinica_id`), independente de `clinica_id` informado
+    — escopo de dados aplicado pelo service a partir do papel do usuário
+    autenticado, não uma checagem de acesso nova fora de `authorize()`.
+    """
+    atendimentos = repo.listar_todas()
+
+    if usuario.papel == Papel.CLINICA:
+        atendimentos = [a for a in atendimentos if a.clinica_id == usuario.clinica_id]
+    elif clinica_id is not None:
+        atendimentos = [a for a in atendimentos if a.clinica_id == clinica_id]
+
+    if veterinario_id is not None:
+        atendimentos = [a for a in atendimentos if a.veterinario_id == veterinario_id]
+    if status is not None:
+        atendimentos = [a for a in atendimentos if a.status == status]
+    if data_inicio is not None:
+        atendimentos = [a for a in atendimentos if a.data_hora >= data_inicio]
+    if data_fim is not None:
+        atendimentos = [a for a in atendimentos if a.data_hora <= data_fim]
+
+    return atendimentos
