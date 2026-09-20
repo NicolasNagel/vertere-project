@@ -91,3 +91,45 @@ class TestSQLAlchemyUsuarioRepository:
         usuario = authenticate("atendente@vertere.com", "senha-correta", repo)
 
         assert usuario.papel == Papel.ATENDENTE
+
+    def test_salvar_insere_usuario_novo_e_buscar_por_id_encontra(
+        self, session: Session
+    ) -> None:
+        repo = SQLAlchemyUsuarioRepository(session)
+        novo = Usuario(
+            id="id-novo",
+            email="novo@vertere.com",
+            senha_hash=hash_senha("senha-correta"),
+            papel=Papel.TECNICO,
+            ativo=True,
+        )
+
+        repo.salvar(novo)
+        encontrado = repo.buscar_por_id("id-novo")
+
+        assert encontrado == novo
+
+    def test_salvar_atualiza_usuario_existente_em_vez_de_duplicar(
+        self, session: Session
+    ) -> None:
+        repo = SQLAlchemyUsuarioRepository(session)
+        original = Usuario(
+            id="id-existente",
+            email="original@vertere.com",
+            senha_hash=hash_senha("senha-correta"),
+            papel=Papel.ATENDENTE,
+            ativo=True,
+        )
+        repo.salvar(original)
+
+        atualizado = Usuario(
+            id="id-existente",
+            email="original@vertere.com",
+            senha_hash=original.senha_hash,
+            papel=Papel.ATENDENTE,
+            ativo=False,
+        )
+        repo.salvar(atualizado)
+
+        assert repo.buscar_por_id("id-existente").ativo is False
+        assert session.query(UsuarioModel).count() == 1

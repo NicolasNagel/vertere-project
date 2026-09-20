@@ -55,7 +55,7 @@ pela verificação de /fechar-spec S1 (ver seção Verificação). -->
 - [x] T1 — Domínio (`Papel`, `Usuario`) e scaffold do projeto `apps/api` com `uv` (User Stories: base para todas) — commit `feat(s1): implementa authenticate/authorize com testes` (13d4f4f)
 - [x] T2 — `authenticate()`/`authorize()` com testes na seam (repositório fake em memória) e hash de senha com `bcrypt` (User Stories: 6, 7, 10, 13; parcial: 11, 12 — lógica correta e testada, falta enforcement em endpoint real) — mesmo commit de T1
 - [x] T3 — Persistência real de usuário: modelo SQLAlchemy + migração Alembic implementando `UsuarioRepository` contra PostgreSQL (pré-requisito de T4; User Stories: 1, 2, 3, 4, 9) — commit `feat(s1): persistência real de usuário via SQLAlchemy/PostgreSQL`
-- [ ] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4)
+- [x] T4 — CRUD de usuário: criar, editar papel, desativar, reativar (User Stories: 1, 2, 3, 4) — commit `feat(s1): CRUD de usuário (criar/editar papel/desativar/reativar)`
 - [ ] T5 — Reset de senha administrativo (User Stories: 9)
 - [ ] T6 — Sessão com expiração por inatividade (User Stories: 8)
 - [ ] T7 — Endpoint HTTP de login (FastAPI) + dependency/middleware aplicando `authorize()` nas rotas, fechando de ponta a ponta as stories que hoje só têm lógica testada isoladamente (User Stories: 5, 11, 12)
