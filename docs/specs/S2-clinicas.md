@@ -44,7 +44,7 @@ Um módulo de cadastro de clínicas parceiras, com CRUD administrado por `admin`
 
 - [x] T1 — Domínio (`Clinica`) e `ClinicaRepository` (interface) com implementação fake em memória para os testes (User Stories: base para todas)
 - [x] T2 — Testes da seam (`clinicas/service.py`) cobrindo criação, edição, inativação/reativação, CNPJ duplicado, busca por nome e listagem (User Stories: 1, 2, 3, 4, 5, 6)
-- [ ] T3 — Implementação de `criar_clinica`, `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem, com `authorize(papel, "gerenciar_clinica")` aplicado nas operações de escrita (User Stories: 1, 2, 3, 4, 5, 6, 7)
+- [x] T3 — Implementação de `criar_clinica`, `editar_clinica`, `inativar_clinica`, `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` em `clinicas/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 2, 3, 4, 5, 6). Nota: autorização (story 7) fica na camada HTTP em T5, reusando `exigir_admin` já estabelecido em S1 (`auth/deps.py`) para as rotas admin-only — mesmo padrão de `usuarios_router.py`, não uma checagem nova por conta própria.
 - [ ] T4 — Persistência real: modelo SQLAlchemy + migração Alembic implementando `ClinicaRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6)
 - [ ] T5 — Endpoints HTTP (`clinicas/router.py` + `schemas.py`): criar, editar, inativar, reativar (admin-only, reusando a dependency de autorização de S1) e buscar/listar (qualquer usuário autenticado) (User Stories: 1, 2, 3, 4, 5, 6, 7)
 
