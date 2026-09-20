@@ -164,7 +164,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       Stories: 4)
 - [x] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
       de T8 passarem (User Stories: 4)
-- [ ] T10 — Persistência real: modelo SQLAlchemy (`Atendimento` com `itens_exame` como tabela
+- [x] T10 — Persistência real: modelo SQLAlchemy (`Atendimento` com `itens_exame` como tabela
       relacionada ou campo JSON — decisão de implementação, `Numeric` para valores monetários) +
       migração Alembic, implementando `AtendimentoRepository` contra PostgreSQL (User Stories: 1,
       2, 3, 4, 5, 6, 7)
