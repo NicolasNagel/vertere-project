@@ -7,6 +7,6 @@
 | Código | Módulo | Spec | Issue | Status |
 |--------|--------|------|-------|--------|
 | S1 | Auth/Usuários | [docs/specs/S1-auth-usuarios.md](specs/S1-auth-usuarios.md) | [#2](https://github.com/NicolasNagel/vertere-project/issues/2) | entregue |
-| S2 | Clínicas | [docs/specs/S2-clinicas.md](specs/S2-clinicas.md) | [#4](https://github.com/NicolasNagel/vertere-project/issues/4) | em-desenvolvimento |
+| S2 | Clínicas | [docs/specs/S2-clinicas.md](specs/S2-clinicas.md) | [#4](https://github.com/NicolasNagel/vertere-project/issues/4) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->

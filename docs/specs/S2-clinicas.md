@@ -2,7 +2,7 @@
 codigo: S2
 modulo: Clínicas
 issue: https://github.com/NicolasNagel/vertere-project/issues/4
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -95,3 +95,8 @@ Pendente resolver na mesma branch (`spec/s2-clinicas`) antes de reabrir `/fechar
 
 Suíte completa: 85 passed (4 testes novos: 1 na seam de CNPJ inválido parametrizado em 3
 casos, 1 HTTP de CNPJ inválido). Pronta para reabrir `/fechar-spec S2`.
+
+**Reverificação (2026-09-19)**: ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S2-verificacao.md`. As duas divergências foram confirmadas corrigidas
+(seam + HTTP ao vivo contra Postgres real). 5/5 tasks com evidência real, 7/7 user stories
+atendidas, sem scope creep, sem desvio de ADR. Sem pendências.
