@@ -127,3 +127,9 @@ não tinha esse parâmetro nem o endpoint `/clinicas/busca` o expunha. Corrigido
 
 Suíte completa após esta correção: 87 passed (mesmo total; nenhum teste novo, é
 refino/modelagem de decisão já testada).
+
+**Reverificação final (2026-09-19)**, por segurança após as correções do `/code-review`: ✅
+APROVADA. Relatório completo em `docs/specs/relatorios/S2-verificacao.md`. Reauditoria do zero
+no commit `ce87cb7` (posterior a todas as correções acima) — 87/87 testes, fluxo HTTP validado
+ao vivo (201/200/403/422/409/401 conferidos com usuários reais), 5/5 tasks e 7/7 user stories
+com evidência real, sem scope creep, sem desvio de ADR. Sem pendências. Pronta para PR.

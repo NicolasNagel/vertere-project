@@ -2,103 +2,123 @@
 
 **Veredito**: ✅ APROVADA
 **Data**: 2026-09-19
-**Testes**: `uv run pytest -q` (em `apps/api`) — 85 passed, 0 failed
+**Testes**: `uv run pytest -q` (apps/api, contra Postgres real em `localhost:5434`) — 87 passed, 0 failed
+
+## Contexto desta reverificação
+
+Esta é uma auditoria independente e do zero, feita após o commit mais recente na branch
+(`ce87cb7 fix(s2): corrige achados de julgamento do /code-review`), que é posterior à última
+nota de "Reverificação ✅ APROVADA" registrada dentro do próprio arquivo da spec. As notas de
+histórico dentro de `docs/specs/S2-clinicas.md` (bloqueio anterior, correções, `/code-review`)
+foram tratadas apenas como ponteiros para o que checar — nenhuma conclusão anterior foi aceita
+sem confirmação direta no código e em execução ao vivo.
 
 ## Tasks
 
-Todas as 5 tasks do checklist estão marcadas `[x]` e todas têm evidência real:
+Todas as 5 tasks do checklist estão marcadas `[x]`. Todas têm evidência real no código:
 
-- **T1** (domínio + `ClinicaRepository`): `clinicas/domain.py` (`Clinica`, dataclass frozen)
-  e `clinicas/repository.py` (`ClinicaRepository` Protocol); fake em memória em
-  `tests/test_clinicas_service.py::RepositorioFake`. Commit `c0c7264`.
-- **T2** (testes da seam): `tests/test_clinicas_service.py` cobre criação válida, CNPJ inválido
-  (3 formatos parametrizados), CNPJ duplicado, edição (existente/inexistente),
-  inativação/reativação (incl. inexistente), busca por substring case-insensitive, listagem
-  com/sem filtro de ativas. Commit `22ad343`.
-- **T3** (`clinicas/service.py`): `criar_clinica`, `editar_clinica`, `inativar_clinica`,
-  `reativar_clinica`, `buscar_por_nome`, `listar_clinicas` implementados e testados.
-  Commit `c2bee5f`.
-- **T4** (persistência real): `clinicas/models.py` (`ClinicaModel`, SQLAlchemy) +
-  `clinicas/repository.py::SQLAlchemyClinicaRepository` + migração Alembic
-  `migrations/versions/aeccdc2ed04c_create_clinicas_table.py` (tabela `clinicas`, índice único
-  em `cnpj`). Testado em `tests/test_clinica_repository.py`. Commit `00c8a96`.
-- **T5** (endpoints HTTP): `clinicas/router.py` + `clinicas/schemas.py`, com
-  `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` nas 4 rotas de escrita e leitura livre para
-  qualquer usuário autenticado. Testado em `tests/test_clinicas_router.py` (13 casos, incluindo
-  papel/403, 404, 409, 422, 401). Commit `3bd57e1`; correção do mecanismo de autorização e da
-  validação de CNPJ em `4b70431`.
+- **T1** — `Clinica` (dataclass, `apps/api/src/vertere_api/clinicas/domain.py`) e
+  `ClinicaRepository` (Protocol, `clinicas/repository.py`) com implementação fake em
+  `apps/api/tests/test_clinicas_service.py::RepositorioFake`. Confirmado.
+- **T2** — `apps/api/tests/test_clinicas_service.py`: cobre criação válida, CNPJ inválido
+  (parametrizado em 3 formatos), CNPJ duplicado, edição existente/inexistente,
+  inativação/reativação (incl. inexistente), busca por substring case-insensitive (com e sem
+  `apenas_ativas`), listagem (com e sem `apenas_ativas`). Confirmado, 16 testes na seam.
+- **T3** — `criar_clinica`, `editar_clinica`, `inativar_clinica`, `reativar_clinica`,
+  `buscar_por_nome`, `listar_clinicas` implementadas em `clinicas/service.py`, todos os testes
+  de T2 passam. Confirmado.
+- **T4** — `apps/api/src/vertere_api/clinicas/models.py` (`ClinicaModel`) +
+  `SQLAlchemyClinicaRepository` (`clinicas/repository.py`) + migração Alembic
+  `apps/api/migrations/versions/aeccdc2ed04c_create_clinicas_table.py` (tabela `clinicas`,
+  índice único em `cnpj`). Rodei `alembic upgrade head` contra o Postgres de dev: já aplicada,
+  sem erro. Confirmado.
+- **T5** — `clinicas/router.py` com 6 endpoints (`POST /clinicas`, `PATCH /clinicas/{id}`,
+  `POST /clinicas/{id}/inativar`, `POST /clinicas/{id}/reativar`, `GET /clinicas`,
+  `GET /clinicas/busca`), todos usando `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` (escrita)
+  ou `Depends(exigir_acao(Acao.CLINICA_VER))` (leitura) — nenhum usa `exigir_admin` ou checagem
+  de papel direta. `Acao.CLINICA_GERENCIAR`/`Acao.CLINICA_VER` existem em `_PERMISSOES`
+  (`auth/service.py`), `CLINICA_GERENCIAR` só para `Papel.ADMIN`, `CLINICA_VER` para os 4 papéis.
+  Confirmado via leitura de código e exercício HTTP ao vivo (ver seção "Funcional de ponta a
+  ponta").
 
-Nenhuma task marcada sem evidência confirmável no código.
+Nenhuma task marcada sem evidência.
 
 ## User Stories
 
 | # | Story (resumo) | Status | Evidência |
 |---|---|---|---|
-| 1 | Admin cadastra clínica (nome, CNPJ, endereço, telefone, e-mail, status) | Atendida | `criar_clinica` (`clinicas/service.py:29`), `POST /clinicas` (`router.py:41`); testado na seam e via HTTP (`test_admin_cria_clinica`) |
-| 2 | Admin edita clínica existente | Atendida | `editar_clinica` (`service.py:63`), `PATCH /clinicas/{id}` (`router.py:65`); `test_admin_edita_clinica` |
-| 3 | Admin inativa clínica sem apagar histórico | Atendida | `inativar_clinica`/`_definir_estado_ativo` (`service.py:86,96`) — apenas seta `ativo=False`, nunca deleta; `POST /clinicas/{id}/inativar` |
-| 4 | Admin reativa clínica | Atendida | `reativar_clinica` (`service.py:91`), `POST /clinicas/{id}/reativar`; `test_admin_inativa_e_reativa_clinica` |
-| 5 | Atendente busca clínica por nome | Atendida | `buscar_por_nome` (`service.py:111`, substring case-insensitive via `casefold`), `GET /clinicas/busca` sem restrição de papel; `test_atendente_pode_buscar_clinica_por_nome` |
-| 6 | Admin lista todas as clínicas | Atendida | `listar_clinicas` (`service.py:117`), `GET /clinicas`; `test_atendente_pode_listar_clinicas` (qualquer papel autenticado, story 6 não restringe a admin e a spec confirma leitura liberada a outros papéis) |
-| 7 | Só admin cria/edita/inativa/reativa; atendente/técnico só leitura, via `authorize()` único | Atendida | `Acao.CLINICA_GERENCIAR` adicionado em `_PERMISSOES` (`auth/service.py:24-35`, só `Papel.ADMIN`); rotas de escrita usam `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))` (`auth/deps.py:52`, que chama `authorize()`), não uma checagem de papel reimplementada; confirmado ao vivo (403 para atendente) |
+| 1 | Admin cadastra clínica (nome, CNPJ, endereço, telefone, e-mail, status) | Atendida | `criar_clinica` (`clinicas/service.py:30`), `POST /clinicas` (`router.py:41`); teste seam `TestCriarClinica`, teste HTTP `TestCriarClinicaEndpoint::test_admin_cria_clinica`; confirmado ao vivo (201, `ativo: true`) |
+| 2 | Admin edita clínica existente | Atendida | `editar_clinica` (`service.py:64`), `PATCH /clinicas/{id}` (`router.py:65`); `TestEditarClinica`/`TestEditarClinicaEndpoint`; confirmado ao vivo (200, campos atualizados) |
+| 3 | Admin inativa clínica preservando histórico | Atendida | `inativar_clinica`/`_definir_estado_ativo` (`service.py:79,89`) apenas altera `ativo`, não deleta nem toca em outras entidades (que ainda não existem); `POST /clinicas/{id}/inativar`; confirmado ao vivo |
+| 4 | Admin reativa clínica | Atendida | `reativar_clinica` (`service.py:84`); `POST /clinicas/{id}/reativar`; confirmado ao vivo |
+| 5 | Atendente busca clínica por nome | Atendida | `buscar_por_nome` (`service.py:96`) exige apenas `Acao.CLINICA_VER` (todos os papéis); `GET /clinicas/busca`; confirmado ao vivo com token de atendente |
+| 6 | Admin lista todas as clínicas | Atendida | `listar_clinicas` (`service.py:107`); `GET /clinicas`; confirmado ao vivo |
+| 7 | Só admin cria/edita/inativa/reativa; atendente/técnico só leitura, via `authorize()` único ponto de decisão | Atendida | Rotas de escrita usam `Depends(exigir_acao(Acao.CLINICA_GERENCIAR))`, rotas de leitura usam `Depends(exigir_acao(Acao.CLINICA_VER))` — ambas via `auth/deps.py::exigir_acao`, que chama `authorize()` (`auth/service.py:73`). Nenhuma checagem de papel reimplementada em `clinicas/`. Confirmado por leitura de código e teste ao vivo: atendente recebe 403 em `POST /clinicas` e em `POST /clinicas/{id}/inativar`, 200 em `GET /clinicas` e `GET /clinicas/busca` |
+
+Todas as 7 user stories atendidas.
 
 ## Seam de teste
 
-`clinicas/service.py` segue o padrão de S1: funções puras recebendo `ClinicaRepository` como
-parâmetro, testadas com `RepositorioFake` em memória, sem HTTP/DB (`test_clinicas_service.py`).
-Cobre exatamente os cenários que a spec lista em "Testing Decisions": criação válida, CNPJ
-duplicado, edição de clínica existente/inexistente, inativação/reativação, busca por substring
-case-insensitive, listagem com/sem filtro de ativas — mais o CNPJ inválido (parametrizado em 3
-formatos), que foi adicionado na correção. Um teste de integração (router) confirma que
-`authorize()`/`exigir_acao` é chamado antes de qualquer escrita (`test_atendente_nao_pode_criar_clinica`,
-`test_atendente_nao_pode_inativar_clinica`), como a spec pede — sem reimplementar teste de papel.
-`test_clinica_repository.py` cobre a seam do repositório real contra Postgres.
+Segue exatamente o padrão descrito em "Testing Decisions": `clinicas/service.py` são funções
+puras recebendo `ClinicaRepository` como parâmetro; `apps/api/tests/test_clinicas_service.py`
+usa `RepositorioFake` em memória, sem HTTP/DB. Os cenários listados na spec estão todos
+cobertos: criação válida, CNPJ duplicado, edição (existente/inexistente), inativação/reativação,
+busca por substring case-insensitive, listagem com/sem filtro de ativas — mais o CNPJ inválido
+(adicionado na correção pós-bloqueio, 3 casos parametrizados).
+
+A autorização é testada na camada de router/integração, não reimplementando teste de papel:
+`test_clinicas_router.py` confirma 403 para atendente em rotas de escrita e 200 em rotas de
+leitura, sem duplicar a lógica de `authorize()`. Consistente com "Testing Decisions".
 
 ## Out of Scope
 
-Nenhuma violação encontrada: não há código de vínculo com Veterinários/Pacientes/Atendimentos,
-não há validação de dígito verificador de CNPJ (só formato de 14 dígitos, como a spec pede), não
-há Portal da Clínica nem upload de documentos em `clinicas/`. Busca por termos relacionados no
-diretório do módulo não retornou nada.
+Nenhum item da lista foi implementado:
+- Vínculo com Veterinários/Pacientes/Atendimentos: não existe nenhuma referência a essas
+  entidades em `clinicas/` (grep confirmou).
+- Validação de dígito verificador de CNPJ: `criar_clinica` só valida `len == 14 and isdigit()`,
+  nenhuma lógica de dígito verificador.
+- Portal da Clínica (papel `clinica` restrito ao próprio registro): não implementado; `Acao.
+  CLINICA_VER` é concedida a todos os 4 papéis sem escopo por clínica (`_ACOES_COM_ESCOPO_DE_
+  CLINICA` não inclui `CLINICA_VER`/`CLINICA_GERENCIAR`), consistente com "fica para quando o
+  Portal da Clínica for especificado".
+- Upload de documentos/contrato: nenhum campo ou endpoint relacionado.
+
+Sem scope creep.
 
 ## ADRs
 
-Stack usada é consistente com ADR-0001/0002: FastAPI, SQLAlchemy 2.x (`Mapped`/`mapped_column`)
-+ Alembic, PostgreSQL, `pytest`, `uv`. Domínio, identificadores e comentários em português. Nenhum
-desvio de stack encontrado; nenhuma justificativa de desvio necessária.
+`docs/adr/0001-stack-tecnica.md` e `0002-frameworks-e-ferramentas.md`: implementação usa
+FastAPI, SQLAlchemy 2.x + Alembic, PostgreSQL, pytest — igual ao restante do backend (S1),
+sem desvio. Contrato Pydantic na fronteira HTTP (`clinicas/schemas.py`, incl. `EmailStr`).
+Nenhum desvio de ADR encontrado ou necessário de documentar.
+
+## Descobertas
+
+Seção "## Descobertas" do arquivo da spec está vazia — nenhuma necessidade fora de escopo foi
+implementada sem decisão do PO.
 
 ## Funcional de ponta a ponta
 
-Validado agora, ao vivo, contra uma instância `uvicorn` nova (processo próprio, não o `TestClient`
-das specs) e o Postgres de dev (`vertere_postgres_dev`, porta 5434):
+Validado agora, ao vivo, contra o Postgres de dev real (`localhost:5434`, container
+`vertere_postgres_dev`), subindo a API real (`uvicorn vertere_api.main:app`) e usando dois
+usuários reais criados diretamente no banco (admin e atendente), autenticados via
+`POST /auth/login` (tokens JWT reais, não mocks):
 
-- Login como admin e como atendente reais (usuários inseridos via SQL/bcrypt para o teste,
-  removidos ao final).
-- `POST /clinicas` com CNPJ `"123"` (inválido) → **422**, corpo `CNPJ inválido: '123' — esperado
-  14 dígitos`.
-- `POST /clinicas` com CNPJ válido de 14 dígitos → **201**, `ativo: true`.
-- Repetir o mesmo CNPJ → **409**.
-- Atendente tentando criar → **403**; atendente listando (`GET /clinicas`) → **200**; atendente
-  buscando por nome (`GET /clinicas/busca?nome=...`) → **200** com resultado filtrado.
-- Atendente tentando inativar → **403**; admin inativando → **200** `ativo: false`; admin
-  reativando → **200** `ativo: true`.
-- `PATCH /clinicas/{id inexistente}` → **404**.
-- `GET /clinicas` sem token → **401**.
+- `POST /clinicas` como atendente → 403
+- `POST /clinicas` como admin, dados completos → 201, `ativo: true`
+- `POST /clinicas` com `cnpj: "123"` como admin → 422
+- `POST /clinicas` com CNPJ já cadastrado → 409
+- `PATCH /clinicas/{id}` como admin → 200, campos atualizados
+- `POST /clinicas/{id}/inativar` como atendente → 403
+- `POST /clinicas/{id}/inativar` como admin → 200, `ativo: false`
+- `POST /clinicas/{id}/reativar` como admin → 200, `ativo: true`
+- `GET /clinicas` como atendente → 200, lista a clínica criada
+- `GET /clinicas/busca?nome=e2e` como atendente → 200, encontra por substring
+- `GET /clinicas` sem token → 401
 
-Nota de processo: a primeira rodada de checagem ao vivo bateu por engano num processo `uvicorn`
-remanescente de uma sessão anterior, ainda com o código *antes* da correção de CNPJ (retornou
-201 para CNPJ inválido) — o novo processo não conseguiu nem fazer bind da porta (log confirmou
-`address already in use`). Depois de encerrar esse processo órfão e subir um `uvicorn` limpo a
-partir do working tree atual, todos os casos acima passaram como esperado. Isso não é uma falha
-da spec — é um artefato do ambiente de verificação — mas registra por que a v1 desta checagem
-teria produzido um falso bloqueio se eu não tivesse notado o "address already in use" no log.
-
-Dados de teste (usuários `verif-*@vertere.com` e as clínicas criadas) foram removidos do Postgres
-de dev ao final; o processo `uvicorn` da verificação foi encerrado.
+Todos os resultados batem com o comportamento esperado pela spec. Dados de teste (usuários e
+clínica criados durante esta verificação) foram removidos do banco de dev ao final.
 
 ## Pendências
 
-Nenhuma. As duas divergências apontadas na verificação anterior (autorização via `exigir_admin`
-em vez de `authorize()`, e ausência de validação de formato de CNPJ) foram corrigidas nesta
-branch e confirmadas agora, tanto pela suíte de testes (85 passed) quanto por exercício HTTP
-real de ponta a ponta.
+Nenhuma. Spec aprovada sem ressalvas.
