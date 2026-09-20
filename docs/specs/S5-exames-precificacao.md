@@ -2,7 +2,7 @@
 codigo: S5
 modulo: Exames & Precificação
 issue: https://github.com/NicolasNagel/vertere-project/issues/10
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -135,7 +135,7 @@ reimplementar a decisão em nenhum outro lugar.
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Exame`, `RegraPlantao`) e repositórios (`ExameRepository`,
+- [x] T1 — Domínio (`Exame`, `RegraPlantao`) e repositórios (`ExameRepository`,
       `RegraPlantaoRepository`, Protocol) com implementações fake em memória para os testes
       (User Stories: base para todas)
 - [ ] T2 — Testes de `calcular_adicional_plantao` (função pura, sem repositório): janela simples,
