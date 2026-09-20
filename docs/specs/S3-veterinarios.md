@@ -2,7 +2,7 @@
 codigo: S3
 modulo: Veterinários
 issue: https://github.com/NicolasNagel/vertere-project/issues/6
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -97,7 +97,7 @@ laudos do veterinário).
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Veterinario`) e `VeterinarioRepository` (interface) com implementação fake
+- [x] T1 — Domínio (`Veterinario`) e `VeterinarioRepository` (interface) com implementação fake
       em memória para os testes (User Stories: base para todas)
 - [ ] T2 — Testes da seam (`veterinarios/service.py`) cobrindo criação, validação de clínica
       existente, CRMV duplicado, edição, inativação/reativação, busca por nome (com filtro de
