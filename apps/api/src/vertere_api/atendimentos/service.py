@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 from datetime import datetime
 from decimal import Decimal
 from typing import Protocol
@@ -55,6 +56,16 @@ class AtendimentoSemItens(Exception):
         super().__init__("Atendimento precisa de ao menos um item de exame")
 
 
+class AtendimentoNaoEncontrado(Exception):
+    def __init__(self, atendimento_id: str) -> None:
+        super().__init__(f"Atendimento {atendimento_id} não encontrado")
+
+
+class AtendimentoCancelado(Exception):
+    def __init__(self, atendimento_id: str) -> None:
+        super().__init__(f"Atendimento {atendimento_id} está cancelado e não pode ser editado")
+
+
 def calcular_valor_total(
     itens_exame: list[ItemExame], valor_adicional_plantao: Decimal, desconto: Decimal
 ) -> Decimal:
@@ -90,6 +101,44 @@ def _resolver_itens_exame(
     return itens
 
 
+def _validar_referencias(
+    clinica_id: str,
+    veterinario_id: str,
+    paciente_id: str,
+    itens_exame: list[ItemExameEntrada],
+    clinicas: ClinicaRepository,
+    veterinarios: VeterinarioRepository,
+    pacientes: PacienteRepository,
+    exames: ExameRepository,
+) -> list[ItemExame]:
+    clinica = clinicas.buscar_por_id(clinica_id)
+    if clinica is None or not clinica.ativo:
+        raise ClinicaInvalida(clinica_id)
+
+    veterinario = veterinarios.buscar_por_id(veterinario_id)
+    if veterinario is None or not veterinario.ativo:
+        raise VeterinarioInvalido(veterinario_id)
+
+    paciente = pacientes.buscar_por_id(paciente_id)
+    if paciente is None or not paciente.ativo:
+        raise PacienteInvalido(paciente_id)
+
+    return _resolver_itens_exame(itens_exame, exames)
+
+
+def _resolver_adicional_plantao(
+    data_hora: datetime,
+    regras_plantao: RegraPlantaoRepository,
+    valor_adicional_plantao: Decimal | None,
+) -> tuple[Decimal, str | None]:
+    if valor_adicional_plantao is not None:
+        return valor_adicional_plantao, None
+    regra = calcular_adicional_plantao(data_hora, regras_plantao.listar_todas())
+    valor = regra.valor_adicional if regra else Decimal("0")
+    regra_id = regra.id if regra else None
+    return valor, regra_id
+
+
 def registrar_atendimento(
     clinica_id: str,
     veterinario_id: str,
@@ -115,26 +164,12 @@ def registrar_atendimento(
     é gravado como final e `regra_plantao_id` fica `None` — o sistema não
     guarda sugestão e valor aplicado separados.
     """
-    clinica = clinicas.buscar_por_id(clinica_id)
-    if clinica is None or not clinica.ativo:
-        raise ClinicaInvalida(clinica_id)
-
-    veterinario = veterinarios.buscar_por_id(veterinario_id)
-    if veterinario is None or not veterinario.ativo:
-        raise VeterinarioInvalido(veterinario_id)
-
-    paciente = pacientes.buscar_por_id(paciente_id)
-    if paciente is None or not paciente.ativo:
-        raise PacienteInvalido(paciente_id)
-
-    itens = _resolver_itens_exame(itens_exame, exames)
-
-    regra_plantao_id: str | None = None
-    if valor_adicional_plantao is None:
-        regra = calcular_adicional_plantao(data_hora, regras_plantao.listar_todas())
-        valor_adicional_plantao = regra.valor_adicional if regra else Decimal("0")
-        regra_plantao_id = regra.id if regra else None
-
+    itens = _validar_referencias(
+        clinica_id, veterinario_id, paciente_id, itens_exame, clinicas, veterinarios, pacientes, exames
+    )
+    valor_adicional_plantao, regra_plantao_id = _resolver_adicional_plantao(
+        data_hora, regras_plantao, valor_adicional_plantao
+    )
     valor_total = calcular_valor_total(itens, valor_adicional_plantao, desconto)
 
     atendimento = Atendimento(
@@ -153,3 +188,73 @@ def registrar_atendimento(
     )
     repo.salvar(atendimento)
     return atendimento
+
+
+def _buscar_atendimento_ou_levantar(atendimento_id: str, repo: AtendimentoRepository) -> Atendimento:
+    atendimento = repo.buscar_por_id(atendimento_id)
+    if atendimento is None:
+        raise AtendimentoNaoEncontrado(atendimento_id)
+    return atendimento
+
+
+def editar_atendimento(
+    atendimento_id: str,
+    clinica_id: str,
+    veterinario_id: str,
+    paciente_id: str,
+    itens_exame: list[ItemExameEntrada],
+    metodo_coleta: str,
+    data_hora: datetime,
+    repo: AtendimentoRepository,
+    clinicas: ClinicaRepository,
+    veterinarios: VeterinarioRepository,
+    pacientes: PacienteRepository,
+    exames: ExameRepository,
+    regras_plantao: RegraPlantaoRepository,
+    desconto: Decimal = Decimal("0"),
+    valor_adicional_plantao: Decimal | None = None,
+) -> Atendimento:
+    """Edita um atendimento com `status=ativo`, recalculando `valor_total`.
+
+    Rejeita edição de atendimento inexistente ou já cancelado (cancelamento
+    é terminal nesta spec — não existe mecanismo de bloqueio por fechamento
+    de período ainda, ver "Implementation Decisions" da spec).
+    """
+    atual = _buscar_atendimento_ou_levantar(atendimento_id, repo)
+    if atual.status == StatusAtendimento.CANCELADO:
+        raise AtendimentoCancelado(atendimento_id)
+
+    itens = _validar_referencias(
+        clinica_id, veterinario_id, paciente_id, itens_exame, clinicas, veterinarios, pacientes, exames
+    )
+    valor_adicional_plantao, regra_plantao_id = _resolver_adicional_plantao(
+        data_hora, regras_plantao, valor_adicional_plantao
+    )
+    valor_total = calcular_valor_total(itens, valor_adicional_plantao, desconto)
+
+    atualizado = replace(
+        atual,
+        clinica_id=clinica_id,
+        veterinario_id=veterinario_id,
+        paciente_id=paciente_id,
+        itens_exame=itens,
+        metodo_coleta=metodo_coleta,
+        data_hora=data_hora,
+        regra_plantao_id=regra_plantao_id,
+        valor_adicional_plantao=valor_adicional_plantao,
+        desconto=desconto,
+        valor_total=valor_total,
+    )
+    repo.salvar(atualizado)
+    return atualizado
+
+
+def cancelar_atendimento(atendimento_id: str, repo: AtendimentoRepository) -> Atendimento:
+    """Cancela um atendimento, preservando o registro para auditoria.
+
+    Cancelamento é terminal nesta spec: não há operação de reabertura.
+    """
+    atual = _buscar_atendimento_ou_levantar(atendimento_id, repo)
+    cancelado = replace(atual, status=StatusAtendimento.CANCELADO)
+    repo.salvar(cancelado)
+    return cancelado

@@ -157,7 +157,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 - [x] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
       `valor_total`, permitida com `status=ativo`, rejeitada com `status=cancelado`) e de
       `cancelar_atendimento` (User Stories: 5, 7)
-- [ ] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
+- [x] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
       `atendimentos/service.py`, fazendo os testes de T6 passarem (User Stories: 5, 7)
 - [ ] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
       incluindo o filtro automático por clínica quando o papel do usuário é `clinica` (User
