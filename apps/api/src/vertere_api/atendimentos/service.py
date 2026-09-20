@@ -1,0 +1,9 @@
+from typing import Protocol
+
+from vertere_api.atendimentos.domain import Atendimento
+
+
+class AtendimentoRepository(Protocol):
+    def buscar_por_id(self, atendimento_id: str) -> Atendimento | None: ...
+    def listar_todas(self) -> list[Atendimento]: ...
+    def salvar(self, atendimento: Atendimento) -> None: ...

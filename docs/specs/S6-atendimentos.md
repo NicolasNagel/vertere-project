@@ -2,7 +2,7 @@
 codigo: S6
 modulo: Atendimentos
 issue: https://github.com/NicolasNagel/vertere-project/issues/12
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -141,7 +141,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Atendimento`, `ItemExame`, `StatusAtendimento`) e `AtendimentoRepository`
+- [x] T1 — Domínio (`Atendimento`, `ItemExame`, `StatusAtendimento`) e `AtendimentoRepository`
       (Protocol) com implementação fake em memória para os testes (User Stories: base para todas)
 - [ ] T2 — Testes de `calcular_valor_total` (função pura, sem repositório): item único, múltiplos
       itens, quantidade > 1, com/sem adicional de plantão, desconto válido, desconto que excede o
