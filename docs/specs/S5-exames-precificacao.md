@@ -151,7 +151,7 @@ reimplementar a decisão em nenhum outro lugar.
       `reativar_regra_plantao`, `listar_regras_plantao` (com filtro de ativos) (User Stories: 6, 7)
 - [x] T7 — Implementação dessas funções em `exames/service.py`, fazendo os testes de T6 passarem
       (User Stories: 6, 7)
-- [ ] T8 — Persistência real: modelos SQLAlchemy (`Exame`, `RegraPlantao`, `Numeric` para valores
+- [x] T8 — Persistência real: modelos SQLAlchemy (`Exame`, `RegraPlantao`, `Numeric` para valores
       monetários) + migração Alembic, implementando `ExameRepository`/`RegraPlantaoRepository`
       contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7)
 - [ ] T9 — Novas ações `Acao.EXAME_GERENCIAR`, `Acao.EXAME_VER`, `Acao.REGRA_PLANTAO_GERENCIAR`,

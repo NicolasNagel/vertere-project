@@ -9,6 +9,7 @@ from vertere_api.auth import models  # noqa: F401 - registra UsuarioModel em Bas
 from vertere_api.clinicas import models as clinicas_models  # noqa: F401 - registra ClinicaModel em Base.metadata
 from vertere_api.veterinarios import models as veterinarios_models  # noqa: F401 - registra VeterinarioModel em Base.metadata
 from vertere_api.pacientes import models as pacientes_models  # noqa: F401 - registra PacienteModel em Base.metadata
+from vertere_api.exames import models as exames_models  # noqa: F401 - registra ExameModel/RegraPlantaoModel em Base.metadata
 from vertere_api.db import Base
 from vertere_api.settings import settings
 
