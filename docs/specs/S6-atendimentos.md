@@ -148,7 +148,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       total (User Stories: 2, 3)
 - [x] T3 — Implementação de `calcular_valor_total` em `atendimentos/service.py`, fazendo os testes
       de T2 passarem (User Stories: 2, 3)
-- [ ] T4 — Testes de `registrar_atendimento`: registro válido com sugestão automática de plantão
+- [x] T4 — Testes de `registrar_atendimento`: registro válido com sugestão automática de plantão
       (reaproveitando `calcular_adicional_plantao` de S5), registro com ajuste manual do
       adicional, rejeição por clínica/veterinário/paciente/exame inativo ou inexistente (User
       Stories: 1, 2, 6)

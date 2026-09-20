@@ -17,6 +17,17 @@ class ItemExame:
 
 
 @dataclass(frozen=True)
+class ItemExameEntrada:
+    """Entrada de `registrar_atendimento`/`editar_atendimento`: exame + quantidade, sem preço —
+
+    o preço é resolvido pelo service a partir do catálogo (snapshot), não informado pelo chamador.
+    """
+
+    exame_id: str
+    quantidade: int
+
+
+@dataclass(frozen=True)
 class Atendimento:
     id: str
     clinica_id: str
