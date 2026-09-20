@@ -176,3 +176,9 @@ class TestCancelarAtendimento:
 
         with pytest.raises(AtendimentoNaoEncontrado):
             cancelar_atendimento("inexistente", repo)
+
+    def test_cancelar_atendimento_ja_cancelado_levanta_erro(self) -> None:
+        repo = AtendimentoRepositorioFake([_atendimento(status=StatusAtendimento.CANCELADO)])
+
+        with pytest.raises(AtendimentoCancelado):
+            cancelar_atendimento("atendimento-1", repo)

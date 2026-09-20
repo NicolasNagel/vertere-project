@@ -1,12 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ItemExameRequest(BaseModel):
     exame_id: str
-    quantidade: int
+    quantidade: int = Field(ge=1)
 
 
 class ItemExameResponse(BaseModel):

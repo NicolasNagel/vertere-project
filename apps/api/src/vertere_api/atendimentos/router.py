@@ -19,6 +19,7 @@ from vertere_api.atendimentos.service import (
     DescontoInvalido,
     ExameInvalido,
     PacienteInvalido,
+    QuantidadeInvalida,
     VeterinarioInvalido,
     cancelar_atendimento,
     editar_atendimento,
@@ -41,6 +42,7 @@ _ERROS_REFERENCIA_INVALIDA = (
     PacienteInvalido,
     ExameInvalido,
     AtendimentoSemItens,
+    QuantidadeInvalida,
     DescontoInvalido,
 )
 
@@ -152,6 +154,8 @@ def cancelar_atendimento_endpoint(
         atendimento = cancelar_atendimento(atendimento_id, repo)
     except AtendimentoNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
+    except AtendimentoCancelado as erro:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     return _atendimento_para_response(atendimento)
 
 

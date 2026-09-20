@@ -277,6 +277,11 @@ class TestEditarECancelarAtendimentoEndpoint:
         )
         assert resposta.status_code == 409
 
+        cancelar_de_novo = cliente.post(
+            f"/atendimentos/{criado['id']}/cancelar", headers=_cabecalho(cenario.token_admin)
+        )
+        assert cancelar_de_novo.status_code == 409
+
 
 class TestListarAtendimentosEndpoint:
     def test_tecnico_pode_listar_atendimentos(self, cliente: TestClient, session: Session) -> None:

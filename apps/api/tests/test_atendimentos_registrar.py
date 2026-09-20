@@ -9,6 +9,7 @@ from vertere_api.atendimentos.service import (
     ClinicaInvalida,
     ExameInvalido,
     PacienteInvalido,
+    QuantidadeInvalida,
     VeterinarioInvalido,
     registrar_atendimento,
 )
@@ -234,3 +235,15 @@ class TestRegistrarAtendimento:
 
         with pytest.raises(AtendimentoSemItens):
             ctx.registrar(itens_exame=[])
+
+    def test_rejeita_quantidade_zero(self) -> None:
+        ctx = _Contexto()
+
+        with pytest.raises(QuantidadeInvalida):
+            ctx.registrar(itens_exame=[ItemExameEntrada(exame_id="exame-1", quantidade=0)])
+
+    def test_rejeita_quantidade_negativa(self) -> None:
+        ctx = _Contexto()
+
+        with pytest.raises(QuantidadeInvalida):
+            ctx.registrar(itens_exame=[ItemExameEntrada(exame_id="exame-1", quantidade=-1)])

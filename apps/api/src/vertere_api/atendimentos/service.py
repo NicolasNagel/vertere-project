@@ -57,6 +57,11 @@ class AtendimentoSemItens(Exception):
         super().__init__("Atendimento precisa de ao menos um item de exame")
 
 
+class QuantidadeInvalida(Exception):
+    def __init__(self, exame_id: str, quantidade: int) -> None:
+        super().__init__(f"Quantidade {quantidade} inválida para o exame {exame_id}: mínimo 1")
+
+
 class AtendimentoNaoEncontrado(Exception):
     def __init__(self, atendimento_id: str) -> None:
         super().__init__(f"Atendimento {atendimento_id} não encontrado")
@@ -64,7 +69,7 @@ class AtendimentoNaoEncontrado(Exception):
 
 class AtendimentoCancelado(Exception):
     def __init__(self, atendimento_id: str) -> None:
-        super().__init__(f"Atendimento {atendimento_id} está cancelado e não pode ser editado")
+        super().__init__(f"Atendimento {atendimento_id} já está cancelado")
 
 
 def calcular_valor_total(
@@ -89,6 +94,8 @@ def _resolver_itens_exame(
         raise AtendimentoSemItens()
     itens = []
     for entrada in entradas:
+        if entrada.quantidade < 1:
+            raise QuantidadeInvalida(entrada.exame_id, entrada.quantidade)
         exame = exames.buscar_por_id(entrada.exame_id)
         if exame is None or not exame.ativo:
             raise ExameInvalido(entrada.exame_id)
@@ -253,9 +260,13 @@ def editar_atendimento(
 def cancelar_atendimento(atendimento_id: str, repo: AtendimentoRepository) -> Atendimento:
     """Cancela um atendimento, preservando o registro para auditoria.
 
-    Cancelamento é terminal nesta spec: não há operação de reabertura.
+    Cancelamento é terminal nesta spec: não há operação de reabertura, e
+    cancelar um atendimento já cancelado é rejeitado em vez de reaplicado
+    silenciosamente.
     """
     atual = _buscar_atendimento_ou_levantar(atendimento_id, repo)
+    if atual.status == StatusAtendimento.CANCELADO:
+        raise AtendimentoCancelado(atendimento_id)
     cancelado = replace(atual, status=StatusAtendimento.CANCELADO)
     repo.salvar(cancelado)
     return cancelado
