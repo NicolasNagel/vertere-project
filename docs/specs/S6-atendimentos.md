@@ -159,7 +159,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       `cancelar_atendimento` (User Stories: 5, 7)
 - [x] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
       `atendimentos/service.py`, fazendo os testes de T6 passarem (User Stories: 5, 7)
-- [ ] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
+- [x] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
       incluindo o filtro automático por clínica quando o papel do usuário é `clinica` (User
       Stories: 4)
 - [ ] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
