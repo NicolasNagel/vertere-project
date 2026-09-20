@@ -126,7 +126,7 @@ de atendimentos e laudos existirem vinculados a um paciente estável).
 - [x] T5 — Novas ações `Acao.PACIENTE_GERENCIAR` e `Acao.PACIENTE_INATIVAR` em `auth/service.py`
       (`_PERMISSOES`: `PACIENTE_GERENCIAR` admin+atendente; `PACIENTE_INATIVAR` só admin);
       `Acao.PACIENTE_VER` já existe desde S1 e não é alterada (User Stories: 7)
-- [ ] T6 — Endpoints HTTP (`pacientes/router.py` + `schemas.py`): criar/editar (via
+- [x] T6 — Endpoints HTTP (`pacientes/router.py` + `schemas.py`): criar/editar (via
       `Depends(exigir_acao(Acao.PACIENTE_GERENCIAR))`), inativar/reativar (via
       `Depends(exigir_acao(Acao.PACIENTE_INATIVAR))`) e buscar/listar (via
       `Depends(exigir_acao(Acao.PACIENTE_VER))`), incluindo mapeamento de erros de domínio
