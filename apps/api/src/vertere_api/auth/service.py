@@ -26,6 +26,9 @@ class Acao(StrEnum):
     EXAME_VER = "exame:ver"
     REGRA_PLANTAO_GERENCIAR = "regra_plantao:gerenciar"
     REGRA_PLANTAO_VER = "regra_plantao:ver"
+    TEMPLATE_LAUDO_GERENCIAR = "template_laudo:gerenciar"
+    TEMPLATE_LAUDO_VER = "template_laudo:ver"
+    LAUDO_GERENCIAR = "laudo:gerenciar"
 
 
 # Ações cujo acesso é restrito à própria clínica quando o papel é CLINICA.
@@ -48,6 +51,9 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.EXAME_VER,
         Acao.REGRA_PLANTAO_GERENCIAR,
         Acao.REGRA_PLANTAO_VER,
+        Acao.TEMPLATE_LAUDO_GERENCIAR,
+        Acao.TEMPLATE_LAUDO_VER,
+        Acao.LAUDO_GERENCIAR,
     },
     Papel.ATENDENTE: {
         Acao.ATENDIMENTO_GERENCIAR,
@@ -66,6 +72,8 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.CLINICA_VER,
         Acao.VETERINARIO_VER,
         Acao.EXAME_VER,
+        Acao.TEMPLATE_LAUDO_VER,
+        Acao.LAUDO_GERENCIAR,
     },
     Papel.CLINICA: {
         Acao.ATENDIMENTO_VER,

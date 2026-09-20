@@ -238,7 +238,7 @@ service testável sem infraestrutura real.
       relacionada ou campo JSON, `Laudo` com `valores` como campo JSON — decisão de implementação)
       + migração Alembic, implementando `TemplateLaudoRepository`/`LaudoRepository` contra
       PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7)
-- [ ] T16 — Novas ações `Acao.TEMPLATE_LAUDO_GERENCIAR`, `Acao.TEMPLATE_LAUDO_VER`,
+- [x] T16 — Novas ações `Acao.TEMPLATE_LAUDO_GERENCIAR`, `Acao.TEMPLATE_LAUDO_VER`,
       `Acao.LAUDO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: `TEMPLATE_LAUDO_GERENCIAR` só
       admin; `TEMPLATE_LAUDO_VER` admin + tecnico; `LAUDO_GERENCIAR` admin + tecnico) (User
       Stories: todas, via checagem de acesso)
