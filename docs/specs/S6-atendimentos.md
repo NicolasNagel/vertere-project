@@ -2,7 +2,7 @@
 codigo: S6
 modulo: Atendimentos
 issue: https://github.com/NicolasNagel/vertere-project/issues/12
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -205,3 +205,10 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 ## Descobertas
 
 ## Verificação
+
+Resultado do `/fechar-spec S6` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S6-verificacao.md`. 259/259 testes passam; as 12 tasks marcadas `[x]` têm
+evidência real (1 commit por task); 7/7 user stories atendidas; sem scope creep; aderente aos
+ADRs 0001/0002. Validação funcional de ponta a ponta contra Postgres de dev real (login, registrar/
+listar/editar/cancelar atendimento via HTTP real, confirmando recálculo de valor_total e 409 ao
+editar atendimento cancelado). Sem pendências.
