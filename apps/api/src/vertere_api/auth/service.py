@@ -19,6 +19,8 @@ class Acao(StrEnum):
     CLINICA_VER = "clinica:ver"
     VETERINARIO_GERENCIAR = "veterinario:gerenciar"
     VETERINARIO_VER = "veterinario:ver"
+    PACIENTE_GERENCIAR = "paciente:gerenciar"
+    PACIENTE_INATIVAR = "paciente:inativar"
 
 
 # Ações cujo acesso é restrito à própria clínica quando o papel é CLINICA.
@@ -34,12 +36,15 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.CLINICA_VER,
         Acao.VETERINARIO_GERENCIAR,
         Acao.VETERINARIO_VER,
+        Acao.PACIENTE_GERENCIAR,
+        Acao.PACIENTE_INATIVAR,
     },
     Papel.ATENDENTE: {
         Acao.ATENDIMENTO_CRIAR,
         Acao.PACIENTE_VER,
         Acao.CLINICA_VER,
         Acao.VETERINARIO_VER,
+        Acao.PACIENTE_GERENCIAR,
     },
     Papel.TECNICO: {Acao.PACIENTE_VER, Acao.LAUDO_VER, Acao.CLINICA_VER, Acao.VETERINARIO_VER},
     Papel.CLINICA: {Acao.PACIENTE_VER, Acao.LAUDO_VER, Acao.CLINICA_VER, Acao.VETERINARIO_VER},

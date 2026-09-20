@@ -9,5 +9,6 @@
 | S1 | Auth/Usuários | [docs/specs/S1-auth-usuarios.md](specs/S1-auth-usuarios.md) | [#2](https://github.com/NicolasNagel/vertere-project/issues/2) | entregue |
 | S2 | Clínicas | [docs/specs/S2-clinicas.md](specs/S2-clinicas.md) | [#4](https://github.com/NicolasNagel/vertere-project/issues/4) | entregue |
 | S3 | Veterinários | [docs/specs/S3-veterinarios.md](specs/S3-veterinarios.md) | [#6](https://github.com/NicolasNagel/vertere-project/issues/6) | entregue |
+| S4 | Pacientes | [docs/specs/S4-pacientes.md](specs/S4-pacientes.md) | [#8](https://github.com/NicolasNagel/vertere-project/issues/8) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
