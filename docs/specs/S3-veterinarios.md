@@ -2,7 +2,7 @@
 codigo: S3
 modulo: Veterinários
 issue: https://github.com/NicolasNagel/vertere-project/issues/6
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -140,3 +140,10 @@ laudos do veterinário).
 ## Descobertas
 
 ## Verificação
+
+Resultado do `/fechar-spec S3` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S3-verificacao.md`. 118/118 testes passam; as 6 tasks marcadas `[x]` têm
+evidência real (1 commit por task); 7/7 user stories atendidas; sem scope creep; aderente ao
+ADR-0002. Validação funcional de ponta a ponta contra Postgres de dev real (criar/editar/
+inativar/reativar/listar/buscar, CRMV duplicado → 409, clínica inexistente → 422, atendente
+bloqueado em escrita → 403 e liberado em leitura → 200, sem token → 401). Sem pendências.
