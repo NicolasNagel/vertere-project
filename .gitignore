@@ -14,3 +14,6 @@ __pycache__/
 
 # Editor/SO
 .DS_Store
+
+# Dados reais do laboratório (nunca vão pro repositório público)
+PLANILHA DE CONTROLE*.xlsx
