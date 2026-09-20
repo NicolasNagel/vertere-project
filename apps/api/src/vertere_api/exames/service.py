@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import replace
-from datetime import datetime
+from datetime import datetime, time
 from decimal import Decimal
 from typing import Protocol
 
@@ -113,3 +113,85 @@ def listar_exames(
     if apenas_ativos:
         exames = [e for e in exames if e.ativo]
     return exames
+
+
+class RegraPlantaoNaoEncontrada(Exception):
+    def __init__(self, regra_id: str) -> None:
+        super().__init__(f"Regra de plantão {regra_id} não encontrada")
+
+
+def cadastrar_regra_plantao(
+    dia_semana: int,
+    hora_inicio: time,
+    hora_fim: time,
+    valor_adicional: Decimal,
+    repo: RegraPlantaoRepository,
+) -> RegraPlantao:
+    """Cadastra uma regra de adicional de plantão."""
+    regra = RegraPlantao(
+        id=str(uuid.uuid4()),
+        dia_semana=dia_semana,
+        hora_inicio=hora_inicio,
+        hora_fim=hora_fim,
+        valor_adicional=valor_adicional,
+        ativo=True,
+    )
+    repo.salvar(regra)
+    return regra
+
+
+def _buscar_regra_ou_levantar(regra_id: str, repo: RegraPlantaoRepository) -> RegraPlantao:
+    regra = repo.buscar_por_id(regra_id)
+    if regra is None:
+        raise RegraPlantaoNaoEncontrada(regra_id)
+    return regra
+
+
+def editar_regra_plantao(
+    regra_id: str,
+    dia_semana: int,
+    hora_inicio: time,
+    hora_fim: time,
+    valor_adicional: Decimal,
+    repo: RegraPlantaoRepository,
+) -> RegraPlantao:
+    """Edita dia da semana, faixa de horário e valor adicional de uma regra existente."""
+    regra = _buscar_regra_ou_levantar(regra_id, repo)
+    atualizada = replace(
+        regra,
+        dia_semana=dia_semana,
+        hora_inicio=hora_inicio,
+        hora_fim=hora_fim,
+        valor_adicional=valor_adicional,
+    )
+    repo.salvar(atualizada)
+    return atualizada
+
+
+def inativar_regra_plantao(regra_id: str, repo: RegraPlantaoRepository) -> RegraPlantao:
+    """Inativa uma regra de plantão, preservando histórico associado a ela."""
+    return _definir_regra_ativa(regra_id, ativo=False, repo=repo)
+
+
+def reativar_regra_plantao(regra_id: str, repo: RegraPlantaoRepository) -> RegraPlantao:
+    """Reativa uma regra de plantão previamente inativada."""
+    return _definir_regra_ativa(regra_id, ativo=True, repo=repo)
+
+
+def _definir_regra_ativa(
+    regra_id: str, ativo: bool, repo: RegraPlantaoRepository
+) -> RegraPlantao:
+    regra = _buscar_regra_ou_levantar(regra_id, repo)
+    atualizada = replace(regra, ativo=ativo)
+    repo.salvar(atualizada)
+    return atualizada
+
+
+def listar_regras_plantao(
+    repo: RegraPlantaoRepository, *, apenas_ativos: bool = False
+) -> list[RegraPlantao]:
+    """Lista as regras de plantão cadastradas, opcionalmente filtrando por ativas."""
+    regras = repo.listar_todas()
+    if apenas_ativos:
+        regras = [r for r in regras if r.ativo]
+    return regras
