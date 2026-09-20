@@ -146,7 +146,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 - [x] T2 — Testes de `calcular_valor_total` (função pura, sem repositório): item único, múltiplos
       itens, quantidade > 1, com/sem adicional de plantão, desconto válido, desconto que excede o
       total (User Stories: 2, 3)
-- [ ] T3 — Implementação de `calcular_valor_total` em `atendimentos/service.py`, fazendo os testes
+- [x] T3 — Implementação de `calcular_valor_total` em `atendimentos/service.py`, fazendo os testes
       de T2 passarem (User Stories: 2, 3)
 - [ ] T4 — Testes de `registrar_atendimento`: registro válido com sugestão automática de plantão
       (reaproveitando `calcular_adicional_plantao` de S5), registro com ajuste manual do
