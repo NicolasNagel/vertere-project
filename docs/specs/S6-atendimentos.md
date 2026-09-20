@@ -152,7 +152,7 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
       (reaproveitando `calcular_adicional_plantao` de S5), registro com ajuste manual do
       adicional, rejeição por clínica/veterinário/paciente/exame inativo ou inexistente (User
       Stories: 1, 2, 6)
-- [ ] T5 — Implementação de `registrar_atendimento` em `atendimentos/service.py`, fazendo os
+- [x] T5 — Implementação de `registrar_atendimento` em `atendimentos/service.py`, fazendo os
       testes de T4 passarem (User Stories: 1, 2, 6)
 - [ ] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
       `valor_total`, permitida com `status=ativo`, rejeitada com `status=cancelado`) e de

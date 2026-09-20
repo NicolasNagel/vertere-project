@@ -5,6 +5,7 @@ import pytest
 
 from vertere_api.atendimentos.domain import Atendimento, ItemExameEntrada, StatusAtendimento
 from vertere_api.atendimentos.service import (
+    AtendimentoSemItens,
     ClinicaInvalida,
     ExameInvalido,
     PacienteInvalido,
@@ -227,3 +228,9 @@ class TestRegistrarAtendimento:
 
         with pytest.raises(ExameInvalido):
             ctx.registrar()
+
+    def test_rejeita_lista_de_itens_vazia(self) -> None:
+        ctx = _Contexto()
+
+        with pytest.raises(AtendimentoSemItens):
+            ctx.registrar(itens_exame=[])
