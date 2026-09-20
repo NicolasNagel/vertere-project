@@ -2,7 +2,7 @@
 codigo: S7
 modulo: Laudos
 issue: https://github.com/NicolasNagel/vertere-project/issues/15
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -199,37 +199,37 @@ service testável sem infraestrutura real.
 
 ## Tasks
 
-- [ ] T1 — Domínio (`TemplateLaudo`, `CampoTemplate`, `Laudo`, `ValorCampo`, `StatusLaudo`,
+- [x] T1 — Domínio (`TemplateLaudo`, `CampoTemplate`, `Laudo`, `ValorCampo`, `StatusLaudo`,
       `DadosLaudo`) e repositórios (`TemplateLaudoRepository`, `LaudoRepository`, Protocol) com
       implementações fake em memória para os testes (User Stories: base para todas)
-- [ ] T2 — Testes de `cadastrar_template_laudo`, `editar_template_laudo`,
+- [x] T2 — Testes de `cadastrar_template_laudo`, `editar_template_laudo`,
       `inativar_template_laudo`, `reativar_template_laudo`, `listar_templates_laudo` (User
       Stories: 2)
-- [ ] T3 — Implementação dessas funções em `laudos/service.py`, fazendo os testes de T2 passarem
+- [x] T3 — Implementação dessas funções em `laudos/service.py`, fazendo os testes de T2 passarem
       (User Stories: 2)
-- [ ] T4 — Testes de `montar_dados_laudo` (função pura, sem repositório): montagem completa,
+- [x] T4 — Testes de `montar_dados_laudo` (função pura, sem repositório): montagem completa,
       `valores` vazio (rascunho), campos sem unidade/faixa_referência (User Stories: 1, 3, 4)
-- [ ] T5 — Implementação de `montar_dados_laudo` em `laudos/service.py`, fazendo os testes de T4
+- [x] T5 — Implementação de `montar_dados_laudo` em `laudos/service.py`, fazendo os testes de T4
       passarem (User Stories: 1, 3, 4)
-- [ ] T6 — Testes de `criar_laudo`: criação válida, rejeição por atendimento inexistente/
+- [x] T6 — Testes de `criar_laudo`: criação válida, rejeição por atendimento inexistente/
       cancelado, exame fora do atendimento, template inexistente/inativo, laudo duplicado (User
       Stories: 1)
-- [ ] T7 — Implementação de `criar_laudo` em `laudos/service.py`, fazendo os testes de T6 passarem
+- [x] T7 — Implementação de `criar_laudo` em `laudos/service.py`, fazendo os testes de T6 passarem
       (User Stories: 1)
-- [ ] T8 — Testes de `salvar_rascunho`: edição permitida em rascunho, rejeitada em finalizado
+- [x] T8 — Testes de `salvar_rascunho`: edição permitida em rascunho, rejeitada em finalizado
       (User Stories: 3)
-- [ ] T9 — Implementação de `salvar_rascunho` em `laudos/service.py`, fazendo os testes de T8
+- [x] T9 — Implementação de `salvar_rascunho` em `laudos/service.py`, fazendo os testes de T8
       passarem (User Stories: 3)
-- [ ] T10 — Testes de `finalizar_laudo` e `reenviar_laudo` com `GeradorPdfLaudo`/
+- [x] T10 — Testes de `finalizar_laudo` e `reenviar_laudo` com `GeradorPdfLaudo`/
       `EnvioLaudoGateway` fakes: finalização com envio bem-sucedido, finalização com envio
       malsucedido (finaliza mesmo assim, grava erro), reenvio após falha, rejeição de finalizar
       já finalizado e de reenviar um rascunho (User Stories: 4, 5, 7)
-- [ ] T11 — Implementação de `finalizar_laudo` e `reenviar_laudo` em `laudos/service.py`, fazendo
+- [x] T11 — Implementação de `finalizar_laudo` e `reenviar_laudo` em `laudos/service.py`, fazendo
       os testes de T10 passarem (User Stories: 4, 5, 7)
-- [ ] T12 — Testes de `listar_laudos` e `ver_laudo` com filtro por atendimento/status/período,
+- [x] T12 — Testes de `listar_laudos` e `ver_laudo` com filtro por atendimento/status/período,
       incluindo o filtro automático por clínica quando o papel do usuário é `clinica` (User
       Stories: 6)
-- [ ] T13 — Implementação de `listar_laudos` e `ver_laudo` em `laudos/service.py`, fazendo os
+- [x] T13 — Implementação de `listar_laudos` e `ver_laudo` em `laudos/service.py`, fazendo os
       testes de T12 passarem (User Stories: 6)
 - [ ] T14 — Implementação real de `GeradorPdfLaudo` (`fpdf2`) e `EnvioLaudoGateway` (SMTP via
       `smtplib`), com teste de fumaça do gerador de PDF e novos campos de configuração SMTP em
