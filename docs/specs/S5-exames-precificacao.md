@@ -138,7 +138,7 @@ reimplementar a decisão em nenhum outro lugar.
 - [x] T1 — Domínio (`Exame`, `RegraPlantao`) e repositórios (`ExameRepository`,
       `RegraPlantaoRepository`, Protocol) com implementações fake em memória para os testes
       (User Stories: base para todas)
-- [ ] T2 — Testes de `calcular_adicional_plantao` (função pura, sem repositório): janela simples,
+- [x] T2 — Testes de `calcular_adicional_plantao` (função pura, sem repositório): janela simples,
       fora da janela, janela cruzando meia-noite, regra inativa ignorada, nenhuma regra aplicável,
       regras sobrepostas (User Stories: 6, 7, 8)
 - [ ] T3 — Implementação de `calcular_adicional_plantao` em `exames/service.py`, fazendo os testes
