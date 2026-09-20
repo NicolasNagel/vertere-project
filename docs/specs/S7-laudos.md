@@ -234,7 +234,7 @@ service testável sem infraestrutura real.
 - [x] T14 — Implementação real de `GeradorPdfLaudo` (`fpdf2`) e `EnvioLaudoGateway` (SMTP via
       `smtplib`), com teste de fumaça do gerador de PDF e novos campos de configuração SMTP em
       `Settings` (User Stories: 4, 5, 7)
-- [ ] T15 — Persistência real: modelos SQLAlchemy (`TemplateLaudo` com `campos` como tabela
+- [x] T15 — Persistência real: modelos SQLAlchemy (`TemplateLaudo` com `campos` como tabela
       relacionada ou campo JSON, `Laudo` com `valores` como campo JSON — decisão de implementação)
       + migração Alembic, implementando `TemplateLaudoRepository`/`LaudoRepository` contra
       PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7)
