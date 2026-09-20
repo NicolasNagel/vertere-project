@@ -154,7 +154,7 @@ reimplementar a decisão em nenhum outro lugar.
 - [x] T8 — Persistência real: modelos SQLAlchemy (`Exame`, `RegraPlantao`, `Numeric` para valores
       monetários) + migração Alembic, implementando `ExameRepository`/`RegraPlantaoRepository`
       contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7)
-- [ ] T9 — Novas ações `Acao.EXAME_GERENCIAR`, `Acao.EXAME_VER`, `Acao.REGRA_PLANTAO_GERENCIAR`,
+- [x] T9 — Novas ações `Acao.EXAME_GERENCIAR`, `Acao.EXAME_VER`, `Acao.REGRA_PLANTAO_GERENCIAR`,
       `Acao.REGRA_PLANTAO_VER` em `auth/service.py` (`_PERMISSOES`: `EXAME_GERENCIAR` e
       `REGRA_PLANTAO_GERENCIAR` só admin; `EXAME_VER` todos os 4 papéis; `REGRA_PLANTAO_VER`
       admin + atendente) (User Stories: 9)

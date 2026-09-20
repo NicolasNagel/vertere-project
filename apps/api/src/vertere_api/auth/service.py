@@ -21,6 +21,10 @@ class Acao(StrEnum):
     VETERINARIO_VER = "veterinario:ver"
     PACIENTE_GERENCIAR = "paciente:gerenciar"
     PACIENTE_INATIVAR = "paciente:inativar"
+    EXAME_GERENCIAR = "exame:gerenciar"
+    EXAME_VER = "exame:ver"
+    REGRA_PLANTAO_GERENCIAR = "regra_plantao:gerenciar"
+    REGRA_PLANTAO_VER = "regra_plantao:ver"
 
 
 # Ações cujo acesso é restrito à própria clínica quando o papel é CLINICA.
@@ -38,6 +42,10 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.VETERINARIO_VER,
         Acao.PACIENTE_GERENCIAR,
         Acao.PACIENTE_INATIVAR,
+        Acao.EXAME_GERENCIAR,
+        Acao.EXAME_VER,
+        Acao.REGRA_PLANTAO_GERENCIAR,
+        Acao.REGRA_PLANTAO_VER,
     },
     Papel.ATENDENTE: {
         Acao.ATENDIMENTO_CRIAR,
@@ -45,9 +53,23 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.CLINICA_VER,
         Acao.VETERINARIO_VER,
         Acao.PACIENTE_GERENCIAR,
+        Acao.EXAME_VER,
+        Acao.REGRA_PLANTAO_VER,
     },
-    Papel.TECNICO: {Acao.PACIENTE_VER, Acao.LAUDO_VER, Acao.CLINICA_VER, Acao.VETERINARIO_VER},
-    Papel.CLINICA: {Acao.PACIENTE_VER, Acao.LAUDO_VER, Acao.CLINICA_VER, Acao.VETERINARIO_VER},
+    Papel.TECNICO: {
+        Acao.PACIENTE_VER,
+        Acao.LAUDO_VER,
+        Acao.CLINICA_VER,
+        Acao.VETERINARIO_VER,
+        Acao.EXAME_VER,
+    },
+    Papel.CLINICA: {
+        Acao.PACIENTE_VER,
+        Acao.LAUDO_VER,
+        Acao.CLINICA_VER,
+        Acao.VETERINARIO_VER,
+        Acao.EXAME_VER,
+    },
 }
 
 
