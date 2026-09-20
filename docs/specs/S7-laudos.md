@@ -231,7 +231,7 @@ service testável sem infraestrutura real.
       Stories: 6)
 - [x] T13 — Implementação de `listar_laudos` e `ver_laudo` em `laudos/service.py`, fazendo os
       testes de T12 passarem (User Stories: 6)
-- [ ] T14 — Implementação real de `GeradorPdfLaudo` (`fpdf2`) e `EnvioLaudoGateway` (SMTP via
+- [x] T14 — Implementação real de `GeradorPdfLaudo` (`fpdf2`) e `EnvioLaudoGateway` (SMTP via
       `smtplib`), com teste de fumaça do gerador de PDF e novos campos de configuração SMTP em
       `Settings` (User Stories: 4, 5, 7)
 - [ ] T15 — Persistência real: modelos SQLAlchemy (`TemplateLaudo` com `campos` como tabela

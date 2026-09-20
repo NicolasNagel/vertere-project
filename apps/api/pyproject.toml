@@ -13,6 +13,7 @@ dependencies = [
     "bcrypt>=4.2",
     "pyjwt>=2.9",
     "email-validator>=2.2",
+    "fpdf2>=2.8.8",
 ]
 
 [dependency-groups]
