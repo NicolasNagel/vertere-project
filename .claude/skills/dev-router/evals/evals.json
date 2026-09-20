@@ -1,0 +1,23 @@
+{
+  "skill_name": "dev-router",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Escrevi um teste novo pra authorize() no módulo auth: papel ATENDENTE, ação ATENDIMENTO_CRIAR, passando clinica_usuario='clinica-a' só por garantia. O teste falhou dizendo que retornou False, mas eu esperava True já que atendente pode criar atendimento segundo a spec S1. Não entendo por quê. Pode investigar? (arquivo: apps/api/src/vertere_api/auth/service.py)",
+      "expected_output": "Antes de sair editando o código, o agente deveria invocar a skill dev-router e, por meio dela, a skill diagnosing-bugs para seguir um loop de diagnóstico estruturado (reproduzir, isolar causa, só então corrigir) em vez de já sair alterando authorize() por tentativa e erro.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Preciso começar a montar a tela de login do Vertere Lab em apps/web — ainda não existe nada de frontend no projeto, só o backend Python em apps/api. Quero a página de login em React seguindo a stack decidida (React+Vite, ver ADR-0002). Pode começar a estruturar isso?",
+      "expected_output": "O agente deveria, via dev-router, invocar frontend-design (e possivelmente ui-ux-pro-max) para orientar decisões de direção estética/UX antes de sair escrevendo componentes React genéricos sem nenhuma direção de design.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Bora começar a integrar o LangChain pra montar o assistente de dúvidas do laboratório que o PRD menciona pra fase 2 — a ideia inicial é o cliente perguntar sobre o status do exame dele e o assistente responder consultando o banco. Pode começar a estruturar esse agente?",
+      "expected_output": "O agente deveria, via dev-router, invocar ecosystem-primer antes de qualquer código de LangChain/LangGraph, para decidir a abordagem certa (LangChain puro vs LangGraph vs Deep Agents) em vez de já sair escolhendo um padrão de agente por conta própria.",
+      "files": []
+    }
+  ]
+}
