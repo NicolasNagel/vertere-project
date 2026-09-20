@@ -1,54 +1,45 @@
 ---
-description: Cria um commit organizado pela spec em desenvolvimento (S1/S2/...), com prefixo conventional commit e corpo detalhado do que mudou.
-argument-hint: [S<N>] [mensagem opcional]
+description: Cria um commit no padrão Conventional Commits do projeto (tipo(escopo): mensagem), escopo obrigatório, corpo detalhado do que mudou.
+argument-hint: [escopo] [mensagem opcional]
 ---
 
-Você vai criar um commit git seguindo o padrão deste projeto: toda mudança é rastreável à spec (S1, S2, ...) que a motivou, com um prefixo de tipo e um corpo que explica o desenvolvimento em detalhe suficiente para o usuário acompanhar o que foi feito sem reler o diff inteiro.
+Você vai criar um commit git seguindo o padrão deste projeto (ver `CLAUDE.md` → Convenções): `tipo(escopo): mensagem`, mensagem em português (código/identificadores continuam em português, ver ADR de convenções), corpo explicando o porquê de cada mudança.
 
-Argumentos recebidos (`$ARGUMENTS`): opcionalmente o código da spec (ex: `S1`) e/ou uma descrição do que fazer. Se vazio, infira tudo a partir do estado do repositório e da conversa.
+Argumentos recebidos (`$ARGUMENTS`): opcionalmente o escopo (ex: `s1`, `adr`, `harness`) e/ou uma descrição do que fazer. Se vazio, infira tudo a partir do estado do repositório e da conversa.
 
 ## Processo
 
-1. **Ver o que mudou.** Rode `git status` e `git diff` (staged e unstaged) para entender o que será commitado. Nunca rode `git add -A`/`git add .` — liste os arquivos relevantes explicitamente.
+1. **Ver o que mudou.** Rode `git status` e `git diff` (staged e unstaged). Nunca rode `git add -A`/`git add .` — liste os arquivos relevantes explicitamente. Cuidado ao adicionar diretórios inteiros: `git add <dir>` também staga deleções dentro dele — prefira listar arquivo por arquivo quando o diretório tiver mudanças mistas.
 
-2. **Identificar a spec.** Leia `docs/specs.md` (tabela `S<N> → módulo → issue`).
-   - Se `$ARGUMENTS` já indica a spec (ex: `S1`), use-a.
-   - Senão, infira pelos arquivos alterados (ex: mudanças em `apps/api/src/vertere_api/auth/` → S1) e pelo que foi discutido na conversa até aqui.
-   - Se a mudança não corresponde a nenhuma spec listada (ex: tooling, setup de projeto, algo cross-cutting), use `S0` para "sem spec específica" — não invente um novo código de spec sem confirmar com o usuário.
-   - Se a mudança pertence a uma spec nova que ainda não está em `docs/specs.md`, pergunte ao usuário o código e a issue antes de prosseguir, e adicione a linha na tabela como parte deste commit.
+2. **Escolha o tipo.** Um de: `feat` (funcionalidade/comportamento novo), `fix` (correção de bug), `test` (só testes), `docs` (documentação: PRD, specs, ADRs, READMEs), `spec` (criação/edição de arquivo de spec em `docs/specs/`), `adr` (novo ADR ou mudança de decisão registrada), `chore` (tooling, dependências, configuração), `refactor` (mudança interna sem alterar comportamento externo), `ci` (pipeline/hooks). Se a mudança misturar tipos que não cabem num commit coerente, sugira dividir em vez de forçar um tipo genérico.
 
-3. **Escolher o tipo (conventional commit).** Baseado na natureza da mudança predominante:
-   - `feat`: nova funcionalidade ou comportamento observável novo
-   - `fix`: correção de bug/comportamento incorreto
-   - `docs`: documentação (PRD, specs, ADRs, comentários, READMEs)
-   - `test`: só testes, sem mudança de comportamento
-   - `refactor`: mudança interna sem alterar comportamento externo
-   - `chore`: tooling, dependências, configuração
-   Se a mudança misturar tipos de forma que não cabe em um só commit coerente, sugira ao usuário dividir em commits separados em vez de forçar um prefixo genérico.
+3. **Escolha o escopo (obrigatório).**
+   - Mudança que implementa/testa uma spec: o código da spec em minúsculo (`s1`, `s2`, ...) — consulte `docs/specs.md` para confirmar qual.
+   - Mudança sem spec associada (tooling, ADR, setup): um nome de área curto (`adr`, `harness`, `commands`, `agents`, `deploy`).
+   - Nunca invente um escopo novo sem que ele apareça de forma óbvia no diff — se não tiver certeza, pergunte.
 
-4. **Montar a mensagem.**
-   - **Título**: `[S<N>] <tipo>: <resumo curto, no imperativo, em português>` — ex: `[S1] feat: implementa authenticate/authorize com testes`.
-   - **Corpo**: lista com o que foi feito e por quê (não apenas o quê — o diff já mostra o quê). Cada item deve ajudar o usuário a entender a decisão, não só a mudança de código. Referencie a issue da spec (`Refs #<issue>`) quando houver uma.
-   - Termine com as linhas de atribuição indicadas pelo system-reminder da conversa (Co-Authored-By / Claude-Session), exatamente como especificado ali.
+4. **Monte a mensagem.**
+   - **Título**: `tipo(escopo): resumo curto no imperativo` — ex: `feat(s1): implementa authenticate/authorize com testes`.
+   - **Corpo**: lista do que foi feito e por quê — a decisão, não só o diff. Referencie a spec (`Spec: docs/specs/S<N>-*.md`) e a issue-ponteiro (`Refs #<issue>`) quando houver.
+   - Termine com as linhas de atribuição indicadas pelo system-reminder da conversa (Co-Authored-By / Claude-Session).
 
-5. **Confirmar escopo.** Mostre ao usuário o título e o corpo propostos, e quais arquivos serão staged, antes de commitar — a menos que o usuário já tenha aprovado explicitamente um commit automático nesta conversa.
+5. **Confirme escopo e arquivos staged** com o usuário antes de commitar, a menos que ele já tenha aprovado explicitamente um commit automático nesta conversa.
 
-6. **Commitar.** Stage apenas os arquivos relevantes, crie o commit com a mensagem via heredoc, e rode `git status` depois para confirmar.
+6. **Commite.** Stage só os arquivos relevantes, crie o commit via heredoc, rode `git status` depois para confirmar.
 
-## Exemplo de mensagem final
+## Exemplo
 
 ```
-[S1] feat: implementa authenticate/authorize com testes
+feat(s1): implementa authenticate/authorize com testes
 
 - Adiciona domínio Papel/Usuario e a seam authenticate()/authorize() em
-  apps/api/src/vertere_api/auth, conforme a spec (issue #2).
+  apps/api/src/vertere_api/auth, conforme a spec.
 - authorize() aplica escopo de clínica: papel CLINICA só acessa recursos
-  da própria clínica (clinica_usuario == clinica_recurso).
-- Hash de senha com bcrypt direto (não passlib — incompatível com bcrypt
-  5.x, ver ADR-0002).
+  da própria clínica.
 - 11 testes cobrindo login válido/inválido, conta inativa e autorização
   por papel, sem HTTP/DB (repositório fake em memória).
 
+Spec: docs/specs/S1-auth-usuarios.md
 Refs #2
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
