@@ -16,7 +16,7 @@ Argumento (`$ARGUMENTS`): o código da spec, ex: `S1`. Se vazio, pergunte qual s
 3. **Aguarde o relatório.** O subagente escreve `docs/specs/relatorios/S<N>-verificacao.md` e retorna o veredito.
 
 4. **Leia o relatório gerado** e aja sobre o veredito:
-   - **✅ APROVADA**: atualize `docs/specs.md` e o frontmatter do arquivo da spec para `status: entregue`; comente na issue-ponteiro com o link do relatório (`gh issue comment`) e feche a issue (`gh issue close`); registre com `/commit` (tipo `docs`, escopo `s<n>`).
+   - **✅ APROVADA**: atualize `docs/specs.md` e o frontmatter do arquivo da spec para `status: entregue`; comente na issue-ponteiro com o link do relatório (`gh issue comment`). **Não feche a issue aqui** — pelo fluxo do projeto (`CLAUDE.md`), ela fecha via squash-merge do PR (`Closes #N` no corpo do PR), não manualmente antes do PR existir. Registre com `/commit` (tipo `docs`, escopo `s<n>`), depois rode `/code-review` na branch antes de abrir o PR.
    - **❌ BLOQUEADA**: não altere `docs/specs.md` além de manter `em-desenvolvimento`; não feche a issue. Copie a lista de pendências do relatório para a seção "Verificação" do arquivo da spec. Diga explicitamente ao usuário: **não seguir para a próxima spec, nem abrir PR, até resolver isto** — e volte para `/spec-start S<N>` na mesma branch para corrigir.
 
 5. **Nunca contorne o veredito.** Se você (a sessão que chamou este comando) discordar do relatório, isso é uma conversa com o usuário, não uma reescrita do relatório ou uma segunda tentativa de convencer o verificador com mais contexto.
