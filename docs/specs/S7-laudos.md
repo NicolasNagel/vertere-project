@@ -105,7 +105,9 @@ service testável sem infraestrutura real.
   existe e está `status=ativo` (atendimento cancelado não gera laudo — erro de domínio), que
   `exame_id` está entre os `itens_exame` do atendimento (senão erro de domínio), que existe um
   `TemplateLaudo` ativo para a `categoria` do exame (senão erro de domínio,
-  `TemplateLaudoNaoEncontrado` — sem template não há como preencher o laudo), e que não existe já
+  `TemplateLaudoIndisponivel` — sem template ativo não há como preencher o laudo; distinto de
+  `TemplateLaudoNaoEncontrado`, usado no CRUD administrativo de template quando o `id` buscado não
+  existe), e que não existe já
   um `Laudo` para o mesmo par `(atendimento_id, exame_id)` (senão erro de domínio,
   `LaudoJaExiste`). Cria o `Laudo` com `status=rascunho`, `template_id` snapshot do template
   encontrado, e `valores` vazios (a lista de campos do template define o que pode ser preenchido;

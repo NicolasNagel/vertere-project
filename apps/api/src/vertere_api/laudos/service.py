@@ -6,6 +6,7 @@ from typing import Protocol
 from vertere_api.atendimentos.domain import Atendimento, StatusAtendimento
 from vertere_api.atendimentos.service import AtendimentoRepository
 from vertere_api.auth.domain import Papel, Usuario
+from vertere_api.auth.service import Acao, authorize
 from vertere_api.clinicas.service import ClinicaRepository
 from vertere_api.exames.service import ExameRepository
 from vertere_api.laudos.domain import (
@@ -383,8 +384,6 @@ def ver_laudo(
     de verdade, o primeiro consumidor real do escopo de `_ACOES_COM_ESCOPO_DE_CLINICA`
     desde que existe em S1.
     """
-    from vertere_api.auth.service import Acao, authorize
-
     laudo = _buscar_laudo_ou_levantar(laudo_id, repo)
     atendimento = atendimentos.buscar_por_id(laudo.atendimento_id)
     clinica_recurso = atendimento.clinica_id if atendimento else None
