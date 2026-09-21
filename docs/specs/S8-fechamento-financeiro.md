@@ -150,9 +150,10 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
   `AtendimentoRepository` e `ClinicaRepository`, cobrindo: geração válida, clínica inexistente/
   inativa, período já fechado, confirmação de pagamento válida, confirmação de fechamento já pago
   rejeitada.
-- O bloqueio de edição em `atendimentos` é testado em `test_atendimentos_service.py` com um fake
-  `PeriodoFechadoChecker` (objeto simples que responde `esta_fechado` fixo) — sem depender do
-  módulo `financeiro` de verdade nesses testes, provando que o `Protocol` é a seam certa.
+- O bloqueio de edição em `atendimentos` é testado em `test_atendimentos_editar_cancelar.py` (já
+  existe desde S6) com um fake `PeriodoFechadoChecker` (objeto simples que responde `esta_fechado`
+  fixo) — sem depender do módulo `financeiro` de verdade nesses testes, provando que o `Protocol` é
+  a seam certa.
 - Autorização é testada reutilizando `authorize()` de S1 diretamente, mesmo padrão de S5/S6/S7: um
   teste de integração leve na camada de router confirma que `Acao.FECHAMENTO_GERENCIAR` e
   `Acao.FINANCEIRO_VER` são os pontos de decisão usados, incluindo o caso de `admin` autorizado e
@@ -193,9 +194,10 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       inclusão de status de pagamento (User Stories: 4)
 - [x] T13 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
       testes de T12 passarem (User Stories: 4)
-- [ ] T14 — Testes do bloqueio de edição em `atendimentos/service.py`: `editar_atendimento` e
-      `cancelar_atendimento` rejeitam com `PeriodoFechado` quando um `PeriodoFechadoChecker` fake
-      retorna `True`, permitem quando retorna `False` ou quando não é passado (User Stories: 3)
+- [x] T14 — Testes do bloqueio de edição em `atendimentos/service.py`
+      (`test_atendimentos_editar_cancelar.py`): `editar_atendimento` e `cancelar_atendimento`
+      rejeitam com `PeriodoFechado` quando um `PeriodoFechadoChecker` fake retorna `True`, permitem
+      quando retorna `False` ou quando não é passado (User Stories: 3)
 - [ ] T15 — Implementação do `Protocol PeriodoFechadoChecker` e do parâmetro `periodo_fechado` em
       `editar_atendimento`/`cancelar_atendimento` (`atendimentos/service.py`), fazendo os testes de
       T14 passarem (User Stories: 3)
