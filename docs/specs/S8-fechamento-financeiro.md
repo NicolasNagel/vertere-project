@@ -171,7 +171,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T4 — Testes de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` (funções
       puras sobre `list[Atendimento]`): sem atendimentos, com atendimento cancelado excluído,
       múltiplas clínicas no resumo (User Stories: 1, 5)
-- [ ] T5 — Implementação de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` em
+- [x] T5 — Implementação de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` em
       `financeiro/service.py`, fazendo os testes de T4 passarem (User Stories: 1, 5)
 - [ ] T6 — Testes de `calcular_vencimento` e `status_exibicao` (funções puras sobre `Clinica` +
       `Fechamento` + `date`): regra padrão (dia 10), `prazo_pagamento_dias` customizado, pago
