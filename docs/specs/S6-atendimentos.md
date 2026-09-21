@@ -2,7 +2,7 @@
 codigo: S6
 modulo: Atendimentos
 issue: https://github.com/NicolasNagel/vertere-project/issues/12
-status: pronta
+status: entregue
 ---
 
 ## Problem Statement
@@ -141,37 +141,37 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 
 ## Tasks
 
-- [ ] T1 — Domínio (`Atendimento`, `ItemExame`, `StatusAtendimento`) e `AtendimentoRepository`
+- [x] T1 — Domínio (`Atendimento`, `ItemExame`, `StatusAtendimento`) e `AtendimentoRepository`
       (Protocol) com implementação fake em memória para os testes (User Stories: base para todas)
-- [ ] T2 — Testes de `calcular_valor_total` (função pura, sem repositório): item único, múltiplos
+- [x] T2 — Testes de `calcular_valor_total` (função pura, sem repositório): item único, múltiplos
       itens, quantidade > 1, com/sem adicional de plantão, desconto válido, desconto que excede o
       total (User Stories: 2, 3)
-- [ ] T3 — Implementação de `calcular_valor_total` em `atendimentos/service.py`, fazendo os testes
+- [x] T3 — Implementação de `calcular_valor_total` em `atendimentos/service.py`, fazendo os testes
       de T2 passarem (User Stories: 2, 3)
-- [ ] T4 — Testes de `registrar_atendimento`: registro válido com sugestão automática de plantão
+- [x] T4 — Testes de `registrar_atendimento`: registro válido com sugestão automática de plantão
       (reaproveitando `calcular_adicional_plantao` de S5), registro com ajuste manual do
       adicional, rejeição por clínica/veterinário/paciente/exame inativo ou inexistente (User
       Stories: 1, 2, 6)
-- [ ] T5 — Implementação de `registrar_atendimento` em `atendimentos/service.py`, fazendo os
+- [x] T5 — Implementação de `registrar_atendimento` em `atendimentos/service.py`, fazendo os
       testes de T4 passarem (User Stories: 1, 2, 6)
-- [ ] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
+- [x] T6 — Testes de `editar_atendimento` (atualização de itens/desconto/plantão recalculando
       `valor_total`, permitida com `status=ativo`, rejeitada com `status=cancelado`) e de
       `cancelar_atendimento` (User Stories: 5, 7)
-- [ ] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
+- [x] T7 — Implementação de `editar_atendimento` e `cancelar_atendimento` em
       `atendimentos/service.py`, fazendo os testes de T6 passarem (User Stories: 5, 7)
-- [ ] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
+- [x] T8 — Testes de `listar_atendimentos` com filtro por período, clínica, veterinário e status,
       incluindo o filtro automático por clínica quando o papel do usuário é `clinica` (User
       Stories: 4)
-- [ ] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
+- [x] T9 — Implementação de `listar_atendimentos` em `atendimentos/service.py`, fazendo os testes
       de T8 passarem (User Stories: 4)
-- [ ] T10 — Persistência real: modelo SQLAlchemy (`Atendimento` com `itens_exame` como tabela
+- [x] T10 — Persistência real: modelo SQLAlchemy (`Atendimento` com `itens_exame` como tabela
       relacionada ou campo JSON — decisão de implementação, `Numeric` para valores monetários) +
       migração Alembic, implementando `AtendimentoRepository` contra PostgreSQL (User Stories: 1,
       2, 3, 4, 5, 6, 7)
-- [ ] T11 — Novas ações `Acao.ATENDIMENTO_GERENCIAR`, `Acao.ATENDIMENTO_VER` em `auth/service.py`
+- [x] T11 — Novas ações `Acao.ATENDIMENTO_GERENCIAR`, `Acao.ATENDIMENTO_VER` em `auth/service.py`
       (`_PERMISSOES`: `ATENDIMENTO_GERENCIAR` para `admin` e `atendente`; `ATENDIMENTO_VER` para
       `admin`, `atendente`, `tecnico` e `clinica`) (User Stories: todas, via checagem de acesso)
-- [ ] T12 — Endpoints HTTP (`atendimentos/router.py` + `schemas.py`): registrar, editar, cancelar
+- [x] T12 — Endpoints HTTP (`atendimentos/router.py` + `schemas.py`): registrar, editar, cancelar
       e listar/filtrar atendimento (via `Depends(exigir_acao(...))` nas ações correspondentes,
       incluindo o filtro automático por clínica para o papel `clinica`), com mapeamento de erros
       de domínio (recurso inexistente → 404, referência inativa/desconto inválido → 400/422)
@@ -204,4 +204,35 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
 
 ## Descobertas
 
+- **Mecanismo de escopo de clínica em `authorize()` é código morto desde S1.** O `/code-review`
+  desta spec (Standards) apontou que `listar_atendimentos` filtra por
+  `usuario.papel == Papel.CLINICA` diretamente no service em vez de usar
+  `_ACOES_COM_ESCOPO_DE_CLINICA`/`clinica_usuario`/`clinica_recurso` de `authorize()` (S1),
+  aparentemente violando a regra de ouro do `CLAUDE.md` ("`authorize()` é o único ponto de decisão
+  de permissão por papel"). Investigação: não é possível corrigir isso usando `authorize()` como
+  está, porque `exigir_acao()` (`auth/deps.py`) chama `authorize(papel, acao)` sem
+  `clinica_recurso` no gate do endpoint — um endpoint de listagem não tem um recurso único no
+  momento do gate. Se `Acao.ATENDIMENTO_VER` entrar em `_ACOES_COM_ESCOPO_DE_CLINICA`, o próprio
+  gate bloqueia usuários `clinica` com 403 antes de chegar ao `listar_atendimentos`, quebrando o
+  acesso que a spec pede. Testei também: `Acao.PACIENTE_VER` já está em
+  `_ACOES_COM_ESCOPO_DE_CLINICA` desde S1, mas `pacientes/router.py` usa
+  `exigir_acao(Acao.PACIENTE_VER)` como gate simples, sem nunca passar `clinica_recurso` — ou seja,
+  um usuário `clinica` tentando listar pacientes hoje também tomaria 403. **Essa lacuna já existe
+  desde S1/S4, não foi introduzida por esta spec** — `authorize()` cobre bem checagem de acesso a
+  um recurso único, mas nunca foi estendido para filtro de lista.
+  - **Decisão do usuário**: não corrigir agora (fora do escopo de S6, mexe em código de S1 já
+    entregue/verificado). Documentar como pendência e tratar depois pelo fluxo padrão de "ajuste
+    apontado por um dev numa spec já entregue" (`CLAUDE.md`): localizar via `git log` os commits
+    de S1 que introduziram `_ACOES_COM_ESCOPO_DE_CLINICA`/`exigir_acao`, reabrir a branch
+    `spec/s1-auth-usuarios`, corrigir lá, rodar a suíte completa e mergear — não implementar como
+    parte de S6. Issue de rastreamento:
+    [#13](https://github.com/NicolasNagel/vertere-project/issues/13).
+
 ## Verificação
+
+Resultado do `/fechar-spec S6` (2026-09-20): ✅ APROVADA. Relatório completo em
+`docs/specs/relatorios/S6-verificacao.md`. 259/259 testes passam; as 12 tasks marcadas `[x]` têm
+evidência real (1 commit por task); 7/7 user stories atendidas; sem scope creep; aderente aos
+ADRs 0001/0002. Validação funcional de ponta a ponta contra Postgres de dev real (login, registrar/
+listar/editar/cancelar atendimento via HTTP real, confirmando recálculo de valor_total e 409 ao
+editar atendimento cancelado). Sem pendências.
