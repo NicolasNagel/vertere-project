@@ -176,7 +176,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T6 — Testes de `calcular_vencimento` e `status_exibicao` (funções puras sobre `Clinica` +
       `Fechamento` + `date`): regra padrão (dia 10), `prazo_pagamento_dias` customizado, pago
       sempre `PAGO`, pendente antes/depois do vencimento (User Stories: 6, 7, 8)
-- [ ] T7 — Implementação de `calcular_vencimento` e `status_exibicao` em `financeiro/service.py`,
+- [x] T7 — Implementação de `calcular_vencimento` e `status_exibicao` em `financeiro/service.py`,
       fazendo os testes de T6 passarem (User Stories: 6, 7, 8)
 - [ ] T8 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
       período já fechado rejeitado, fechamento sem atendimentos ativos gera valor 0 (User Stories:

@@ -1,8 +1,12 @@
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Protocol
 
 from vertere_api.atendimentos.domain import Atendimento, StatusAtendimento
-from vertere_api.financeiro.domain import Fechamento
+from vertere_api.clinicas.domain import Clinica
+from vertere_api.financeiro.domain import Fechamento, StatusFechamento
+
+_DIA_VENCIMENTO_PADRAO = 10
 
 
 class FechamentoRepository(Protocol):
@@ -42,3 +46,28 @@ def calcular_resumo_financeiro(
         (clinica_id, calcular_faturamento_por_clinica(atendimentos, clinica_id, ano, mes))
         for clinica_id in clinicas_ids
     ]
+
+
+def calcular_vencimento(clinica: Clinica, data_fechamento: datetime) -> date:
+    """Data de vencimento do pagamento de um fechamento.
+
+    Se `clinica.prazo_pagamento_dias` estiver definido, vence `N` dias após
+    `data_fechamento`. Caso contrário, usa a regra padrão: dia 10 do mês
+    seguinte ao mês de `data_fechamento`.
+    """
+    if clinica.prazo_pagamento_dias is not None:
+        return (data_fechamento + timedelta(days=clinica.prazo_pagamento_dias)).date()
+
+    ano, mes = data_fechamento.year, data_fechamento.month + 1
+    if mes > 12:
+        ano, mes = ano + 1, 1
+    return date(ano, mes, _DIA_VENCIMENTO_PADRAO)
+
+
+def status_exibicao(fechamento: Fechamento, clinica: Clinica, hoje: date) -> StatusFechamento:
+    """Status exibido de um fechamento, calculado sob demanda (nunca gravado)."""
+    if fechamento.pago:
+        return StatusFechamento.PAGO
+    if hoje > calcular_vencimento(clinica, fechamento.data_fechamento):
+        return StatusFechamento.INADIMPLENTE
+    return StatusFechamento.PENDENTE
