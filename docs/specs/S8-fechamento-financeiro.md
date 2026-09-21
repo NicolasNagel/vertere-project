@@ -198,7 +198,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       (`test_atendimentos_editar_cancelar.py`): `editar_atendimento` e `cancelar_atendimento`
       rejeitam com `PeriodoFechado` quando um `PeriodoFechadoChecker` fake retorna `True`, permitem
       quando retorna `False` ou quando não é passado (User Stories: 3)
-- [ ] T15 — Implementação do `Protocol PeriodoFechadoChecker` e do parâmetro `periodo_fechado` em
+- [x] T15 — Implementação do `Protocol PeriodoFechadoChecker` e do parâmetro `periodo_fechado` em
       `editar_atendimento`/`cancelar_atendimento` (`atendimentos/service.py`), fazendo os testes de
       T14 passarem (User Stories: 3)
 - [ ] T16 — Persistência real: migração Alembic (coluna `prazo_pagamento_dias` em `clinicas`,
