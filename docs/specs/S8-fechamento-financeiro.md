@@ -178,7 +178,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       sempre `PAGO`, pendente antes/depois do vencimento (User Stories: 6, 7, 8)
 - [x] T7 — Implementação de `calcular_vencimento` e `status_exibicao` em `financeiro/service.py`,
       fazendo os testes de T6 passarem (User Stories: 6, 7, 8)
-- [ ] T8 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
+- [x] T8 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
       período já fechado rejeitado, fechamento sem atendimentos ativos gera valor 0 (User Stories:
       2)
 - [ ] T9 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T8
