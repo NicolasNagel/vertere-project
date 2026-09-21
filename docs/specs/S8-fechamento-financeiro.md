@@ -166,7 +166,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T2 — Testes de `definir_prazo_pagamento` (`clinicas/service.py`, ação isolada, mesmo padrão
       de `inativar_clinica`/`reativar_clinica`): define valor customizado, volta para `None`
       (regra padrão), clínica inexistente rejeitada (User Stories: 8)
-- [ ] T3 — Implementação de `definir_prazo_pagamento` em `clinicas/service.py`, fazendo os testes
+- [x] T3 — Implementação de `definir_prazo_pagamento` em `clinicas/service.py`, fazendo os testes
       de T2 passarem (User Stories: 8)
 - [ ] T4 — Testes de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` (funções
       puras sobre `list[Atendimento]`): sem atendimentos, com atendimento cancelado excluído,

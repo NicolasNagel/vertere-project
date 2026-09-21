@@ -93,6 +93,16 @@ def _definir_estado_ativo(clinica_id: str, ativo: bool, repo: ClinicaRepository)
     return atualizada
 
 
+def definir_prazo_pagamento(
+    clinica_id: str, prazo_pagamento_dias: int | None, repo: ClinicaRepository
+) -> Clinica:
+    """Define o prazo de pagamento customizado da clínica. `None` volta à regra padrão."""
+    clinica = _buscar_ou_levantar(clinica_id, repo)
+    atualizada = replace(clinica, prazo_pagamento_dias=prazo_pagamento_dias)
+    repo.salvar(atualizada)
+    return atualizada
+
+
 def buscar_por_nome(
     nome: str, repo: ClinicaRepository, *, apenas_ativas: bool = False
 ) -> list[Clinica]:
