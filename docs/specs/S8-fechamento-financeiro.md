@@ -116,10 +116,12 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
   fechamento já pago é rejeitado (`FechamentoJaPago`), mesmo padrão de idempotência de
   `cancelar_atendimento` (S6). Não existe operação de "estornar"/desfazer pagamento nesta spec (ver
   "Out of Scope").
-- **`exportar_fechamento_csv(fechamento: Fechamento, clinica: Clinica) -> str`**: função pura que
-  monta um CSV (cabeçalho + uma linha) com clínica, período, valor total, quantidade de
-  atendimentos, status de pagamento e data de pagamento (se houver) — cobre US4/PRD US35. Sem
-  geração de PDF ou layout de boleto — apenas dado tabular exportável.
+- **`exportar_fechamento_csv(fechamento: Fechamento, clinica: Clinica, hoje: date) -> str`**: função
+  pura que monta um CSV (cabeçalho + uma linha) com clínica, período, valor total, quantidade de
+  atendimentos, status de pagamento (via `status_exibicao`, incluindo `inadimplente`) e data de
+  pagamento (se houver) — cobre US4/PRD US35. `hoje` é parâmetro explícito (não usa o relógio do
+  sistema) para manter a função determinística e testável. Sem geração de PDF ou layout de boleto —
+  apenas dado tabular exportável.
 - **Tipo monetário**: `valor_total` é `Decimal` (Python) / `Numeric` (SQLAlchemy), mesma convenção
   de S5/S6.
 - **Autorização**: reaproveita `authorize()` de S1, sem checagem de acesso reimplementada.
@@ -187,7 +189,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       confirmação de fechamento já pago rejeitada (User Stories: 6)
 - [x] T11 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
       T10 passarem (User Stories: 6)
-- [ ] T12 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
+- [x] T12 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
       inclusão de status de pagamento (User Stories: 4)
 - [ ] T13 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
       testes de T12 passarem (User Stories: 4)
