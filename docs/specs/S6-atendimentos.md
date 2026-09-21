@@ -227,6 +227,14 @@ atendimento, sem reimplementar a decisão de qual regra de plantão se aplica.
     `spec/s1-auth-usuarios`, corrigir lá, rodar a suíte completa e mergear — não implementar como
     parte de S6. Issue de rastreamento:
     [#13](https://github.com/NicolasNagel/vertere-project/issues/13).
+  - **Resolvido (2026-09-21)**: `exigir_acao()` (`auth/deps.py`) agora passa a própria clínica do
+    usuário autenticado como `clinica_recurso` ao chamar `authorize()`, liberando o gate para
+    qualquer usuário `clinica` com a ação concedida (seguro para listagem, desde que o service
+    filtre pela clínica do usuário — não seguro para um endpoint de recurso único, que deve chamar
+    `authorize()` diretamente após carregar o recurso, ver `laudos.service.ver_laudo`).
+    `pacientes.service.listar_pacientes`/`buscar_pacientes` passaram a receber `usuario` e aplicar
+    esse filtro, mesmo padrão já usado por `listar_atendimentos`/`listar_laudos`. Fix na branch
+    `spec/s1-auth-usuarios`, PR fecha a issue #13.
 
 ## Verificação
 

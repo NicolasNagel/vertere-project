@@ -1,5 +1,6 @@
 import pytest
 
+from vertere_api.auth.domain import Papel, Usuario
 from vertere_api.clinicas.domain import Clinica
 from vertere_api.pacientes.domain import Paciente
 from vertere_api.pacientes.service import (
@@ -12,6 +13,12 @@ from vertere_api.pacientes.service import (
     listar_pacientes,
     reativar_paciente,
 )
+
+
+def _usuario(papel: Papel = Papel.ADMIN, clinica_id: str | None = None) -> Usuario:
+    return Usuario(
+        id="usuario-1", email="u@vertere.com", senha_hash="hash", papel=papel, ativo=True, clinica_id=clinica_id
+    )
 
 
 class ClinicaRepositorioFake:
@@ -265,37 +272,46 @@ class TestBuscarPacientes:
     def test_busca_por_substring_case_insensitive(self) -> None:
         repo = self._repo()
 
-        resultado = buscar_pacientes("rex", repo)
+        resultado = buscar_pacientes("rex", repo, _usuario())
 
         assert {p.id for p in resultado} == {"pac-1", "pac-3"}
 
     def test_busca_filtra_por_clinica(self) -> None:
         repo = self._repo()
 
-        resultado = buscar_pacientes("", repo, clinica_id="clinica-1")
+        resultado = buscar_pacientes("", repo, _usuario(), clinica_id="clinica-1")
 
         assert {p.id for p in resultado} == {"pac-1", "pac-3"}
 
     def test_busca_filtra_por_proprietario(self) -> None:
         repo = self._repo()
 
-        resultado = buscar_pacientes("", repo, proprietario="joão")
+        resultado = buscar_pacientes("", repo, _usuario(), proprietario="joão")
 
         assert {p.id for p in resultado} == {"pac-2", "pac-3"}
 
     def test_busca_combina_clinica_e_proprietario(self) -> None:
         repo = self._repo()
 
-        resultado = buscar_pacientes("", repo, clinica_id="clinica-1", proprietario="joão")
+        resultado = buscar_pacientes("", repo, _usuario(), clinica_id="clinica-1", proprietario="joão")
 
         assert {p.id for p in resultado} == {"pac-3"}
 
     def test_busca_filtra_apenas_ativos(self) -> None:
         repo = self._repo()
 
-        resultado = buscar_pacientes("", repo, apenas_ativos=True)
+        resultado = buscar_pacientes("", repo, _usuario(), apenas_ativos=True)
 
         assert {p.id for p in resultado} == {"pac-1", "pac-3"}
+
+    def test_busca_com_usuario_clinica_ignora_clinica_id_informado(self) -> None:
+        repo = self._repo()
+
+        resultado = buscar_pacientes(
+            "", repo, _usuario(Papel.CLINICA, clinica_id="clinica-2"), clinica_id="clinica-1"
+        )
+
+        assert {p.id for p in resultado} == {"pac-2"}
 
 
 class TestListarPacientes:
@@ -313,7 +329,7 @@ class TestListarPacientes:
             ]
         )
 
-        assert len(listar_pacientes(repo)) == 2
+        assert len(listar_pacientes(repo, _usuario())) == 2
 
     def test_lista_filtrando_ativos_e_clinica(self) -> None:
         repo = PacienteRepositorioFake(
@@ -333,6 +349,26 @@ class TestListarPacientes:
             ]
         )
 
-        resultado = listar_pacientes(repo, clinica_id="clinica-1", apenas_ativos=True)
+        resultado = listar_pacientes(repo, _usuario(), clinica_id="clinica-1", apenas_ativos=True)
 
         assert [p.id for p in resultado] == ["pac-1"]
+
+    def test_lista_com_usuario_clinica_ignora_clinica_id_informado(self) -> None:
+        repo = PacienteRepositorioFake(
+            [
+                Paciente(
+                    id="pac-1", nome="Rex", especie="Canina", raca="Labrador", sexo="M",
+                    idade=3, proprietario="Maria Souza", clinica_id="clinica-1", ativo=True,
+                ),
+                Paciente(
+                    id="pac-2", nome="Mimi", especie="Felina", raca="Siamês", sexo="F",
+                    idade=2, proprietario="João Pedro", clinica_id="clinica-2", ativo=True,
+                ),
+            ]
+        )
+
+        resultado = listar_pacientes(
+            repo, _usuario(Papel.CLINICA, clinica_id="clinica-2"), clinica_id="clinica-1"
+        )
+
+        assert [p.id for p in resultado] == ["pac-2"]

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from vertere_api.atendimentos.repository import SQLAlchemyAtendimentoRepository
 from vertere_api.auth.deps import exigir_acao, obter_db, obter_usuario_atual
 from vertere_api.auth.domain import Usuario
-from vertere_api.auth.service import Acao, authorize
+from vertere_api.auth.service import Acao
 from vertere_api.clinicas.repository import SQLAlchemyClinicaRepository
 from vertere_api.exames.repository import SQLAlchemyExameRepository
 from vertere_api.laudos.adapters import FpdfGeradorPdfLaudo, SmtpEnvioLaudoGateway
@@ -309,18 +309,8 @@ def listar_laudos_endpoint(
     data_inicio: datetime | None = Query(default=None),
     data_fim: datetime | None = Query(default=None),
     db: Session = Depends(obter_db),
-    usuario: Usuario = Depends(obter_usuario_atual),
+    usuario: Usuario = Depends(exigir_acao(Acao.LAUDO_VER)),
 ) -> list[LaudoResponse]:
-    # `Acao.LAUDO_VER` já está em `_ACOES_COM_ESCOPO_DE_CLINICA` desde S1, então
-    # `exigir_acao` (que chama `authorize()` sem contexto de clínica) bloquearia
-    # todo usuário `clinica` aqui. Para uma listagem, o escopo correto é "a
-    # clínica só enxerga os próprios laudos" (filtrado abaixo por
-    # `listar_laudos`), não "recurso de uma clínica específica" — por isso o
-    # gate usa a própria clínica do usuário como `clinica_recurso`.
-    if not authorize(
-        usuario.papel, Acao.LAUDO_VER, clinica_usuario=usuario.clinica_id, clinica_recurso=usuario.clinica_id
-    ):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Não autorizado")
     laudos = listar_laudos(
         SQLAlchemyLaudoRepository(db),
         usuario,

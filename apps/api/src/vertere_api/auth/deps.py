@@ -54,10 +54,30 @@ def exigir_acao(acao: Acao):
 
     Ponto único de enforcement HTTP — qualquer rota protegida usa isto em vez
     de reimplementar checagem de papel.
+
+    Para ações com escopo de clínica (`_ACOES_COM_ESCOPO_DE_CLINICA` em
+    `auth/service.py`), este gate roda antes do corpo do endpoint e não
+    conhece a clínica de um recurso específico — por isso sempre libera um
+    usuário `clinica` que tenha a ação concedida (passa a própria clínica do
+    usuário como `clinica_recurso`, que sempre bate consigo mesma). Isso é
+    seguro para um endpoint de **listagem**, desde que o service
+    correspondente filtre o resultado pela clínica do usuário autenticado
+    (padrão usado em `atendimentos.service.listar_atendimentos`,
+    `pacientes.service.listar_pacientes`/`buscar_pacientes` e
+    `laudos.service.listar_laudos`). **Não é seguro** para um endpoint de
+    recurso único (GET por id): nesse caso não use `exigir_acao` como gate —
+    autentique com `obter_usuario_atual` e chame `authorize()` diretamente
+    depois de carregar o recurso, passando o `clinica_recurso` real (ver
+    `laudos.service.ver_laudo`).
     """
 
     def verificar(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
-        if not authorize(usuario.papel, acao):
+        if not authorize(
+            usuario.papel,
+            acao,
+            clinica_usuario=usuario.clinica_id,
+            clinica_recurso=usuario.clinica_id,
+        ):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Não autorizado")
         return usuario
 
