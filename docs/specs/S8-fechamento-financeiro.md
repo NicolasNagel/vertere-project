@@ -163,7 +163,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       `FechamentoRepository` (Protocol) em `financeiro/service.py` (fakes em memória seguem o
       padrão do repo: definidos por arquivo de teste, não como implementação compartilhada — ver
       T4/T8/T10) (User Stories: base para todas)
-- [ ] T2 — Testes de `definir_prazo_pagamento` (`clinicas/service.py`, ação isolada, mesmo padrão
+- [x] T2 — Testes de `definir_prazo_pagamento` (`clinicas/service.py`, ação isolada, mesmo padrão
       de `inativar_clinica`/`reativar_clinica`): define valor customizado, volta para `None`
       (regra padrão), clínica inexistente rejeitada (User Stories: 8)
 - [ ] T3 — Implementação de `definir_prazo_pagamento` em `clinicas/service.py`, fazendo os testes

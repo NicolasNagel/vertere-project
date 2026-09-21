@@ -7,6 +7,7 @@ from vertere_api.clinicas.service import (
     ClinicaNaoEncontrada,
     buscar_por_nome,
     criar_clinica,
+    definir_prazo_pagamento,
     editar_clinica,
     inativar_clinica,
     listar_clinicas,
@@ -157,6 +158,54 @@ class TestInativarReativarClinica:
 
         with pytest.raises(ClinicaNaoEncontrada):
             inativar_clinica(clinica_id="inexistente", repo=repo)
+
+
+class TestDefinirPrazoPagamento:
+    def test_define_prazo_customizado(self) -> None:
+        clinica = Clinica(
+            id="1", nome="A", cnpj="1", endereco="A", telefone="1", email="a@a.com", ativo=True
+        )
+        repo = RepositorioFake([clinica])
+
+        atualizada = definir_prazo_pagamento(clinica_id="1", prazo_pagamento_dias=15, repo=repo)
+
+        assert atualizada.prazo_pagamento_dias == 15
+        assert repo.buscar_por_id("1").prazo_pagamento_dias == 15
+
+    def test_volta_para_regra_padrao_com_none(self) -> None:
+        clinica = Clinica(
+            id="1",
+            nome="A",
+            cnpj="1",
+            endereco="A",
+            telefone="1",
+            email="a@a.com",
+            ativo=True,
+            prazo_pagamento_dias=15,
+        )
+        repo = RepositorioFake([clinica])
+
+        atualizada = definir_prazo_pagamento(clinica_id="1", prazo_pagamento_dias=None, repo=repo)
+
+        assert atualizada.prazo_pagamento_dias is None
+        assert repo.buscar_por_id("1").prazo_pagamento_dias is None
+
+    def test_definir_prazo_de_clinica_inexistente_levanta_erro(self) -> None:
+        repo = RepositorioFake()
+
+        with pytest.raises(ClinicaNaoEncontrada):
+            definir_prazo_pagamento(clinica_id="inexistente", prazo_pagamento_dias=7, repo=repo)
+
+    def test_nao_altera_outros_campos_da_clinica(self) -> None:
+        clinica = Clinica(
+            id="1", nome="A", cnpj="1", endereco="A", telefone="1", email="a@a.com", ativo=True
+        )
+        repo = RepositorioFake([clinica])
+
+        atualizada = definir_prazo_pagamento(clinica_id="1", prazo_pagamento_dias=7, repo=repo)
+
+        assert atualizada.nome == "A"
+        assert atualizada.ativo is True
 
 
 class TestBuscaELista:
