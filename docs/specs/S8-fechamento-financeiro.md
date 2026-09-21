@@ -204,7 +204,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T16 — Persistência real: migração Alembic (coluna `prazo_pagamento_dias` em `clinicas`,
       tabela `fechamentos` com `Numeric` para `valor_total`) + implementação de
       `FechamentoRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7, 8)
-- [ ] T17 — Nova ação `Acao.FECHAMENTO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: apenas
+- [x] T17 — Nova ação `Acao.FECHAMENTO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: apenas
       `admin`); confirma que `Acao.FINANCEIRO_VER` (já existente) cobre as visualizações desta
       spec (User Stories: todas, via checagem de acesso)
 - [ ] T18 — Endpoints HTTP (`financeiro/router.py` + `schemas.py`): gerar fechamento, confirmar
