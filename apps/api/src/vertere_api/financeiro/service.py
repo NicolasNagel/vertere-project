@@ -155,3 +155,17 @@ def confirmar_pagamento(
     )
     repo.salvar(atualizado)
     return atualizado
+
+
+def exportar_fechamento_csv(fechamento: Fechamento, clinica: Clinica, hoje: date) -> str:
+    """Monta um CSV (cabeçalho + uma linha) com os dados do fechamento para cobrança externa."""
+    status = status_exibicao(fechamento, clinica, hoje)
+    data_pagamento = (
+        fechamento.data_pagamento.date().isoformat() if fechamento.data_pagamento else ""
+    )
+    cabecalho = "clinica,ano,mes,valor_total,quantidade_atendimentos,status,data_pagamento"
+    linha = (
+        f"{clinica.nome},{fechamento.ano},{fechamento.mes},{fechamento.valor_total},"
+        f"{fechamento.quantidade_atendimentos},{status.value},{data_pagamento}"
+    )
+    return f"{cabecalho}\n{linha}\n"

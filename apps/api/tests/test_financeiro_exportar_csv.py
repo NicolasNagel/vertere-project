@@ -44,7 +44,7 @@ class TestExportarFechamentoCsv:
         assert linhas[1] == "Clínica Central,2026,9,150.00,2,pendente,"
 
     def test_linha_de_fechamento_inadimplente(self) -> None:
-        csv = exportar_fechamento_csv(_fechamento(), _clinica(), hoje=date(2026, 10, 11))
+        csv = exportar_fechamento_csv(_fechamento(), _clinica(), hoje=date(2026, 11, 11))
         linha = csv.strip().splitlines()[1]
 
         assert linha == "Clínica Central,2026,9,150.00,2,inadimplente,"

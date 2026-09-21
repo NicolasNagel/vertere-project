@@ -191,7 +191,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       T10 passarem (User Stories: 6)
 - [x] T12 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
       inclusão de status de pagamento (User Stories: 4)
-- [ ] T13 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
+- [x] T13 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
       testes de T12 passarem (User Stories: 4)
 - [ ] T14 — Testes do bloqueio de edição em `atendimentos/service.py`: `editar_atendimento` e
       `cancelar_atendimento` rejeitam com `PeriodoFechado` quando um `PeriodoFechadoChecker` fake
