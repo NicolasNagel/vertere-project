@@ -207,13 +207,13 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T17 — Nova ação `Acao.FECHAMENTO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: apenas
       `admin`); confirma que `Acao.FINANCEIRO_VER` (já existente) cobre as visualizações desta
       spec (User Stories: todas, via checagem de acesso)
-- [ ] T18 — Endpoints HTTP (`financeiro/router.py` + `schemas.py`): gerar fechamento, confirmar
+- [x] T18 — Endpoints HTTP (`financeiro/router.py` + `schemas.py`): gerar fechamento, confirmar
       pagamento, ver faturamento por clínica, resumo financeiro geral, exportar CSV (via
       `Depends(exigir_acao(...))` nas ações correspondentes); endpoint novo em `clinicas/router.py`
-      + `schemas.py` (S2) para `definir_prazo_pagamento` (`PATCH`/`PUT` dedicado, mesmo padrão de
-      inativar/reativar clínica); wiring do adapter
-      `PeriodoFechadoChecker` (baseado em `FechamentoRepository`) em `atendimentos/router.py`
-      (User Stories: 1, 2, 3, 4, 5, 6, 7, 8)
+      + `schemas.py` (S2) para `definir_prazo_pagamento` (`POST /clinicas/{id}/prazo-pagamento`,
+      mesmo padrão de inativar/reativar clínica); wiring do adapter
+      `FechamentoPeriodoFechadoChecker` (`financeiro/adapters.py`, baseado em
+      `FechamentoRepository`) em `atendimentos/router.py` (User Stories: 1, 2, 3, 4, 5, 6, 7, 8)
 
 ## Out of Scope
 

@@ -19,6 +19,7 @@ from vertere_api.atendimentos.service import (
     DescontoInvalido,
     ExameInvalido,
     PacienteInvalido,
+    PeriodoFechado,
     QuantidadeInvalida,
     VeterinarioInvalido,
     cancelar_atendimento,
@@ -31,6 +32,8 @@ from vertere_api.auth.domain import Usuario
 from vertere_api.auth.service import Acao
 from vertere_api.clinicas.repository import SQLAlchemyClinicaRepository
 from vertere_api.exames.repository import SQLAlchemyExameRepository, SQLAlchemyRegraPlantaoRepository
+from vertere_api.financeiro.adapters import FechamentoPeriodoFechadoChecker
+from vertere_api.financeiro.repository import SQLAlchemyFechamentoRepository
 from vertere_api.pacientes.repository import SQLAlchemyPacienteRepository
 from vertere_api.veterinarios.repository import SQLAlchemyVeterinarioRepository
 
@@ -131,10 +134,11 @@ def editar_atendimento_endpoint(
             regras_plantao=SQLAlchemyRegraPlantaoRepository(db),
             desconto=dados.desconto,
             valor_adicional_plantao=dados.valor_adicional_plantao,
+            periodo_fechado=FechamentoPeriodoFechadoChecker(SQLAlchemyFechamentoRepository(db)),
         )
     except AtendimentoNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    except AtendimentoCancelado as erro:
+    except (AtendimentoCancelado, PeriodoFechado) as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     except _ERROS_REFERENCIA_INVALIDA as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
@@ -151,10 +155,14 @@ def cancelar_atendimento_endpoint(
 ) -> AtendimentoResponse:
     repo = SQLAlchemyAtendimentoRepository(db)
     try:
-        atendimento = cancelar_atendimento(atendimento_id, repo)
+        atendimento = cancelar_atendimento(
+            atendimento_id,
+            repo,
+            periodo_fechado=FechamentoPeriodoFechadoChecker(SQLAlchemyFechamentoRepository(db)),
+        )
     except AtendimentoNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    except AtendimentoCancelado as erro:
+    except (AtendimentoCancelado, PeriodoFechado) as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     return _atendimento_para_response(atendimento)
 

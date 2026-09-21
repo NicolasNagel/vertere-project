@@ -8,6 +8,7 @@ from vertere_api.pacientes.router import router as pacientes_router
 from vertere_api.exames.router import router_exames, router_regras_plantao
 from vertere_api.atendimentos.router import router as atendimentos_router
 from vertere_api.laudos.router import router_laudos, router_templates_laudo
+from vertere_api.financeiro.router import router as financeiro_router
 
 app = FastAPI(title="Vertere Lab API")
 app.include_router(auth_router)
@@ -20,3 +21,4 @@ app.include_router(router_regras_plantao)
 app.include_router(atendimentos_router)
 app.include_router(router_templates_laudo)
 app.include_router(router_laudos)
+app.include_router(financeiro_router)

@@ -9,6 +9,7 @@ class ClinicaResponse(BaseModel):
     telefone: str
     email: str
     ativo: bool
+    prazo_pagamento_dias: int | None = None
 
 
 class CriarClinicaRequest(BaseModel):
@@ -24,3 +25,7 @@ class EditarClinicaRequest(BaseModel):
     endereco: str
     telefone: str
     email: EmailStr
+
+
+class DefinirPrazoPagamentoRequest(BaseModel):
+    prazo_pagamento_dias: int | None = None
