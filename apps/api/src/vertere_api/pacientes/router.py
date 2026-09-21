@@ -124,10 +124,10 @@ def listar(
     clinica_id: str | None = Query(default=None),
     apenas_ativos: bool = Query(default=False),
     db: Session = Depends(obter_db),
-    _usuario: Usuario = Depends(exigir_acao(Acao.PACIENTE_VER)),
+    usuario: Usuario = Depends(exigir_acao(Acao.PACIENTE_VER)),
 ) -> list[PacienteResponse]:
     repo = SQLAlchemyPacienteRepository(db)
-    pacientes = listar_pacientes(repo, clinica_id=clinica_id, apenas_ativos=apenas_ativos)
+    pacientes = listar_pacientes(repo, usuario, clinica_id=clinica_id, apenas_ativos=apenas_ativos)
     return [_para_response(p) for p in pacientes]
 
 
@@ -138,12 +138,13 @@ def buscar(
     proprietario: str | None = Query(default=None),
     apenas_ativos: bool = Query(default=False),
     db: Session = Depends(obter_db),
-    _usuario: Usuario = Depends(exigir_acao(Acao.PACIENTE_VER)),
+    usuario: Usuario = Depends(exigir_acao(Acao.PACIENTE_VER)),
 ) -> list[PacienteResponse]:
     repo = SQLAlchemyPacienteRepository(db)
     pacientes = buscar_pacientes(
         nome,
         repo,
+        usuario,
         clinica_id=clinica_id,
         proprietario=proprietario,
         apenas_ativos=apenas_ativos,

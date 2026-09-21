@@ -2,6 +2,7 @@ import uuid
 from dataclasses import replace
 from typing import Protocol
 
+from vertere_api.auth.domain import Papel, Usuario
 from vertere_api.clinicas.service import ClinicaRepository
 from vertere_api.pacientes.domain import Paciente
 
@@ -126,12 +127,20 @@ def _filtrar(
 def buscar_pacientes(
     nome: str,
     repo: PacienteRepository,
+    usuario: Usuario,
     *,
     clinica_id: str | None = None,
     proprietario: str | None = None,
     apenas_ativos: bool = False,
 ) -> list[Paciente]:
-    """Busca pacientes cujo nome contém `nome` (case-insensitive, substring)."""
+    """Busca pacientes cujo nome contém `nome` (case-insensitive, substring).
+
+    Um usuário com `papel=clinica` só enxerga pacientes da própria clínica
+    (`usuario.clinica_id`), independente de `clinica_id` informado — mesmo
+    padrão de escopo de `atendimentos.service.listar_atendimentos` (S6).
+    """
+    if usuario.papel == Papel.CLINICA:
+        clinica_id = usuario.clinica_id
     alvo = nome.casefold()
     resultado = [p for p in repo.listar_todas() if alvo in p.nome.casefold()]
     return _filtrar(
@@ -141,11 +150,18 @@ def buscar_pacientes(
 
 def listar_pacientes(
     repo: PacienteRepository,
+    usuario: Usuario,
     *,
     clinica_id: str | None = None,
     apenas_ativos: bool = False,
 ) -> list[Paciente]:
-    """Lista todos os pacientes cadastrados, opcionalmente filtrando por clínica e/ou ativos."""
+    """Lista todos os pacientes cadastrados, opcionalmente filtrando por clínica e/ou ativos.
+
+    Um usuário com `papel=clinica` só enxerga pacientes da própria clínica
+    (`usuario.clinica_id`), independente de `clinica_id` informado.
+    """
+    if usuario.papel == Papel.CLINICA:
+        clinica_id = usuario.clinica_id
     return _filtrar(
         repo.listar_todas(), clinica_id=clinica_id, proprietario=None, apenas_ativos=apenas_ativos
     )

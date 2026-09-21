@@ -285,6 +285,15 @@ service testável sem infraestrutura real.
 
 <!-- Necessidades novas encontradas durante o desenvolvimento, fora do escopo acima. Não implementar sem decisão do PO. -->
 
+- **Issue #13 resolvida (2026-09-21), fora do escopo desta spec.** `exigir_acao()` (`auth/deps.py`)
+  passou a passar a própria clínica do usuário como `clinica_recurso`, liberando o gate para
+  qualquer `clinica` com a ação concedida (seguro para listagem com filtro no service; não seguro
+  para recurso único). `listar_laudos_endpoint` (`laudos/router.py`) voltou a usar
+  `Depends(exigir_acao(Acao.LAUDO_VER))` — o workaround manual descrito em "Implementation
+  Decisions" para esse endpoint não é mais necessário; `ver_laudo_endpoint` continua chamando
+  `authorize()` diretamente via `ver_laudo()` (recurso único, precisa do `clinica_recurso` real).
+  Fix na branch `spec/s1-auth-usuarios`, PR fecha a issue #13.
+
 ## Verificação
 
 Resultado do `/fechar-spec S7` (2026-09-20): ✅ APROVADA. Relatório completo em

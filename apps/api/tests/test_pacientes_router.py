@@ -44,8 +44,12 @@ def cliente() -> TestClient:
     return TestClient(app)
 
 
-def _criar_usuario_db(session: Session, email: str, papel: Papel, senha: str = "senha-correta") -> str:
-    modelo = UsuarioModel(email=email, senha_hash=hash_senha(senha), papel=papel, ativo=True)
+def _criar_usuario_db(
+    session: Session, email: str, papel: Papel, clinica_id: str | None = None, senha: str = "senha-correta"
+) -> str:
+    modelo = UsuarioModel(
+        email=email, senha_hash=hash_senha(senha), papel=papel, ativo=True, clinica_id=clinica_id
+    )
     session.add(modelo)
     session.commit()
     session.refresh(modelo)
@@ -268,6 +272,36 @@ class TestListarEBuscarPacienteEndpoint:
         assert resposta.status_code == 200
         assert len(resposta.json()) == 1
         assert resposta.json()[0]["clinica_id"] == clinica_1
+
+    def test_clinica_lista_apenas_pacientes_da_propria_clinica(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token_admin = _token(cliente, "admin@vertere.com")
+        clinica_1 = _criar_clinica_db(session, "Clínica A", "11222333000181")
+        clinica_2 = _criar_clinica_db(session, "Clínica B", "22333444000199")
+        cliente.post(
+            "/pacientes",
+            json=_payload_paciente(clinica_1),
+            headers={"Authorization": f"Bearer {token_admin}"},
+        )
+        cliente.post(
+            "/pacientes",
+            json=_payload_paciente(clinica_2),
+            headers={"Authorization": f"Bearer {token_admin}"},
+        )
+        _criar_usuario_db(session, "clinica@vertere.com", Papel.CLINICA, clinica_id=clinica_2)
+        token_clinica = _token(cliente, "clinica@vertere.com")
+
+        resposta = cliente.get(
+            "/pacientes",
+            params={"clinica_id": clinica_1},
+            headers={"Authorization": f"Bearer {token_clinica}"},
+        )
+
+        assert resposta.status_code == 200
+        assert len(resposta.json()) == 1
+        assert resposta.json()[0]["clinica_id"] == clinica_2
 
     def test_atendente_pode_buscar_paciente_por_nome(
         self, cliente: TestClient, session: Session
