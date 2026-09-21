@@ -181,7 +181,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 - [x] T8 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
       período já fechado rejeitado, fechamento sem atendimentos ativos gera valor 0 (User Stories:
       2)
-- [ ] T9 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T8
+- [x] T9 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T8
       passarem (User Stories: 2)
 - [ ] T10 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
       confirmação de fechamento já pago rejeitada (User Stories: 6)

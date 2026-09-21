@@ -1,9 +1,12 @@
+import uuid
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Protocol
 
 from vertere_api.atendimentos.domain import Atendimento, StatusAtendimento
+from vertere_api.atendimentos.service import AtendimentoRepository
 from vertere_api.clinicas.domain import Clinica
+from vertere_api.clinicas.service import ClinicaRepository
 from vertere_api.financeiro.domain import Fechamento, StatusFechamento
 
 _DIA_VENCIMENTO_PADRAO = 10
@@ -14,6 +17,16 @@ class FechamentoRepository(Protocol):
     def buscar_por_clinica_periodo(self, clinica_id: str, ano: int, mes: int) -> Fechamento | None: ...
     def listar_todas(self) -> list[Fechamento]: ...
     def salvar(self, fechamento: Fechamento) -> None: ...
+
+
+class ClinicaInvalida(Exception):
+    def __init__(self, clinica_id: str) -> None:
+        super().__init__(f"Clínica {clinica_id} inexistente ou inativa")
+
+
+class FechamentoJaExiste(Exception):
+    def __init__(self, clinica_id: str, ano: int, mes: int) -> None:
+        super().__init__(f"Fechamento já existe para a clínica {clinica_id} no período {mes}/{ano}")
 
 
 def _atendimentos_ativos_do_periodo(
@@ -71,3 +84,42 @@ def status_exibicao(fechamento: Fechamento, clinica: Clinica, hoje: date) -> Sta
     if hoje > calcular_vencimento(clinica, fechamento.data_fechamento):
         return StatusFechamento.INADIMPLENTE
     return StatusFechamento.PENDENTE
+
+
+def gerar_fechamento(
+    clinica_id: str,
+    ano: int,
+    mes: int,
+    repo: FechamentoRepository,
+    atendimentos_repo: AtendimentoRepository,
+    clinicas_repo: ClinicaRepository,
+) -> Fechamento:
+    """Gera o snapshot do fechamento mensal de uma clínica.
+
+    Rejeita clínica inexistente/inativa e reprocessamento de um período já
+    fechado. Fechar um período sem atendimentos ativos é permitido (gera
+    `valor_total=0`).
+    """
+    clinica = clinicas_repo.buscar_por_id(clinica_id)
+    if clinica is None or not clinica.ativo:
+        raise ClinicaInvalida(clinica_id)
+    if repo.buscar_por_clinica_periodo(clinica_id, ano, mes) is not None:
+        raise FechamentoJaExiste(clinica_id, ano, mes)
+
+    atendimentos = atendimentos_repo.listar_todas()
+    valor_total = calcular_faturamento_por_clinica(atendimentos, clinica_id, ano, mes)
+    quantidade = len(_atendimentos_ativos_do_periodo(atendimentos, clinica_id, ano, mes))
+
+    fechamento = Fechamento(
+        id=str(uuid.uuid4()),
+        clinica_id=clinica_id,
+        ano=ano,
+        mes=mes,
+        valor_total=valor_total,
+        quantidade_atendimentos=quantidade,
+        data_fechamento=datetime.now(),
+        pago=False,
+        data_pagamento=None,
+    )
+    repo.salvar(fechamento)
+    return fechamento
