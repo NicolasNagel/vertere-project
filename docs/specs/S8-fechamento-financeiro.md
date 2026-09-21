@@ -183,7 +183,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       2)
 - [x] T9 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T8
       passarem (User Stories: 2)
-- [ ] T10 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
+- [x] T10 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
       confirmação de fechamento já pago rejeitada (User Stories: 6)
 - [ ] T11 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
       T10 passarem (User Stories: 6)
