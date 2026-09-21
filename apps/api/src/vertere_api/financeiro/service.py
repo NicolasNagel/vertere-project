@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Protocol
@@ -27,6 +28,16 @@ class ClinicaInvalida(Exception):
 class FechamentoJaExiste(Exception):
     def __init__(self, clinica_id: str, ano: int, mes: int) -> None:
         super().__init__(f"Fechamento já existe para a clínica {clinica_id} no período {mes}/{ano}")
+
+
+class FechamentoNaoEncontrado(Exception):
+    def __init__(self, fechamento_id: str) -> None:
+        super().__init__(f"Fechamento {fechamento_id} não encontrado")
+
+
+class FechamentoJaPago(Exception):
+    def __init__(self, fechamento_id: str) -> None:
+        super().__init__(f"Fechamento {fechamento_id} já está pago")
 
 
 def _atendimentos_ativos_do_periodo(
@@ -123,3 +134,24 @@ def gerar_fechamento(
     )
     repo.salvar(fechamento)
     return fechamento
+
+
+def confirmar_pagamento(
+    fechamento_id: str, repo: FechamentoRepository, data_pagamento: datetime | None = None
+) -> Fechamento:
+    """Dá baixa manual no fechamento, marcando `pago=True`.
+
+    Rejeita confirmar um fechamento já pago (idempotência, mesmo padrão de
+    `cancelar_atendimento` em S6) — não existe estorno nesta spec.
+    """
+    fechamento = repo.buscar_por_id(fechamento_id)
+    if fechamento is None:
+        raise FechamentoNaoEncontrado(fechamento_id)
+    if fechamento.pago:
+        raise FechamentoJaPago(fechamento_id)
+
+    atualizado = replace(
+        fechamento, pago=True, data_pagamento=data_pagamento or datetime.now()
+    )
+    repo.salvar(atualizado)
+    return atualizado

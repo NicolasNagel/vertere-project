@@ -185,7 +185,7 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
       passarem (User Stories: 2)
 - [x] T10 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
       confirmação de fechamento já pago rejeitada (User Stories: 6)
-- [ ] T11 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
+- [x] T11 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
       T10 passarem (User Stories: 6)
 - [ ] T12 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
       inclusão de status de pagamento (User Stories: 4)
