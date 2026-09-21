@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vertere_api.db import Base
@@ -18,3 +18,4 @@ class ClinicaModel(Base):
     telefone: Mapped[str] = mapped_column(String(20))
     email: Mapped[str] = mapped_column(String(255))
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+    prazo_pagamento_dias: Mapped[int | None] = mapped_column(Integer, nullable=True)

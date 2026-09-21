@@ -35,6 +35,7 @@ class SQLAlchemyClinicaRepository:
         modelo.telefone = clinica.telefone
         modelo.email = clinica.email
         modelo.ativo = clinica.ativo
+        modelo.prazo_pagamento_dias = clinica.prazo_pagamento_dias
         self._session.commit()
 
     @staticmethod
@@ -49,4 +50,5 @@ class SQLAlchemyClinicaRepository:
             telefone=modelo.telefone,
             email=modelo.email,
             ativo=modelo.ativo,
+            prazo_pagamento_dias=modelo.prazo_pagamento_dias,
         )
