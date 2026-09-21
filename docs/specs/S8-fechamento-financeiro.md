@@ -2,7 +2,7 @@
 codigo: S8
 modulo: Fechamento Financeiro
 issue: https://github.com/NicolasNagel/vertere-project/issues/18
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -95,8 +95,11 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
   padrão global (vencimento no dia 10 do mês seguinte ao mês do `Fechamento`), cobrindo a maioria
   das clínicas sem exigir configuração. Um valor numérico (ex: `15`, `7`) sobrepõe a regra padrão
   para acordos quinzenais/semanais: vencimento = `data_fechamento + prazo_pagamento_dias` dias.
-  `editar_clinica` (S2) passa a aceitar esse campo opcional, sem alterar o comportamento de quem
-  não o usa.
+  Não é um parâmetro de `editar_clinica` (S2): essa função faz overwrite completo via
+  `dataclasses.replace`, então editar qualquer outro campo resetaria o prazo customizado para
+  `None` sem intenção. Em vez disso, `clinicas/service.py` ganha `definir_prazo_pagamento(
+  clinica_id, prazo_pagamento_dias, repo) -> Clinica`, ação isolada seguindo o mesmo padrão já
+  usado no arquivo para `inativar_clinica`/`reativar_clinica` (`_definir_estado_ativo`).
 - **`calcular_vencimento(clinica: Clinica, data_fechamento: datetime) -> date`**: função pura em
   `financeiro/service.py` que aplica a regra acima (padrão dia 10 do mês seguinte, ou
   `data_fechamento + N dias` se `clinica.prazo_pagamento_dias` estiver definido).
@@ -155,49 +158,56 @@ sob demanda (nunca gravado) a partir de um prazo de pagamento configurável por 
 
 ## Tasks
 
-- [ ] T1 — Domínio: campo `prazo_pagamento_dias` em `Clinica` (`clinicas/domain.py`), entidade
+- [x] T1 — Domínio: campo `prazo_pagamento_dias` em `Clinica` (`clinicas/domain.py`), entidade
       `Fechamento` + `StatusFechamento` (`PENDENTE`/`PAGO`/`INADIMPLENTE`) em `financeiro/domain.py`,
-      `FechamentoRepository` (Protocol) com implementação fake em memória (User Stories: base para
-      todas)
-- [ ] T2 — Testes de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` (funções
+      `FechamentoRepository` (Protocol) em `financeiro/service.py` (fakes em memória seguem o
+      padrão do repo: definidos por arquivo de teste, não como implementação compartilhada — ver
+      T4/T8/T10) (User Stories: base para todas)
+- [ ] T2 — Testes de `definir_prazo_pagamento` (`clinicas/service.py`, ação isolada, mesmo padrão
+      de `inativar_clinica`/`reativar_clinica`): define valor customizado, volta para `None`
+      (regra padrão), clínica inexistente rejeitada (User Stories: 8)
+- [ ] T3 — Implementação de `definir_prazo_pagamento` em `clinicas/service.py`, fazendo os testes
+      de T2 passarem (User Stories: 8)
+- [ ] T4 — Testes de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` (funções
       puras sobre `list[Atendimento]`): sem atendimentos, com atendimento cancelado excluído,
       múltiplas clínicas no resumo (User Stories: 1, 5)
-- [ ] T3 — Implementação de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` em
-      `financeiro/service.py`, fazendo os testes de T2 passarem (User Stories: 1, 5)
-- [ ] T4 — Testes de `calcular_vencimento` e `status_exibicao` (funções puras sobre `Clinica` +
+- [ ] T5 — Implementação de `calcular_faturamento_por_clinica` e `calcular_resumo_financeiro` em
+      `financeiro/service.py`, fazendo os testes de T4 passarem (User Stories: 1, 5)
+- [ ] T6 — Testes de `calcular_vencimento` e `status_exibicao` (funções puras sobre `Clinica` +
       `Fechamento` + `date`): regra padrão (dia 10), `prazo_pagamento_dias` customizado, pago
       sempre `PAGO`, pendente antes/depois do vencimento (User Stories: 6, 7, 8)
-- [ ] T5 — Implementação de `calcular_vencimento` e `status_exibicao` em `financeiro/service.py`,
-      fazendo os testes de T4 passarem (User Stories: 6, 7, 8)
-- [ ] T6 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
+- [ ] T7 — Implementação de `calcular_vencimento` e `status_exibicao` em `financeiro/service.py`,
+      fazendo os testes de T6 passarem (User Stories: 6, 7, 8)
+- [ ] T8 — Testes de `gerar_fechamento`: geração válida, clínica inexistente/inativa rejeitada,
       período já fechado rejeitado, fechamento sem atendimentos ativos gera valor 0 (User Stories:
       2)
-- [ ] T7 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T6
+- [ ] T9 — Implementação de `gerar_fechamento` em `financeiro/service.py`, fazendo os testes de T8
       passarem (User Stories: 2)
-- [ ] T8 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
+- [ ] T10 — Testes de `confirmar_pagamento`: confirmação válida grava `pago`/`data_pagamento`,
       confirmação de fechamento já pago rejeitada (User Stories: 6)
-- [ ] T9 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
-      T8 passarem (User Stories: 6)
-- [ ] T10 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
+- [ ] T11 — Implementação de `confirmar_pagamento` em `financeiro/service.py`, fazendo os testes de
+      T10 passarem (User Stories: 6)
+- [ ] T12 — Testes de `exportar_fechamento_csv` (função pura): formato de cabeçalho e linha,
       inclusão de status de pagamento (User Stories: 4)
-- [ ] T11 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
-      testes de T10 passarem (User Stories: 4)
-- [ ] T12 — Testes do bloqueio de edição em `atendimentos/service.py`: `editar_atendimento` e
+- [ ] T13 — Implementação de `exportar_fechamento_csv` em `financeiro/service.py`, fazendo os
+      testes de T12 passarem (User Stories: 4)
+- [ ] T14 — Testes do bloqueio de edição em `atendimentos/service.py`: `editar_atendimento` e
       `cancelar_atendimento` rejeitam com `PeriodoFechado` quando um `PeriodoFechadoChecker` fake
       retorna `True`, permitem quando retorna `False` ou quando não é passado (User Stories: 3)
-- [ ] T13 — Implementação do `Protocol PeriodoFechadoChecker` e do parâmetro `periodo_fechado` em
+- [ ] T15 — Implementação do `Protocol PeriodoFechadoChecker` e do parâmetro `periodo_fechado` em
       `editar_atendimento`/`cancelar_atendimento` (`atendimentos/service.py`), fazendo os testes de
-      T12 passarem (User Stories: 3)
-- [ ] T14 — Persistência real: migração Alembic (coluna `prazo_pagamento_dias` em `clinicas`,
+      T14 passarem (User Stories: 3)
+- [ ] T16 — Persistência real: migração Alembic (coluna `prazo_pagamento_dias` em `clinicas`,
       tabela `fechamentos` com `Numeric` para `valor_total`) + implementação de
       `FechamentoRepository` contra PostgreSQL (User Stories: 1, 2, 3, 4, 5, 6, 7, 8)
-- [ ] T15 — Nova ação `Acao.FECHAMENTO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: apenas
+- [ ] T17 — Nova ação `Acao.FECHAMENTO_GERENCIAR` em `auth/service.py` (`_PERMISSOES`: apenas
       `admin`); confirma que `Acao.FINANCEIRO_VER` (já existente) cobre as visualizações desta
       spec (User Stories: todas, via checagem de acesso)
-- [ ] T16 — Endpoints HTTP (`financeiro/router.py` + `schemas.py`): gerar fechamento, confirmar
+- [ ] T18 — Endpoints HTTP (`financeiro/router.py` + `schemas.py`): gerar fechamento, confirmar
       pagamento, ver faturamento por clínica, resumo financeiro geral, exportar CSV (via
-      `Depends(exigir_acao(...))` nas ações correspondentes); extensão de `clinicas/router.py` e
-      `schemas.py` (S2) para aceitar `prazo_pagamento_dias` em editar clínica; wiring do adapter
+      `Depends(exigir_acao(...))` nas ações correspondentes); endpoint novo em `clinicas/router.py`
+      + `schemas.py` (S2) para `definir_prazo_pagamento` (`PATCH`/`PUT` dedicado, mesmo padrão de
+      inativar/reativar clínica); wiring do adapter
       `PeriodoFechadoChecker` (baseado em `FechamentoRepository`) em `atendimentos/router.py`
       (User Stories: 1, 2, 3, 4, 5, 6, 7, 8)
 
