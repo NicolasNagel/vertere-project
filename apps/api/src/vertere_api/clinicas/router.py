@@ -9,6 +9,7 @@ from vertere_api.clinicas.repository import SQLAlchemyClinicaRepository
 from vertere_api.clinicas.schemas import (
     ClinicaResponse,
     CriarClinicaRequest,
+    DefinirPrazoPagamentoRequest,
     EditarClinicaRequest,
 )
 from vertere_api.clinicas.service import (
@@ -17,6 +18,7 @@ from vertere_api.clinicas.service import (
     CnpjJaCadastrado,
     buscar_por_nome,
     criar_clinica,
+    definir_prazo_pagamento,
     editar_clinica,
     inativar_clinica,
     listar_clinicas,
@@ -35,6 +37,7 @@ def _para_response(clinica: Clinica) -> ClinicaResponse:
         telefone=clinica.telefone,
         email=clinica.email,
         ativo=clinica.ativo,
+        prazo_pagamento_dias=clinica.prazo_pagamento_dias,
     )
 
 
@@ -108,6 +111,22 @@ def reativar(clinica_id: str, db: Session = Depends(obter_db)) -> ClinicaRespons
     repo = SQLAlchemyClinicaRepository(db)
     try:
         clinica = reativar_clinica(clinica_id, repo)
+    except ClinicaNaoEncontrada as erro:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
+    return _para_response(clinica)
+
+
+@router.post(
+    "/{clinica_id}/prazo-pagamento",
+    response_model=ClinicaResponse,
+    dependencies=[Depends(exigir_acao(Acao.CLINICA_GERENCIAR))],
+)
+def definir_prazo_pagamento_endpoint(
+    clinica_id: str, dados: DefinirPrazoPagamentoRequest, db: Session = Depends(obter_db)
+) -> ClinicaResponse:
+    repo = SQLAlchemyClinicaRepository(db)
+    try:
+        clinica = definir_prazo_pagamento(clinica_id, dados.prazo_pagamento_dias, repo)
     except ClinicaNaoEncontrada as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     return _para_response(clinica)

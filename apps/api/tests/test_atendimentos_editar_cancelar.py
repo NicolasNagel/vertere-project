@@ -7,6 +7,7 @@ from vertere_api.atendimentos.domain import Atendimento, ItemExame, ItemExameEnt
 from vertere_api.atendimentos.service import (
     AtendimentoCancelado,
     AtendimentoNaoEncontrado,
+    PeriodoFechado,
     cancelar_atendimento,
     editar_atendimento,
 )
@@ -102,6 +103,14 @@ def _atendimento(status: StatusAtendimento = StatusAtendimento.ATIVO) -> Atendim
     )
 
 
+class _PeriodoFechadoFake:
+    def __init__(self, fechado: bool) -> None:
+        self._fechado = fechado
+
+    def esta_fechado(self, clinica_id: str, data_hora) -> bool:
+        return self._fechado
+
+
 class _Contexto:
     def __init__(self, atendimento: Atendimento | None = None) -> None:
         self.repo = AtendimentoRepositorioFake([atendimento or _atendimento()])
@@ -182,3 +191,42 @@ class TestCancelarAtendimento:
 
         with pytest.raises(AtendimentoCancelado):
             cancelar_atendimento("atendimento-1", repo)
+
+
+class TestBloqueioPorPeriodoFechado:
+    def test_editar_rejeitado_quando_periodo_fechado(self) -> None:
+        ctx = _Contexto()
+
+        with pytest.raises(PeriodoFechado):
+            ctx.editar(periodo_fechado=_PeriodoFechadoFake(fechado=True))
+
+    def test_editar_permitido_quando_periodo_aberto(self) -> None:
+        ctx = _Contexto()
+
+        atualizado = ctx.editar(periodo_fechado=_PeriodoFechadoFake(fechado=False))
+
+        assert atualizado.valor_total == Decimal("90.00")
+
+    def test_editar_permitido_quando_checker_nao_e_passado(self) -> None:
+        ctx = _Contexto()
+
+        atualizado = ctx.editar()
+
+        assert atualizado.valor_total == Decimal("90.00")
+
+    def test_cancelar_rejeitado_quando_periodo_fechado(self) -> None:
+        repo = AtendimentoRepositorioFake([_atendimento()])
+
+        with pytest.raises(PeriodoFechado):
+            cancelar_atendimento(
+                "atendimento-1", repo, periodo_fechado=_PeriodoFechadoFake(fechado=True)
+            )
+
+    def test_cancelar_permitido_quando_periodo_aberto(self) -> None:
+        repo = AtendimentoRepositorioFake([_atendimento()])
+
+        cancelado = cancelar_atendimento(
+            "atendimento-1", repo, periodo_fechado=_PeriodoFechadoFake(fechado=False)
+        )
+
+        assert cancelado.status == StatusAtendimento.CANCELADO

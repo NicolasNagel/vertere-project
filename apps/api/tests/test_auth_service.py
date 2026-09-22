@@ -93,6 +93,18 @@ class TestAuthorize:
     def test_atendente_pode_gerenciar_atendimento(self) -> None:
         assert authorize(Papel.ATENDENTE, Acao.ATENDIMENTO_GERENCIAR) is True
 
+    def test_admin_pode_gerenciar_fechamento(self) -> None:
+        assert authorize(Papel.ADMIN, Acao.FECHAMENTO_GERENCIAR) is True
+
+    def test_atendente_nao_pode_gerenciar_fechamento(self) -> None:
+        assert authorize(Papel.ATENDENTE, Acao.FECHAMENTO_GERENCIAR) is False
+
+    def test_tecnico_nao_pode_gerenciar_fechamento(self) -> None:
+        assert authorize(Papel.TECNICO, Acao.FECHAMENTO_GERENCIAR) is False
+
+    def test_clinica_nao_pode_gerenciar_fechamento(self) -> None:
+        assert authorize(Papel.CLINICA, Acao.FECHAMENTO_GERENCIAR) is False
+
     def test_clinica_pode_ver_paciente_da_propria_clinica(self) -> None:
         assert (
             authorize(

@@ -12,6 +12,7 @@ class Acao(StrEnum):
     forem implementados."""
 
     FINANCEIRO_VER = "financeiro:ver"
+    FECHAMENTO_GERENCIAR = "fechamento:gerenciar"
     ATENDIMENTO_GERENCIAR = "atendimento:gerenciar"
     ATENDIMENTO_VER = "atendimento:ver"
     PACIENTE_VER = "paciente:ver"
@@ -37,6 +38,7 @@ _ACOES_COM_ESCOPO_DE_CLINICA = {Acao.PACIENTE_VER, Acao.LAUDO_VER}
 _PERMISSOES: dict[Papel, set[Acao]] = {
     Papel.ADMIN: {
         Acao.FINANCEIRO_VER,
+        Acao.FECHAMENTO_GERENCIAR,
         Acao.ATENDIMENTO_GERENCIAR,
         Acao.ATENDIMENTO_VER,
         Acao.PACIENTE_VER,

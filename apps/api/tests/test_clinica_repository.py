@@ -102,6 +102,23 @@ class TestSQLAlchemyClinicaRepository:
         assert repo.buscar_por_id("id-existente").ativo is False
         assert session.query(ClinicaModel).count() == 1
 
+    def test_salvar_e_buscar_preserva_prazo_pagamento_dias(self, session: Session) -> None:
+        repo = SQLAlchemyClinicaRepository(session)
+        nova = Clinica(
+            id="id-prazo",
+            nome="Vet Sul",
+            cnpj="44555666000177",
+            endereco="Rua D, 789",
+            telefone="4730003333",
+            email="contato@vetsul.com",
+            ativo=True,
+            prazo_pagamento_dias=15,
+        )
+
+        repo.salvar(nova)
+
+        assert repo.buscar_por_id("id-prazo").prazo_pagamento_dias == 15
+
     def test_listar_todas_retorna_clinicas_persistidas(self, session: Session) -> None:
         repo = SQLAlchemyClinicaRepository(session)
         repo.salvar(
