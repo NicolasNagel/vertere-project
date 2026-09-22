@@ -114,7 +114,7 @@ de qualquer lógica de negócio rodar.
 - [x] T7 — implementa `buscar_atendimento` em `atendimentos/service.py` (User Stories: 1, 3)
 - [x] T8 — testes de `buscar_historico_paciente` (agregação escopada de atendimentos + laudos) (User Stories: 4)
 - [x] T9 — implementa `buscar_historico_paciente` em `pacientes/service.py` (User Stories: 4)
-- [ ] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6) — o gate é
+- [x] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6) — o gate é
   coberto pelos testes de `/portal/*` (T11), mesmo padrão de `exigir_admin` no repo (sem teste unitário isolado de
   dependency, só via router)
 - [ ] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
