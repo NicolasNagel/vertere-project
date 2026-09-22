@@ -33,7 +33,7 @@ class Acao(StrEnum):
 
 
 # Ações cujo acesso é restrito à própria clínica quando o papel é CLINICA.
-_ACOES_COM_ESCOPO_DE_CLINICA = {Acao.PACIENTE_VER, Acao.LAUDO_VER}
+_ACOES_COM_ESCOPO_DE_CLINICA = {Acao.PACIENTE_VER, Acao.LAUDO_VER, Acao.ATENDIMENTO_VER}
 
 _PERMISSOES: dict[Papel, set[Acao]] = {
     Papel.ADMIN: {
