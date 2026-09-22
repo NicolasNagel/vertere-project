@@ -2,7 +2,7 @@
 codigo: S8
 modulo: Fechamento Financeiro
 issue: https://github.com/NicolasNagel/vertere-project/issues/18
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
