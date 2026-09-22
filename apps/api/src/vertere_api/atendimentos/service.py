@@ -27,6 +27,10 @@ class AtendimentoRepository(Protocol):
     def salvar(self, atendimento: Atendimento) -> None: ...
 
 
+class PeriodoFechadoChecker(Protocol):
+    def esta_fechado(self, clinica_id: str, data_hora: datetime) -> bool: ...
+
+
 class DescontoInvalido(Exception):
     def __init__(self, desconto: Decimal, subtotal: Decimal) -> None:
         super().__init__(f"Desconto {desconto} excede o subtotal {subtotal}")
@@ -70,6 +74,13 @@ class AtendimentoNaoEncontrado(Exception):
 class AtendimentoCancelado(Exception):
     def __init__(self, atendimento_id: str) -> None:
         super().__init__(f"Atendimento {atendimento_id} já está cancelado")
+
+
+class PeriodoFechado(Exception):
+    def __init__(self, atendimento_id: str) -> None:
+        super().__init__(
+            f"Atendimento {atendimento_id} pertence a um período já fechado para a clínica"
+        )
 
 
 def calcular_valor_total(
@@ -205,6 +216,15 @@ def _buscar_atendimento_ou_levantar(atendimento_id: str, repo: AtendimentoReposi
     return atendimento
 
 
+def _garantir_periodo_aberto(
+    atendimento: Atendimento, periodo_fechado: PeriodoFechadoChecker | None
+) -> None:
+    if periodo_fechado is not None and periodo_fechado.esta_fechado(
+        atendimento.clinica_id, atendimento.data_hora
+    ):
+        raise PeriodoFechado(atendimento.id)
+
+
 def editar_atendimento(
     atendimento_id: str,
     clinica_id: str,
@@ -221,16 +241,18 @@ def editar_atendimento(
     regras_plantao: RegraPlantaoRepository,
     desconto: Decimal = Decimal("0"),
     valor_adicional_plantao: Decimal | None = None,
+    periodo_fechado: PeriodoFechadoChecker | None = None,
 ) -> Atendimento:
     """Edita um atendimento com `status=ativo`, recalculando `valor_total`.
 
-    Rejeita edição de atendimento inexistente ou já cancelado (cancelamento
-    é terminal nesta spec — não existe mecanismo de bloqueio por fechamento
-    de período ainda, ver "Implementation Decisions" da spec).
+    Rejeita edição de atendimento inexistente, já cancelado, ou — quando
+    `periodo_fechado` é informado (S8, módulo `financeiro`) — pertencente a
+    um período já fechado para a clínica.
     """
     atual = _buscar_atendimento_ou_levantar(atendimento_id, repo)
     if atual.status == StatusAtendimento.CANCELADO:
         raise AtendimentoCancelado(atendimento_id)
+    _garantir_periodo_aberto(atual, periodo_fechado)
 
     itens = _validar_referencias(
         clinica_id, veterinario_id, paciente_id, itens_exame, clinicas, veterinarios, pacientes, exames
@@ -257,16 +279,23 @@ def editar_atendimento(
     return atualizado
 
 
-def cancelar_atendimento(atendimento_id: str, repo: AtendimentoRepository) -> Atendimento:
+def cancelar_atendimento(
+    atendimento_id: str,
+    repo: AtendimentoRepository,
+    periodo_fechado: PeriodoFechadoChecker | None = None,
+) -> Atendimento:
     """Cancela um atendimento, preservando o registro para auditoria.
 
     Cancelamento é terminal nesta spec: não há operação de reabertura, e
     cancelar um atendimento já cancelado é rejeitado em vez de reaplicado
-    silenciosamente.
+    silenciosamente. Quando `periodo_fechado` é informado (S8) e o
+    atendimento pertence a um período já fechado, o cancelamento também é
+    rejeitado.
     """
     atual = _buscar_atendimento_ou_levantar(atendimento_id, repo)
     if atual.status == StatusAtendimento.CANCELADO:
         raise AtendimentoCancelado(atendimento_id)
+    _garantir_periodo_aberto(atual, periodo_fechado)
     cancelado = replace(atual, status=StatusAtendimento.CANCELADO)
     repo.salvar(cancelado)
     return cancelado

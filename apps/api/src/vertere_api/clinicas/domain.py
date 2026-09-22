@@ -10,3 +10,4 @@ class Clinica:
     telefone: str
     email: str
     ativo: bool
+    prazo_pagamento_dias: int | None = None

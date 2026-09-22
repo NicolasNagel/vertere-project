@@ -115,6 +115,43 @@ class TestCriarClinicaEndpoint:
         assert resposta.status_code == 403
 
 
+class TestDefinirPrazoPagamentoEndpoint:
+    def test_admin_define_prazo_customizado(self, cliente: TestClient, session: Session) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token = _token(cliente, "admin@vertere.com")
+        criada = cliente.post(
+            "/clinicas", json=_payload_clinica(), headers={"Authorization": f"Bearer {token}"}
+        ).json()
+
+        resposta = cliente.post(
+            f"/clinicas/{criada['id']}/prazo-pagamento",
+            json={"prazo_pagamento_dias": 15},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert resposta.status_code == 200
+        assert resposta.json()["prazo_pagamento_dias"] == 15
+
+    def test_atendente_nao_pode_definir_prazo_pagamento(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        token_admin = _token(cliente, "admin@vertere.com")
+        criada = cliente.post(
+            "/clinicas", json=_payload_clinica(), headers={"Authorization": f"Bearer {token_admin}"}
+        ).json()
+        _criar_usuario_db(session, "atendente@vertere.com", Papel.ATENDENTE)
+        token = _token(cliente, "atendente@vertere.com")
+
+        resposta = cliente.post(
+            f"/clinicas/{criada['id']}/prazo-pagamento",
+            json={"prazo_pagamento_dias": 15},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert resposta.status_code == 403
+
+
 class TestEditarClinicaEndpoint:
     def test_admin_edita_clinica(self, cliente: TestClient, session: Session) -> None:
         _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
