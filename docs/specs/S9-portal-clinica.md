@@ -111,7 +111,7 @@ de qualquer lógica de negócio rodar.
 - [x] T4 — testes de `_ACOES_COM_ESCOPO_DE_CLINICA` incluindo `ATENDIMENTO_VER` (User Stories: 1, 3)
 - [x] T5 — adiciona `Acao.ATENDIMENTO_VER` a `_ACOES_COM_ESCOPO_DE_CLINICA` em `auth/service.py` (User Stories: 1, 3)
 - [x] T6 — testes de `buscar_atendimento` (escopo de clínica) (User Stories: 1, 3)
-- [ ] T7 — implementa `buscar_atendimento` em `atendimentos/service.py` (User Stories: 1, 3)
+- [x] T7 — implementa `buscar_atendimento` em `atendimentos/service.py` (User Stories: 1, 3)
 - [ ] T8 — testes de `buscar_historico_paciente` (agregação escopada de atendimentos + laudos) (User Stories: 4)
 - [ ] T9 — implementa `buscar_historico_paciente` em `pacientes/service.py` (User Stories: 4)
 - [ ] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6) — o gate é
