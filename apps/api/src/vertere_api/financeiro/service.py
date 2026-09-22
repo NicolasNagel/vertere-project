@@ -1,3 +1,5 @@
+import csv
+import io
 import uuid
 from dataclasses import replace
 from datetime import date, datetime, timedelta
@@ -171,9 +173,20 @@ def exportar_fechamento_csv(fechamento: Fechamento, clinica: Clinica, hoje: date
     data_pagamento = (
         fechamento.data_pagamento.date().isoformat() if fechamento.data_pagamento else ""
     )
-    cabecalho = "clinica,ano,mes,valor_total,quantidade_atendimentos,status,data_pagamento"
-    linha = (
-        f"{clinica.nome},{fechamento.ano},{fechamento.mes},{fechamento.valor_total},"
-        f"{fechamento.quantidade_atendimentos},{status.value},{data_pagamento}"
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, lineterminator="\n")
+    escritor.writerow(
+        ["clinica", "ano", "mes", "valor_total", "quantidade_atendimentos", "status", "data_pagamento"]
     )
-    return f"{cabecalho}\n{linha}\n"
+    escritor.writerow(
+        [
+            clinica.nome,
+            fechamento.ano,
+            fechamento.mes,
+            fechamento.valor_total,
+            fechamento.quantidade_atendimentos,
+            status.value,
+            data_pagamento,
+        ]
+    )
+    return buffer.getvalue()

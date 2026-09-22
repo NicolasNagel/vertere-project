@@ -1,3 +1,5 @@
+import csv as csv_module
+import io
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -56,3 +58,20 @@ class TestExportarFechamentoCsv:
         linha = csv.strip().splitlines()[1]
 
         assert linha == "Clínica Central,2026,9,150.00,2,pago,2026-10-05"
+
+    def test_nome_de_clinica_com_virgula_e_escapado_corretamente(self) -> None:
+        clinica = Clinica(
+            id="clinica-1",
+            nome="Clínica Central, Filial Norte",
+            cnpj="11222333000181",
+            endereco="Rua A, 123",
+            telefone="47999990000",
+            email="contato@clinica.com",
+            ativo=True,
+        )
+
+        csv = exportar_fechamento_csv(_fechamento(), clinica, hoje=date(2026, 10, 5))
+        linhas = list(csv_module.reader(io.StringIO(csv)))
+
+        assert linhas[1][0] == "Clínica Central, Filial Norte"
+        assert len(linhas[1]) == 7
