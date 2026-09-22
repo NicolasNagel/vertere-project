@@ -97,6 +97,14 @@ def status_exibicao(fechamento: Fechamento, clinica: Clinica, hoje: date) -> Sta
     return StatusFechamento.PENDENTE
 
 
+def listar_fechamentos(repo: FechamentoRepository, *, clinica_id: str | None = None) -> list[Fechamento]:
+    """Lista fechamentos, opcionalmente filtrando por clínica."""
+    fechamentos = repo.listar_todas()
+    if clinica_id is not None:
+        fechamentos = [f for f in fechamentos if f.clinica_id == clinica_id]
+    return fechamentos
+
+
 def gerar_fechamento(
     clinica_id: str,
     ano: int,

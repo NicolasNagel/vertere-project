@@ -258,6 +258,52 @@ class TestGerarFechamentoEndpoint:
         assert resposta.status_code == 409
 
 
+class TestListarFechamentosEndpoint:
+    def test_admin_lista_fechamentos(self, cliente: TestClient, session: Session) -> None:
+        cenario = _Cenario(cliente, session)
+        cenario.criar_atendimento(cliente)
+        cliente.post(
+            f"/financeiro/clinicas/{cenario.clinica_id}/fechamentos",
+            json={"ano": 2026, "mes": 9},
+            headers=_cabecalho(cenario.token_admin),
+        )
+
+        resposta = cliente.get("/financeiro/fechamentos", headers=_cabecalho(cenario.token_admin))
+
+        assert resposta.status_code == 200
+        assert len(resposta.json()) == 1
+        assert resposta.json()[0]["clinica_id"] == cenario.clinica_id
+
+    def test_admin_lista_fechamentos_filtrando_por_clinica(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        cenario = _Cenario(cliente, session)
+        cliente.post(
+            f"/financeiro/clinicas/{cenario.clinica_id}/fechamentos",
+            json={"ano": 2026, "mes": 9},
+            headers=_cabecalho(cenario.token_admin),
+        )
+
+        resposta = cliente.get(
+            "/financeiro/fechamentos",
+            params={"clinica_id": "inexistente"},
+            headers=_cabecalho(cenario.token_admin),
+        )
+
+        assert resposta.status_code == 200
+        assert resposta.json() == []
+
+    def test_atendente_nao_pode_listar_fechamentos(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        _criar_usuario_db(session, "atendente@vertere.com", Papel.ATENDENTE)
+        token = _token(cliente, "atendente@vertere.com")
+
+        resposta = cliente.get("/financeiro/fechamentos", headers=_cabecalho(token))
+
+        assert resposta.status_code == 403
+
+
 class TestConfirmarPagamentoEndpoint:
     def test_admin_confirma_pagamento(self, cliente: TestClient, session: Session) -> None:
         cenario = _Cenario(cliente, session)

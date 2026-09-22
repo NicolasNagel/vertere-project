@@ -27,6 +27,7 @@ from vertere_api.financeiro.service import (
     confirmar_pagamento,
     exportar_fechamento_csv,
     gerar_fechamento,
+    listar_fechamentos,
     status_exibicao,
 )
 
@@ -92,6 +93,19 @@ def confirmar_pagamento_endpoint(
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     clinica = SQLAlchemyClinicaRepository(db).buscar_por_id(fechamento.clinica_id)
     return _para_response(fechamento, clinica)
+
+
+@router.get(
+    "/fechamentos",
+    response_model=list[FechamentoResponse],
+    dependencies=[Depends(exigir_acao(Acao.FINANCEIRO_VER))],
+)
+def listar_fechamentos_endpoint(
+    clinica_id: str | None = Query(default=None), db: Session = Depends(obter_db)
+) -> list[FechamentoResponse]:
+    clinicas_repo = SQLAlchemyClinicaRepository(db)
+    fechamentos = listar_fechamentos(SQLAlchemyFechamentoRepository(db), clinica_id=clinica_id)
+    return [_para_response(f, clinicas_repo.buscar_por_id(f.clinica_id)) for f in fechamentos]
 
 
 @router.get(

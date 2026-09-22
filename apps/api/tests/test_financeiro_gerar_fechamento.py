@@ -10,6 +10,7 @@ from vertere_api.financeiro.service import (
     ClinicaInvalida,
     FechamentoJaExiste,
     gerar_fechamento,
+    listar_fechamentos,
 )
 
 
@@ -150,3 +151,37 @@ class TestGerarFechamento:
 
         assert fechamento.valor_total == Decimal("0")
         assert fechamento.quantidade_atendimentos == 0
+
+
+class TestListarFechamentos:
+    def test_lista_todos_sem_filtro(self) -> None:
+        f1 = Fechamento(
+            id="f1", clinica_id="clinica-1", ano=2026, mes=9, valor_total=Decimal("100.00"),
+            quantidade_atendimentos=1, data_fechamento=datetime(2026, 10, 1), pago=False,
+            data_pagamento=None,
+        )
+        f2 = Fechamento(
+            id="f2", clinica_id="clinica-2", ano=2026, mes=9, valor_total=Decimal("200.00"),
+            quantidade_atendimentos=1, data_fechamento=datetime(2026, 10, 1), pago=False,
+            data_pagamento=None,
+        )
+        repo = FechamentoRepositorioFake([f1, f2])
+
+        assert sorted(f.id for f in listar_fechamentos(repo)) == ["f1", "f2"]
+
+    def test_filtra_por_clinica(self) -> None:
+        f1 = Fechamento(
+            id="f1", clinica_id="clinica-1", ano=2026, mes=9, valor_total=Decimal("100.00"),
+            quantidade_atendimentos=1, data_fechamento=datetime(2026, 10, 1), pago=False,
+            data_pagamento=None,
+        )
+        f2 = Fechamento(
+            id="f2", clinica_id="clinica-2", ano=2026, mes=9, valor_total=Decimal("200.00"),
+            quantidade_atendimentos=1, data_fechamento=datetime(2026, 10, 1), pago=False,
+            data_pagamento=None,
+        )
+        repo = FechamentoRepositorioFake([f1, f2])
+
+        resultado = listar_fechamentos(repo, clinica_id="clinica-1")
+
+        assert [f.id for f in resultado] == ["f1"]
