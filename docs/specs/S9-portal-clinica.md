@@ -107,7 +107,7 @@ de qualquer lógica de negócio rodar.
 
 - [x] T1 — `HistoricoPaciente` (dataclass de agregação) em `pacientes/domain.py` (User Stories: 4)
 - [x] T2 — testes de `buscar_paciente` (escopo de clínica, mirror de `ver_laudo`) (User Stories: 1, 2)
-- [ ] T3 — implementa `buscar_paciente` em `pacientes/service.py` (User Stories: 1, 2)
+- [x] T3 — implementa `buscar_paciente` em `pacientes/service.py` (User Stories: 1, 2)
 - [ ] T4 — testes de `_ACOES_COM_ESCOPO_DE_CLINICA` incluindo `ATENDIMENTO_VER` (User Stories: 1, 3)
 - [ ] T5 — adiciona `Acao.ATENDIMENTO_VER` a `_ACOES_COM_ESCOPO_DE_CLINICA` em `auth/service.py` (User Stories: 1, 3)
 - [ ] T6 — testes de `buscar_atendimento` (escopo de clínica) (User Stories: 1, 3)
