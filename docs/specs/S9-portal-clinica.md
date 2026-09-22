@@ -117,7 +117,7 @@ de qualquer lógica de negócio rodar.
 - [x] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6) — o gate é
   coberto pelos testes de `/portal/*` (T11), mesmo padrão de `exigir_admin` no repo (sem teste unitário isolado de
   dependency, só via router)
-- [ ] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
 
 ## Out of Scope
 
