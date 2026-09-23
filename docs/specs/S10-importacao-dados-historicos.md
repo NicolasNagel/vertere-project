@@ -2,7 +2,7 @@
 codigo: S10
 modulo: Importação de Dados Históricos
 issue: https://github.com/NicolasNagel/vertere-project/issues/22
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
@@ -163,9 +163,4 @@ local e não deve ser usada como fixture de teste.
 
 ## Verificação
 
-Verificação de 2026-09-23 bloqueada até:
-
-1. registrar CNPJs e CRMVs observados independentemente dos demais erros da linha, sem transformar
-   linha inválida em entidade planejada;
-2. cobrir na seam a duplicidade cuja primeira ocorrência possui outro erro, acumulando ambos no
-   mesmo relatório.
+✅ Aprovada em 2026-09-23. Relatório: [S10-verificacao.md](relatorios/S10-verificacao.md).
