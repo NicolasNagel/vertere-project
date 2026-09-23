@@ -119,3 +119,54 @@ def test_colisao_faz_rollback_de_toda_a_aplicacao(session: Session) -> None:
 
     assert session.get(ClinicaModel, "clinica-nova") is None
     assert _quantidade(session, VeterinarioModel) == 0
+
+
+def test_chave_natural_de_paciente_com_id_legado_bloqueia(session: Session) -> None:
+    session.add(
+        ClinicaModel(
+            id="clinica-1",
+            nome="Clínica A",
+            cnpj="12345678000190",
+            endereco="Rua A",
+            telefone="",
+            email="",
+            ativo=True,
+        )
+    )
+    session.add(
+        PacienteModel(
+            id="paciente-legado",
+            nome="  TÓBIAS ",
+            especie="Canino",
+            raca="SRD",
+            sexo="Macho",
+            idade=4,
+            proprietario="JOSÉ",
+            clinica_id="clinica-1",
+            ativo=True,
+        )
+    )
+    session.commit()
+
+    with pytest.raises(ColisaoDestino):
+        aplicar_plano(_plano(), session)
+
+    assert session.get(PacienteModel, "pac-1") is None
+
+
+def test_chave_natural_de_exame_com_id_legado_bloqueia(session: Session) -> None:
+    session.add(
+        ExameModel(
+            id="exame-legado",
+            categoria=" HEMATOLÓGICOS ",
+            nome="HEMOGRAMA",
+            preco_base=Decimal("50.00"),
+            ativo=True,
+        )
+    )
+    session.commit()
+
+    with pytest.raises(ColisaoDestino):
+        aplicar_plano(_plano(), session)
+
+    assert session.get(ExameModel, "exame-1") is None
