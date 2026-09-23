@@ -125,7 +125,7 @@ nem expõe seus dados em fixtures ou snapshots.
 
 - [x] T1 — modelos de entrada, inconsistência, contadores e `PlanoImportacao`, incluindo namespaces UUIDv5 e códigos de erro (User Stories: 4, 5, 6)
 - [x] T2 — testes da seam para normalização, referências e coleta acumulada de inconsistências (User Stories: 1, 2, 4, 5)
-- [ ] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
+- [x] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
 - [ ] T4 — testes da seam para deduplicação/canonicalização de pacientes (User Stories: 2, 4, 6)
 - [ ] T5 — implementar planejamento de pacientes derivados de `Dados` (User Stories: 2, 4, 6)
 - [ ] T6 — testes da seam para exames, atendimentos, preços históricos, totais e proveniência (User Stories: 1, 3, 4, 6)
