@@ -163,5 +163,9 @@ local e não deve ser usada como fixture de teste.
 
 ## Verificação
 
-Verificação final bloqueada até normalizar células de hora que o `openpyxl` lê como
-`datetime.timedelta`, cobrir esse formato no adapter e confirmar novamente o dry-run real.
+✅ Aprovada em 2026-09-23. Relatório: [S10-verificacao.md](relatorios/S10-verificacao.md).
+
+A rodada anterior bloqueou por `ler_planilha` abortar com `ValidationError` quando `openpyxl` lê uma
+célula de `Hora` como `datetime.timedelta` (linha 545 da planilha real). Corrigido normalizando o
+`timedelta` para `datetime.time` em `xlsx.py`, com teste dedicado cobrindo esse formato. Reexecução
+da CLI contra a planilha real confirma dry-run completo, sem traceback, com relatório JSON válido.
