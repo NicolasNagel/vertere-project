@@ -133,7 +133,7 @@ nem expõe seus dados em fixtures ou snapshots.
 - [x] T8 — adicionar `numero_origem`/`protocolo_origem` ao domínio, modelo e migration de atendimentos, mantendo compatibilidade com fluxos existentes (User Stories: 1, 3, 6)
 - [x] T9 — testes do adapter XLSX com fixture mínimo e estruturas inválidas (User Stories: 1, 4, 5)
 - [x] T10 — implementar leitura XLSX tipada e adicionar `openpyxl` às dependências (User Stories: 1, 4, 5)
-- [ ] T11 — testes do adapter SQLAlchemy para aplicação, reexecução idempotente e rollback (User Stories: 1, 3, 4, 6)
+- [x] T11 — testes do adapter SQLAlchemy para aplicação, reexecução idempotente e rollback (User Stories: 1, 3, 4, 6)
 - [ ] T12 — implementar aplicação transacional do plano no banco (User Stories: 1, 3, 4, 6)
 - [ ] T13 — testes da CLI para dry-run, bloqueio por inconsistência, `--aplicar` e relatório JSON (User Stories: 4, 5)
 - [ ] T14 — implementar CLI e documentar comandos operacionais de validação/aplicação (User Stories: 1, 4, 5)
