@@ -2,7 +2,7 @@
 codigo: S10
 modulo: Importação de Dados Históricos
 issue: https://github.com/NicolasNagel/vertere-project/issues/22
-status: pronta
+status: em-desenvolvimento
 ---
 
 ## Problem Statement
@@ -123,7 +123,7 @@ nem expõe seus dados em fixtures ou snapshots.
 
 ## Tasks
 
-- [ ] T1 — modelos de entrada, inconsistência, contadores e `PlanoImportacao`, incluindo namespaces UUIDv5 e códigos de erro (User Stories: 4, 5, 6)
+- [x] T1 — modelos de entrada, inconsistência, contadores e `PlanoImportacao`, incluindo namespaces UUIDv5 e códigos de erro (User Stories: 4, 5, 6)
 - [ ] T2 — testes da seam para normalização, referências e coleta acumulada de inconsistências (User Stories: 1, 2, 4, 5)
 - [ ] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
 - [ ] T4 — testes da seam para deduplicação/canonicalização de pacientes (User Stories: 2, 4, 6)
