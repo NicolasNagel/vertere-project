@@ -30,6 +30,7 @@ class Acao(StrEnum):
     TEMPLATE_LAUDO_GERENCIAR = "template_laudo:gerenciar"
     TEMPLATE_LAUDO_VER = "template_laudo:ver"
     LAUDO_GERENCIAR = "laudo:gerenciar"
+    PORTAL_ACESSAR = "portal:acessar"
 
 
 # Ações cujo acesso é restrito à própria clínica quando o papel é CLINICA.
@@ -84,6 +85,7 @@ _PERMISSOES: dict[Papel, set[Acao]] = {
         Acao.CLINICA_VER,
         Acao.VETERINARIO_VER,
         Acao.EXAME_VER,
+        Acao.PORTAL_ACESSAR,
     },
 }
 

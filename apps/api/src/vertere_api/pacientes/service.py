@@ -209,7 +209,17 @@ def buscar_historico_paciente(
     """
     paciente = buscar_paciente(paciente_id, usuario, pacientes_repo)
 
-    atendimentos = [a for a in atendimentos_repo.listar_todas() if a.paciente_id == paciente_id]
+    atendimentos = [
+        atendimento
+        for atendimento in atendimentos_repo.listar_todas()
+        if atendimento.paciente_id == paciente_id
+        and authorize(
+            usuario.papel,
+            Acao.ATENDIMENTO_VER,
+            clinica_usuario=usuario.clinica_id,
+            clinica_recurso=atendimento.clinica_id,
+        )
+    ]
     atendimento_ids = {a.id for a in atendimentos}
     laudos = [l for l in laudos_repo.listar_todas() if l.atendimento_id in atendimento_ids]
 

@@ -91,8 +91,4 @@ def exigir_admin(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
     return usuario
 
 
-def exigir_papel_clinica(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
-    """Atalho para rotas restritas ao papel clínica (namespace `/portal/*`, S9)."""
-    if usuario.papel is not Papel.CLINICA:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Restrito a usuários do tipo clínica")
-    return usuario
+exigir_papel_clinica = exigir_acao(Acao.PORTAL_ACESSAR)

@@ -119,7 +119,7 @@ de qualquer lógica de negócio rodar.
   dependency, só via router)
 - [x] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
 - [x] T12 — testes de regressão dos achados do code review: autorização centralizada do portal, histórico resistente a vínculo inconsistente e matriz completa de papéis (User Stories: 1, 4, 6)
-- [ ] T13 — corrigir autorização do portal via `authorize()` e escopo de clínica na agregação do histórico (User Stories: 1, 4, 6)
+- [x] T13 — corrigir autorização do portal via `authorize()` e escopo de clínica na agregação do histórico (User Stories: 1, 4, 6)
 
 ## Out of Scope
 
