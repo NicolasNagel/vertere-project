@@ -1,5 +1,3 @@
-import re
-import unicodedata
 from collections import defaultdict
 from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
@@ -25,22 +23,11 @@ from vertere_api.importacao.domain import (
     ValorCelula,
     VeterinarioPlanejado,
 )
-
-
-def _texto(valor: ValorCelula) -> str:
-    if valor is None:
-        return ""
-    return " ".join(str(valor).strip().split())
-
-
-def _chave_texto(valor: ValorCelula) -> str:
-    texto = unicodedata.normalize("NFKD", _texto(valor))
-    sem_acentos = "".join(caractere for caractere in texto if not unicodedata.combining(caractere))
-    return sem_acentos.casefold()
-
-
-def _somente_digitos(valor: ValorCelula) -> str:
-    return re.sub(r"\D", "", _texto(valor))
+from vertere_api.importacao.normalizacao import (
+    chave_texto as _chave_texto,
+    somente_digitos as _somente_digitos,
+    texto as _texto,
+)
 
 
 def _interpretar_status(valor: ValorCelula) -> bool | None:

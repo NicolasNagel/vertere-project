@@ -1,12 +1,16 @@
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from vertere_api.atendimentos.models import AtendimentoItemExameModel, AtendimentoModel
 from vertere_api.clinicas.models import ClinicaModel
 from vertere_api.exames.models import ExameModel
 from vertere_api.importacao.domain import PlanoImportacao
+from vertere_api.importacao.normalizacao import chave_texto, somente_digitos, texto
 from vertere_api.pacientes.models import PacienteModel
 from vertere_api.veterinarios.models import VeterinarioModel
 
@@ -32,7 +36,10 @@ def _adicionar_ou_validar(
     identificador: str,
     valores: dict[str, Any],
     entidade: str,
+    existente_natural: object | None = None,
 ) -> object:
+    if existente_natural is not None and existente_natural.id != identificador:
+        raise ColisaoDestino(entidade, identificador)
     existente = sessao.get(modelo_tipo, identificador)
     if existente is not None:
         if not _igual(existente, valores):
@@ -43,12 +50,70 @@ def _adicionar_ou_validar(
     return modelo
 
 
+@dataclass(frozen=True)
+class _IndiceDestino:
+    clinicas: dict[str, ClinicaModel]
+    veterinarios: dict[str, VeterinarioModel]
+    pacientes: dict[tuple[str, str, str], PacienteModel]
+    exames: dict[tuple[str, str], ExameModel]
+    atendimentos: dict[str, AtendimentoModel]
+
+
+def _indexar(modelos: list[object], chave, entidade: str) -> dict:
+    indice = {}
+    for modelo in modelos:
+        chave_modelo = chave(modelo)
+        if chave_modelo in indice:
+            raise ColisaoDestino(entidade, str(chave_modelo))
+        indice[chave_modelo] = modelo
+    return indice
+
+
+def _indexar_destino(sessao: Session) -> _IndiceDestino:
+    return _IndiceDestino(
+        clinicas=_indexar(
+            list(sessao.scalars(select(ClinicaModel))),
+            lambda item: somente_digitos(item.cnpj),
+            "Clínica",
+        ),
+        veterinarios=_indexar(
+            list(sessao.scalars(select(VeterinarioModel))),
+            lambda item: chave_texto(item.crmv),
+            "Veterinário",
+        ),
+        pacientes=_indexar(
+            list(sessao.scalars(select(PacienteModel))),
+            lambda item: (
+                item.clinica_id,
+                chave_texto(item.nome),
+                chave_texto(item.proprietario),
+            ),
+            "Paciente",
+        ),
+        exames=_indexar(
+            list(sessao.scalars(select(ExameModel))),
+            lambda item: (chave_texto(item.categoria), chave_texto(item.nome)),
+            "Exame",
+        ),
+        atendimentos=_indexar(
+            [
+                item
+                for item in sessao.scalars(select(AtendimentoModel))
+                if item.protocolo_origem is not None
+            ],
+            lambda item: texto(item.protocolo_origem),
+            "Atendimento",
+        ),
+    )
+
+
 def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
     """Aplica o plano inteiro ou não aplica nada; aceita reexecução idêntica."""
     if not plano.aplicavel:
         raise PlanoNaoAplicavel("Plano contém erros bloqueantes")
 
     try:
+        indice = _indexar_destino(sessao)
         for clinica in plano.clinicas:
             _adicionar_ou_validar(
                 sessao,
@@ -64,6 +129,7 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                     "prazo_pagamento_dias": None,
                 },
                 "Clínica",
+                indice.clinicas.get(somente_digitos(clinica.cnpj)),
             )
         sessao.flush()
 
@@ -81,6 +147,7 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                     "ativo": veterinario.ativo,
                 },
                 "Veterinário",
+                indice.veterinarios.get(chave_texto(veterinario.crmv)),
             )
         for paciente in plano.pacientes:
             _adicionar_ou_validar(
@@ -98,6 +165,13 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                     "ativo": paciente.ativo,
                 },
                 "Paciente",
+                indice.pacientes.get(
+                    (
+                        paciente.clinica_id,
+                        chave_texto(paciente.nome),
+                        chave_texto(paciente.proprietario),
+                    )
+                ),
             )
         for exame in plano.exames:
             _adicionar_ou_validar(
@@ -111,6 +185,7 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                     "ativo": exame.ativo,
                 },
                 "Exame",
+                indice.exames.get((chave_texto(exame.categoria), chave_texto(exame.nome))),
             )
         sessao.flush()
 
@@ -135,6 +210,7 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                 atendimento.id,
                 valores,
                 "Atendimento",
+                indice.atendimentos.get(texto(atendimento.protocolo_origem)),
             )
             if modelo.itens_exame:
                 item = modelo.itens_exame[0]
@@ -159,6 +235,9 @@ def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
                 ]
 
         sessao.commit()
+    except IntegrityError as erro:
+        sessao.rollback()
+        raise ColisaoDestino("Banco de destino", "restrição de integridade") from erro
     except Exception:
         sessao.rollback()
         raise
