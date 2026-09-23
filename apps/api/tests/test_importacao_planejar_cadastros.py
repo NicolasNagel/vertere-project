@@ -9,7 +9,11 @@ from vertere_api.importacao.service import planejar_importacao
 
 
 def _clinica(
-    *, linha: int = 3, nome: object = "Clínica São Francisco", cnpj: object = "12.345.678/0001-90"
+    *,
+    linha: int = 3,
+    nome: object = "Clínica São Francisco",
+    cnpj: object = "12.345.678/0001-90",
+    status: object = "Ativo",
 ) -> LinhaClinicaPlanilha:
     return LinhaClinicaPlanilha(
         linha=linha,
@@ -18,12 +22,15 @@ def _clinica(
         endereco="Rua Central, 10",
         telefone="(47) 99999-0000",
         email="contato@clinica.test",
-        status="Ativo",
+        status=status,
     )
 
 
 def _veterinario(
-    *, linha: int = 3, clinica: object = " clinica  sao   francisco ", crmv: object = "12345"
+    *,
+    linha: int = 3,
+    clinica: object = " clinica  sao   francisco ",
+    crmv: object = "12345",
 ) -> LinhaVeterinarioPlanilha:
     return LinhaVeterinarioPlanilha(
         linha=linha,
@@ -103,3 +110,35 @@ def test_colisao_de_nome_normalizado_bloqueia_referencia_ambigua() -> None:
     codigos = [i.codigo for i in plano.inconsistencias]
     assert CodigoInconsistencia.CHAVE_DUPLICADA in codigos
     assert CodigoInconsistencia.REFERENCIA_AMBIGUA in codigos
+
+
+def test_detecta_cnpj_repetido_quando_primeira_linha_tem_outro_erro() -> None:
+    plano = planejar_importacao(
+        _dados(
+            (
+                _clinica(linha=3, status="desconhecido"),
+                _clinica(linha=4, nome="Clínica B"),
+            ),
+            (),
+        )
+    )
+
+    erros = {(item.codigo, item.linha, item.coluna) for item in plano.inconsistencias}
+    assert (CodigoInconsistencia.STATUS_INVALIDO, 3, "Status") in erros
+    assert (CodigoInconsistencia.CHAVE_DUPLICADA, 4, "CNPJ") in erros
+
+
+def test_detecta_crmv_repetido_quando_primeira_linha_tem_outro_erro() -> None:
+    plano = planejar_importacao(
+        _dados(
+            (_clinica(),),
+            (
+                _veterinario(linha=3, clinica="Inexistente"),
+                _veterinario(linha=4),
+            ),
+        )
+    )
+
+    erros = {(item.codigo, item.linha, item.coluna) for item in plano.inconsistencias}
+    assert (CodigoInconsistencia.REFERENCIA_INEXISTENTE, 3, "Clínica") in erros
+    assert (CodigoInconsistencia.CHAVE_DUPLICADA, 4, "CRMV") in erros

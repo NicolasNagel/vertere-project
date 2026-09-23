@@ -163,4 +163,9 @@ local e não deve ser usada como fixture de teste.
 
 ## Verificação
 
-<!-- Preenchido por /fechar-spec -->
+Verificação de 2026-09-23 bloqueada até:
+
+1. registrar CNPJs e CRMVs observados independentemente dos demais erros da linha, sem transformar
+   linha inválida em entidade planejada;
+2. cobrir na seam a duplicidade cuja primeira ocorrência possui outro erro, acumulando ambos no
+   mesmo relatório.
