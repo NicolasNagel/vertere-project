@@ -115,3 +115,32 @@ def test_paciente_com_campo_obrigatorio_ausente_bloqueia_plano() -> None:
     ]
     assert {item.coluna for item in erros_paciente} >= {"Espécie", "Idade", "Proprietário"}
     assert all(item.severidade is SeveridadeInconsistencia.ERRO for item in erros_paciente)
+
+
+def test_dado_incompleto_em_ocorrencia_antiga_nao_bloqueia_paciente() -> None:
+    dados = DadosPlanilha(
+        clinicas=(_clinica(),),
+        veterinarios=(),
+        atendimentos=(
+            _atendimento(
+                linha=5,
+                data=date(2026, 1, 10),
+                especie=None,
+                raca=None,
+                sexo=None,
+                idade="NI",
+            ),
+            _atendimento(linha=6, data=date(2026, 7, 10)),
+        ),
+    )
+
+    plano = planejar_importacao(dados)
+
+    assert len(plano.pacientes) == 1
+    assert plano.pacientes[0].idade == 4
+    assert not any(
+        item.severidade is SeveridadeInconsistencia.ERRO
+        and item.linha == 5
+        and item.coluna in {"Espécie", "Raça", "Sexo", "Idade"}
+        for item in plano.inconsistencias
+    )

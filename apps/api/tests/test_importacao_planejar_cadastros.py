@@ -142,3 +142,22 @@ def test_detecta_crmv_repetido_quando_primeira_linha_tem_outro_erro() -> None:
     erros = {(item.codigo, item.linha, item.coluna) for item in plano.inconsistencias}
     assert (CodigoInconsistencia.REFERENCIA_INEXISTENTE, 3, "Clínica") in erros
     assert (CodigoInconsistencia.CHAVE_DUPLICADA, 4, "CRMV") in erros
+
+
+def test_detecta_crmv_repetido_com_variacao_de_caixa() -> None:
+    plano = planejar_importacao(
+        _dados(
+            (_clinica(),),
+            (
+                _veterinario(linha=3, crmv="ABC123"),
+                _veterinario(linha=4, crmv="abc123"),
+            ),
+        )
+    )
+
+    assert any(
+        item.codigo is CodigoInconsistencia.CHAVE_DUPLICADA
+        and item.linha == 4
+        and item.coluna == "CRMV"
+        for item in plano.inconsistencias
+    )
