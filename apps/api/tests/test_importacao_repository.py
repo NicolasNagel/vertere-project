@@ -29,6 +29,7 @@ def session() -> Session:
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+    engine.dispose()
 
 
 def _plano() -> PlanoImportacao:
