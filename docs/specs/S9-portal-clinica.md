@@ -120,6 +120,7 @@ de qualquer lógica de negócio rodar.
 - [x] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
 - [x] T12 — testes de regressão dos achados do code review: autorização centralizada do portal, histórico resistente a vínculo inconsistente e matriz completa de papéis (User Stories: 1, 4, 6)
 - [x] T13 — corrigir autorização do portal via `authorize()` e escopo de clínica na agregação do histórico (User Stories: 1, 4, 6)
+- [x] T14 — eliminar conversores duplicados usando validação Pydantic a partir dos objetos de domínio nos módulos proprietários e no portal (User Stories: 1, 2, 3, 4, 5)
 
 ## Out of Scope
 
