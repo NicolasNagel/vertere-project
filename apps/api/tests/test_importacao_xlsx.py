@@ -1,3 +1,4 @@
+from datetime import time, timedelta
 from pathlib import Path
 
 import pytest
@@ -19,7 +20,7 @@ CABECALHOS_DADOS = [
 ]
 
 
-def _salvar_planilha_valida(caminho: Path) -> None:
+def _salvar_planilha_valida(caminho: Path, *, hora: object = "10:30") -> None:
     workbook = Workbook()
     clinicas = workbook.active
     clinicas.title = "Cadastro Clínicas"
@@ -38,7 +39,7 @@ def _salvar_planilha_valida(caminho: Path) -> None:
     dados.append([])
     dados.append(CABECALHOS_DADOS)
     dados.append([
-        "Clínica A", "10/01/2026", "10:30", 2026, 1, "PROTO-1", "Motoboy",
+        "Clínica A", "10/01/2026", hora, 2026, 1, "PROTO-1", "Motoboy",
         "Dra. Ana", "Tobias", "Canino", "SRD", "Macho", 4, "José",
         "Hematológicos", "Hemograma", "Normal", 50, None, None, 50,
     ])
@@ -59,6 +60,15 @@ def test_le_planilha_minima_com_as_tres_abas(tmp_path: Path) -> None:
     assert len(dados.atendimentos) == 1
     assert dados.atendimentos[0].linha == 5
     assert dados.atendimentos[0].protocolo == "PROTO-1"
+
+
+def test_normaliza_hora_excel_representada_como_duracao(tmp_path: Path) -> None:
+    caminho = tmp_path / "hora-duracao.xlsx"
+    _salvar_planilha_valida(caminho, hora=timedelta(hours=17, minutes=11))
+
+    dados = ler_planilha(caminho)
+
+    assert dados.atendimentos[0].hora == time(17, 11)
 
 
 def test_rejeita_aba_ou_cabecalho_ausente(tmp_path: Path) -> None:

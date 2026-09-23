@@ -163,4 +163,5 @@ local e não deve ser usada como fixture de teste.
 
 ## Verificação
 
-✅ Aprovada em 2026-09-23. Relatório: [S10-verificacao.md](relatorios/S10-verificacao.md).
+Verificação final bloqueada até normalizar células de hora que o `openpyxl` lê como
+`datetime.timedelta`, cobrir esse formato no adapter e confirmar novamente o dry-run real.
