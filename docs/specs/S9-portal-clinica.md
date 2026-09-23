@@ -2,7 +2,7 @@
 codigo: S9
 modulo: Portal da Clínica
 issue: https://github.com/NicolasNagel/vertere-project/issues/20
-status: em-desenvolvimento
+status: entregue
 ---
 
 ## Problem Statement
