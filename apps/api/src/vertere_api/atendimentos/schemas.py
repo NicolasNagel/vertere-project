@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ItemExameRequest(BaseModel):
@@ -10,12 +10,16 @@ class ItemExameRequest(BaseModel):
 
 
 class ItemExameResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     exame_id: str
     preco_unitario: Decimal
     quantidade: int
 
 
 class AtendimentoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     clinica_id: str
     veterinario_id: str

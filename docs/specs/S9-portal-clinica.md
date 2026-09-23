@@ -2,7 +2,7 @@
 codigo: S9
 modulo: Portal da Clínica
 issue: https://github.com/NicolasNagel/vertere-project/issues/20
-status: pronta
+status: entregue
 ---
 
 ## Problem Statement
@@ -105,17 +105,22 @@ de qualquer lógica de negócio rodar.
 
 ## Tasks
 
-- [ ] T1 — `HistoricoPaciente` (dataclass de agregação) em `pacientes/domain.py` (User Stories: 4)
-- [ ] T2 — testes de `buscar_paciente` (escopo de clínica, mirror de `ver_laudo`) (User Stories: 1, 2)
-- [ ] T3 — implementa `buscar_paciente` em `pacientes/service.py` (User Stories: 1, 2)
-- [ ] T4 — testes de `_ACOES_COM_ESCOPO_DE_CLINICA` incluindo `ATENDIMENTO_VER` (User Stories: 1, 3)
-- [ ] T5 — adiciona `Acao.ATENDIMENTO_VER` a `_ACOES_COM_ESCOPO_DE_CLINICA` em `auth/service.py` (User Stories: 1, 3)
-- [ ] T6 — testes de `buscar_atendimento` (escopo de clínica) (User Stories: 1, 3)
-- [ ] T7 — implementa `buscar_atendimento` em `atendimentos/service.py` (User Stories: 1, 3)
-- [ ] T8 — testes de `buscar_historico_paciente` (agregação escopada de atendimentos + laudos) (User Stories: 4)
-- [ ] T9 — implementa `buscar_historico_paciente` em `pacientes/service.py` (User Stories: 4)
-- [ ] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6)
-- [ ] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T1 — `HistoricoPaciente` (dataclass de agregação) em `pacientes/domain.py` (User Stories: 4)
+- [x] T2 — testes de `buscar_paciente` (escopo de clínica, mirror de `ver_laudo`) (User Stories: 1, 2)
+- [x] T3 — implementa `buscar_paciente` em `pacientes/service.py` (User Stories: 1, 2)
+- [x] T4 — testes de `_ACOES_COM_ESCOPO_DE_CLINICA` incluindo `ATENDIMENTO_VER` (User Stories: 1, 3)
+- [x] T5 — adiciona `Acao.ATENDIMENTO_VER` a `_ACOES_COM_ESCOPO_DE_CLINICA` em `auth/service.py` (User Stories: 1, 3)
+- [x] T6 — testes de `buscar_atendimento` (escopo de clínica) (User Stories: 1, 3)
+- [x] T7 — implementa `buscar_atendimento` em `atendimentos/service.py` (User Stories: 1, 3)
+- [x] T8 — testes de `buscar_historico_paciente` (agregação escopada de atendimentos + laudos) (User Stories: 4)
+- [x] T9 — implementa `buscar_historico_paciente` em `pacientes/service.py` (User Stories: 4)
+- [x] T10 — `exigir_papel_clinica` em `auth/deps.py` (mirror de `exigir_admin`) + testes (User Stories: 6) — o gate é
+  coberto pelos testes de `/portal/*` (T11), mesmo padrão de `exigir_admin` no repo (sem teste unitário isolado de
+  dependency, só via router)
+- [x] T11 — endpoints HTTP `/portal/*` (router novo: pacientes, atendimentos, laudos — listas e recurso único — e histórico do paciente), registrado em `main.py` (User Stories: 1, 2, 3, 4, 5, 6)
+- [x] T12 — testes de regressão dos achados do code review: autorização centralizada do portal, histórico resistente a vínculo inconsistente e matriz completa de papéis (User Stories: 1, 4, 6)
+- [x] T13 — corrigir autorização do portal via `authorize()` e escopo de clínica na agregação do histórico (User Stories: 1, 4, 6)
+- [x] T14 — eliminar conversores duplicados usando validação Pydantic a partir dos objetos de domínio nos módulos proprietários e no portal (User Stories: 1, 2, 3, 4, 5)
 
 ## Out of Scope
 

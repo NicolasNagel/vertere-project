@@ -89,3 +89,6 @@ def exigir_admin(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
     if usuario.papel is not Papel.ADMIN:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Restrito a administradores")
     return usuario
+
+
+exigir_papel_clinica = exigir_acao(Acao.PORTAL_ACESSAR)

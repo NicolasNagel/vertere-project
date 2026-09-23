@@ -11,6 +11,7 @@ from vertere_api.atendimentos.domain import (
     StatusAtendimento,
 )
 from vertere_api.auth.domain import Papel, Usuario
+from vertere_api.auth.service import Acao, authorize
 from vertere_api.clinicas.service import ClinicaRepository
 from vertere_api.exames.service import (
     ExameRepository,
@@ -299,6 +300,31 @@ def cancelar_atendimento(
     cancelado = replace(atual, status=StatusAtendimento.CANCELADO)
     repo.salvar(cancelado)
     return cancelado
+
+
+def buscar_atendimento(atendimento_id: str, usuario: Usuario, repo: AtendimentoRepository) -> Atendimento:
+    """Busca um atendimento único, aplicando o escopo de clínica via `authorize()`.
+
+    Recurso único (não listagem): usa `authorize()` de verdade com o
+    `clinica_recurso` do próprio atendimento — mesmo padrão de
+    `laudos.service.ver_laudo` (S7) e `pacientes.service.buscar_paciente`.
+    Levanta `AtendimentoNaoEncontrado` tanto para id inexistente quanto para
+    acesso negado (404, não 403 — não revela a existência do recurso a quem
+    não tem acesso).
+    """
+    atendimento = repo.buscar_por_id(atendimento_id)
+    if atendimento is None:
+        raise AtendimentoNaoEncontrado(atendimento_id)
+
+    if not authorize(
+        usuario.papel,
+        Acao.ATENDIMENTO_VER,
+        clinica_usuario=usuario.clinica_id,
+        clinica_recurso=atendimento.clinica_id,
+    ):
+        raise AtendimentoNaoEncontrado(atendimento_id)
+
+    return atendimento
 
 
 def listar_atendimentos(

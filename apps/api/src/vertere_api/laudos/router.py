@@ -20,7 +20,6 @@ from vertere_api.laudos.schemas import (
     LaudoResponse,
     SalvarRascunhoRequest,
     TemplateLaudoResponse,
-    ValorCampoSchema,
 )
 from vertere_api.laudos.service import (
     AtendimentoInvalido,
@@ -63,23 +62,6 @@ def _template_para_response(template: TemplateLaudo) -> TemplateLaudoResponse:
             for c in template.campos
         ],
         ativo=template.ativo,
-    )
-
-
-def _laudo_para_response(laudo: Laudo) -> LaudoResponse:
-    return LaudoResponse(
-        id=laudo.id,
-        atendimento_id=laudo.atendimento_id,
-        exame_id=laudo.exame_id,
-        template_id=laudo.template_id,
-        valores=[ValorCampoSchema(nome_campo=v.nome_campo, valor=v.valor) for v in laudo.valores],
-        status=laudo.status.value,
-        criado_por=laudo.criado_por,
-        criado_em=laudo.criado_em,
-        finalizado_por=laudo.finalizado_por,
-        finalizado_em=laudo.finalizado_em,
-        enviado_em=laudo.enviado_em,
-        erro_envio=laudo.erro_envio,
     )
 
 
@@ -190,7 +172,7 @@ def criar_laudo_endpoint(
         )
     except _ERROS_REFERENCIA_INVALIDA as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
-    return _laudo_para_response(laudo)
+    return LaudoResponse.model_validate(laudo)
 
 
 @router_laudos.patch(
@@ -212,7 +194,7 @@ def salvar_rascunho_endpoint(
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     except LaudoFinalizado as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
-    return _laudo_para_response(laudo)
+    return LaudoResponse.model_validate(laudo)
 
 
 def _montar_dados_e_destinatario(laudo_id: str, db: Session) -> tuple[DadosLaudo, str]:
@@ -276,7 +258,7 @@ def finalizar_laudo_endpoint(
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     except LaudoFinalizado as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
-    return _laudo_para_response(laudo)
+    return LaudoResponse.model_validate(laudo)
 
 
 @router_laudos.post(
@@ -299,7 +281,7 @@ def reenviar_laudo_endpoint(laudo_id: str, db: Session = Depends(obter_db)) -> L
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     except LaudoNaoFinalizado as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
-    return _laudo_para_response(laudo)
+    return LaudoResponse.model_validate(laudo)
 
 
 @router_laudos.get("", response_model=list[LaudoResponse])
@@ -320,7 +302,7 @@ def listar_laudos_endpoint(
         data_inicio=data_inicio,
         data_fim=data_fim,
     )
-    return [_laudo_para_response(l) for l in laudos]
+    return [LaudoResponse.model_validate(l) for l in laudos]
 
 
 @router_laudos.get("/{laudo_id}", response_model=LaudoResponse)
@@ -337,4 +319,4 @@ def ver_laudo_endpoint(
         laudo = ver_laudo(laudo_id, usuario, SQLAlchemyLaudoRepository(db), SQLAlchemyAtendimentoRepository(db))
     except LaudoNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    return _laudo_para_response(laudo)
+    return LaudoResponse.model_validate(laudo)

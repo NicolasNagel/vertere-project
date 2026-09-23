@@ -6,6 +6,7 @@ from vertere_api.pacientes.domain import Paciente
 from vertere_api.pacientes.service import (
     ClinicaInexistente,
     PacienteNaoEncontrado,
+    buscar_paciente,
     buscar_pacientes,
     cadastrar_paciente,
     editar_paciente,
@@ -372,3 +373,49 @@ class TestListarPacientes:
         )
 
         assert [p.id for p in resultado] == ["pac-2"]
+
+
+class TestBuscarPaciente:
+    def _repo(self) -> PacienteRepositorioFake:
+        return PacienteRepositorioFake(
+            [
+                Paciente(
+                    id="pac-1", nome="Rex", especie="Canina", raca="Labrador", sexo="M",
+                    idade=3, proprietario="Maria Souza", clinica_id="clinica-1", ativo=True,
+                )
+            ]
+        )
+
+    def test_admin_ve_qualquer_paciente(self) -> None:
+        repo = self._repo()
+
+        paciente = buscar_paciente("pac-1", _usuario(Papel.ADMIN), repo)
+
+        assert paciente.id == "pac-1"
+
+    @pytest.mark.parametrize("papel", [Papel.ATENDENTE, Papel.TECNICO])
+    def test_papel_interno_ve_qualquer_paciente(self, papel: Papel) -> None:
+        repo = self._repo()
+
+        paciente = buscar_paciente("pac-1", _usuario(papel), repo)
+
+        assert paciente.id == "pac-1"
+
+    def test_clinica_ve_paciente_da_propria_clinica(self) -> None:
+        repo = self._repo()
+
+        paciente = buscar_paciente("pac-1", _usuario(Papel.CLINICA, clinica_id="clinica-1"), repo)
+
+        assert paciente.id == "pac-1"
+
+    def test_clinica_nao_ve_paciente_de_outra_clinica(self) -> None:
+        repo = self._repo()
+
+        with pytest.raises(PacienteNaoEncontrado):
+            buscar_paciente("pac-1", _usuario(Papel.CLINICA, clinica_id="clinica-2"), repo)
+
+    def test_paciente_inexistente_levanta_erro(self) -> None:
+        repo = self._repo()
+
+        with pytest.raises(PacienteNaoEncontrado):
+            buscar_paciente("inexistente", _usuario(Papel.ADMIN), repo)

@@ -2,15 +2,36 @@ import uuid
 from dataclasses import replace
 from typing import Protocol
 
+from vertere_api.atendimentos.domain import Atendimento
 from vertere_api.auth.domain import Papel, Usuario
+from vertere_api.auth.service import Acao, authorize
 from vertere_api.clinicas.service import ClinicaRepository
-from vertere_api.pacientes.domain import Paciente
+from vertere_api.laudos.domain import Laudo
+from vertere_api.pacientes.domain import HistoricoPaciente, Paciente
 
 
 class PacienteRepository(Protocol):
     def buscar_por_id(self, paciente_id: str) -> Paciente | None: ...
     def listar_todas(self) -> list[Paciente]: ...
     def salvar(self, paciente: Paciente) -> None: ...
+
+
+class _AtendimentosLeitura(Protocol):
+    """Shape mínimo de leitura exigido de um repositório de atendimentos.
+
+    Não importa `AtendimentoRepository` de `atendimentos.service` para evitar
+    dependência circular (`atendimentos.service` já depende de
+    `pacientes.service` para `PacienteRepository`) — Protocol é estrutural,
+    então `SQLAlchemyAtendimentoRepository` satisfaz isso sem herança.
+    """
+
+    def listar_todas(self) -> list[Atendimento]: ...
+
+
+class _LaudosLeitura(Protocol):
+    """Mesma lógica de `_AtendimentosLeitura`, para não depender de `laudos.service`."""
+
+    def listar_todas(self) -> list[Laudo]: ...
 
 
 class ClinicaInexistente(Exception):
@@ -146,6 +167,63 @@ def buscar_pacientes(
     return _filtrar(
         resultado, clinica_id=clinica_id, proprietario=proprietario, apenas_ativos=apenas_ativos
     )
+
+
+def buscar_paciente(paciente_id: str, usuario: Usuario, repo: PacienteRepository) -> Paciente:
+    """Busca um paciente único, aplicando o escopo de clínica via `authorize()`.
+
+    Recurso único (não listagem): usa `authorize()` de verdade com o
+    `clinica_recurso` do próprio paciente — mesmo padrão de
+    `laudos.service.ver_laudo` (S7). Levanta `PacienteNaoEncontrado` tanto
+    para id inexistente quanto para acesso negado (404, não 403 — não revela
+    a existência do recurso a quem não tem acesso).
+    """
+    paciente = repo.buscar_por_id(paciente_id)
+    if paciente is None:
+        raise PacienteNaoEncontrado(paciente_id)
+
+    if not authorize(
+        usuario.papel,
+        Acao.PACIENTE_VER,
+        clinica_usuario=usuario.clinica_id,
+        clinica_recurso=paciente.clinica_id,
+    ):
+        raise PacienteNaoEncontrado(paciente_id)
+
+    return paciente
+
+
+def buscar_historico_paciente(
+    paciente_id: str,
+    usuario: Usuario,
+    pacientes_repo: PacienteRepository,
+    atendimentos_repo: _AtendimentosLeitura,
+    laudos_repo: _LaudosLeitura,
+) -> HistoricoPaciente:
+    """Agrega o paciente + seus atendimentos + os laudos desses atendimentos (S9, portal).
+
+    Reaproveita `buscar_paciente` para o escopo de clínica: se o usuário não
+    tem acesso ao paciente, a mesma `PacienteNaoEncontrado` é levantada antes
+    de qualquer agregação — atendimentos e laudos de um paciente inacessível
+    nunca são carregados.
+    """
+    paciente = buscar_paciente(paciente_id, usuario, pacientes_repo)
+
+    atendimentos = [
+        atendimento
+        for atendimento in atendimentos_repo.listar_todas()
+        if atendimento.paciente_id == paciente_id
+        and authorize(
+            usuario.papel,
+            Acao.ATENDIMENTO_VER,
+            clinica_usuario=usuario.clinica_id,
+            clinica_recurso=atendimento.clinica_id,
+        )
+    ]
+    atendimento_ids = {a.id for a in atendimentos}
+    laudos = [l for l in laudos_repo.listar_todas() if l.atendimento_id in atendimento_ids]
+
+    return HistoricoPaciente(paciente=paciente, atendimentos=atendimentos, laudos=laudos)
 
 
 def listar_pacientes(

@@ -129,3 +129,32 @@ class TestAuthorize:
 
     def test_clinica_sem_contexto_e_negada_por_padrao(self) -> None:
         assert authorize(Papel.CLINICA, Acao.PACIENTE_VER) is False
+
+    def test_clinica_pode_ver_atendimento_da_propria_clinica(self) -> None:
+        assert (
+            authorize(
+                Papel.CLINICA,
+                Acao.ATENDIMENTO_VER,
+                clinica_usuario="clinica-a",
+                clinica_recurso="clinica-a",
+            )
+            is True
+        )
+
+    def test_clinica_nao_pode_ver_atendimento_de_outra_clinica(self) -> None:
+        assert (
+            authorize(
+                Papel.CLINICA,
+                Acao.ATENDIMENTO_VER,
+                clinica_usuario="clinica-a",
+                clinica_recurso="clinica-b",
+            )
+            is False
+        )
+
+    @pytest.mark.parametrize("papel", [Papel.ADMIN, Papel.ATENDENTE, Papel.TECNICO])
+    def test_somente_clinica_pode_acessar_portal(self, papel: Papel) -> None:
+        assert authorize(papel, Acao.PORTAL_ACESSAR) is False
+
+    def test_clinica_pode_acessar_portal(self) -> None:
+        assert authorize(Papel.CLINICA, Acao.PORTAL_ACESSAR) is True

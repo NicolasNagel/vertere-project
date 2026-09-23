@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CampoTemplateSchema(BaseModel):
@@ -27,11 +27,15 @@ class EditarTemplateLaudoRequest(BaseModel):
 
 
 class ValorCampoSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     nome_campo: str
     valor: str
 
 
 class LaudoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     atendimento_id: str
     exame_id: str

@@ -5,7 +5,6 @@ from vertere_api.auth.deps import exigir_acao, obter_db
 from vertere_api.auth.domain import Usuario
 from vertere_api.auth.service import Acao
 from vertere_api.clinicas.repository import SQLAlchemyClinicaRepository
-from vertere_api.pacientes.domain import Paciente
 from vertere_api.pacientes.repository import SQLAlchemyPacienteRepository
 from vertere_api.pacientes.schemas import (
     CriarPacienteRequest,
@@ -24,20 +23,6 @@ from vertere_api.pacientes.service import (
 )
 
 router = APIRouter(prefix="/pacientes", tags=["pacientes"])
-
-
-def _para_response(paciente: Paciente) -> PacienteResponse:
-    return PacienteResponse(
-        id=paciente.id,
-        nome=paciente.nome,
-        especie=paciente.especie,
-        raca=paciente.raca,
-        sexo=paciente.sexo,
-        idade=paciente.idade,
-        proprietario=paciente.proprietario,
-        clinica_id=paciente.clinica_id,
-        ativo=paciente.ativo,
-    )
 
 
 @router.post(
@@ -63,7 +48,7 @@ def criar(dados: CriarPacienteRequest, db: Session = Depends(obter_db)) -> Pacie
         )
     except ClinicaInexistente as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
-    return _para_response(paciente)
+    return PacienteResponse.model_validate(paciente)
 
 
 @router.patch(
@@ -88,7 +73,7 @@ def editar(
         )
     except PacienteNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    return _para_response(paciente)
+    return PacienteResponse.model_validate(paciente)
 
 
 @router.post(
@@ -102,7 +87,7 @@ def inativar(paciente_id: str, db: Session = Depends(obter_db)) -> PacienteRespo
         paciente = inativar_paciente(paciente_id, repo)
     except PacienteNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    return _para_response(paciente)
+    return PacienteResponse.model_validate(paciente)
 
 
 @router.post(
@@ -116,7 +101,7 @@ def reativar(paciente_id: str, db: Session = Depends(obter_db)) -> PacienteRespo
         paciente = reativar_paciente(paciente_id, repo)
     except PacienteNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
-    return _para_response(paciente)
+    return PacienteResponse.model_validate(paciente)
 
 
 @router.get("", response_model=list[PacienteResponse])
@@ -128,7 +113,7 @@ def listar(
 ) -> list[PacienteResponse]:
     repo = SQLAlchemyPacienteRepository(db)
     pacientes = listar_pacientes(repo, usuario, clinica_id=clinica_id, apenas_ativos=apenas_ativos)
-    return [_para_response(p) for p in pacientes]
+    return [PacienteResponse.model_validate(p) for p in pacientes]
 
 
 @router.get("/busca", response_model=list[PacienteResponse])
@@ -149,4 +134,4 @@ def buscar(
         proprietario=proprietario,
         apenas_ativos=apenas_ativos,
     )
-    return [_para_response(p) for p in pacientes]
+    return [PacienteResponse.model_validate(p) for p in pacientes]

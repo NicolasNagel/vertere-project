@@ -3,13 +3,12 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from vertere_api.atendimentos.domain import Atendimento, ItemExameEntrada, StatusAtendimento
+from vertere_api.atendimentos.domain import ItemExameEntrada, StatusAtendimento
 from vertere_api.atendimentos.repository import SQLAlchemyAtendimentoRepository
 from vertere_api.atendimentos.schemas import (
     AtendimentoResponse,
     CriarAtendimentoRequest,
     EditarAtendimentoRequest,
-    ItemExameResponse,
 )
 from vertere_api.atendimentos.service import (
     AtendimentoCancelado,
@@ -50,28 +49,6 @@ _ERROS_REFERENCIA_INVALIDA = (
 )
 
 
-def _atendimento_para_response(atendimento: Atendimento) -> AtendimentoResponse:
-    return AtendimentoResponse(
-        id=atendimento.id,
-        clinica_id=atendimento.clinica_id,
-        veterinario_id=atendimento.veterinario_id,
-        paciente_id=atendimento.paciente_id,
-        itens_exame=[
-            ItemExameResponse(
-                exame_id=item.exame_id, preco_unitario=item.preco_unitario, quantidade=item.quantidade
-            )
-            for item in atendimento.itens_exame
-        ],
-        metodo_coleta=atendimento.metodo_coleta,
-        data_hora=atendimento.data_hora,
-        regra_plantao_id=atendimento.regra_plantao_id,
-        valor_adicional_plantao=atendimento.valor_adicional_plantao,
-        desconto=atendimento.desconto,
-        valor_total=atendimento.valor_total,
-        status=atendimento.status.value,
-    )
-
-
 @router.post(
     "",
     response_model=AtendimentoResponse,
@@ -103,7 +80,7 @@ def criar_atendimento(
         )
     except _ERROS_REFERENCIA_INVALIDA as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
-    return _atendimento_para_response(atendimento)
+    return AtendimentoResponse.model_validate(atendimento)
 
 
 @router.patch(
@@ -142,7 +119,7 @@ def editar_atendimento_endpoint(
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
     except _ERROS_REFERENCIA_INVALIDA as erro:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
-    return _atendimento_para_response(atendimento)
+    return AtendimentoResponse.model_validate(atendimento)
 
 
 @router.post(
@@ -164,7 +141,7 @@ def cancelar_atendimento_endpoint(
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     except (AtendimentoCancelado, PeriodoFechado) as erro:
         raise HTTPException(status.HTTP_409_CONFLICT, str(erro)) from erro
-    return _atendimento_para_response(atendimento)
+    return AtendimentoResponse.model_validate(atendimento)
 
 
 @router.get("", response_model=list[AtendimentoResponse])
@@ -187,4 +164,4 @@ def listar_atendimentos_endpoint(
         data_inicio=data_inicio,
         data_fim=data_fim,
     )
-    return [_atendimento_para_response(a) for a in atendimentos]
+    return [AtendimentoResponse.model_validate(a) for a in atendimentos]
