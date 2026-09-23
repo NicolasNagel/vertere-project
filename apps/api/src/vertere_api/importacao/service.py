@@ -199,6 +199,8 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 )
             )
             valido = False
+        if len(cnpj) == 14:
+            cnpjs_vistos.add(cnpj)
 
         ativo = _interpretar_status(linha.status)
         if ativo is None:
@@ -238,7 +240,6 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         )
         clinicas.append(clinica)
         clinicas_por_nome[chave_nome].append(clinica)
-        cnpjs_vistos.add(cnpj)
 
     veterinarios: list[VeterinarioPlanejado] = []
     crmvs_vistos: set[str] = set()
@@ -282,6 +283,8 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 )
             )
             valido = False
+        if crmv:
+            crmvs_vistos.add(crmv)
 
         if not candidatas:
             inconsistencias.append(
@@ -332,7 +335,6 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             ativo=ativo,
         )
         veterinarios.append(veterinario)
-        crmvs_vistos.add(crmv)
 
     pacientes_por_chave: dict[
         tuple[str, str, str], list[tuple[datetime, object]]
