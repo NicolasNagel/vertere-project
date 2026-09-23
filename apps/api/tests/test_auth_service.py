@@ -151,3 +151,10 @@ class TestAuthorize:
             )
             is False
         )
+
+    @pytest.mark.parametrize("papel", [Papel.ADMIN, Papel.ATENDENTE, Papel.TECNICO])
+    def test_somente_clinica_pode_acessar_portal(self, papel: Papel) -> None:
+        assert authorize(papel, Acao.PORTAL_ACESSAR) is False
+
+    def test_clinica_pode_acessar_portal(self) -> None:
+        assert authorize(Papel.CLINICA, Acao.PORTAL_ACESSAR) is True

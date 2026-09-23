@@ -393,6 +393,14 @@ class TestBuscarPaciente:
 
         assert paciente.id == "pac-1"
 
+    @pytest.mark.parametrize("papel", [Papel.ATENDENTE, Papel.TECNICO])
+    def test_papel_interno_ve_qualquer_paciente(self, papel: Papel) -> None:
+        repo = self._repo()
+
+        paciente = buscar_paciente("pac-1", _usuario(papel), repo)
+
+        assert paciente.id == "pac-1"
+
     def test_clinica_ve_paciente_da_propria_clinica(self) -> None:
         repo = self._repo()
 

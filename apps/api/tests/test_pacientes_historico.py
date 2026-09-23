@@ -116,6 +116,35 @@ class TestBuscarHistoricoPaciente:
         assert historico.paciente.id == "paciente-1"
         assert {a.id for a in historico.atendimentos} == {"atendimento-1", "atendimento-2"}
 
+    def test_clinica_nao_ve_atendimento_inconsistente_de_outra_clinica(self) -> None:
+        pacientes, atendimentos, laudos = self._cenario()
+        atendimentos._itens.append(
+            _atendimento("atendimento-inconsistente", "paciente-1", "clinica-2")
+        )
+        laudos._itens.append(_laudo("laudo-inconsistente", "atendimento-inconsistente"))
+
+        historico = buscar_historico_paciente(
+            "paciente-1",
+            _usuario(Papel.CLINICA, clinica_id="clinica-1"),
+            pacientes,
+            atendimentos,
+            laudos,
+        )
+
+        assert {a.id for a in historico.atendimentos} == {"atendimento-1", "atendimento-2"}
+        assert {l.id for l in historico.laudos} == {"laudo-1"}
+
+    @pytest.mark.parametrize("papel", [Papel.ATENDENTE, Papel.TECNICO])
+    def test_papel_interno_ve_historico_completo_do_paciente(self, papel: Papel) -> None:
+        pacientes, atendimentos, laudos = self._cenario()
+
+        historico = buscar_historico_paciente(
+            "paciente-1", _usuario(papel), pacientes, atendimentos, laudos
+        )
+
+        assert {a.id for a in historico.atendimentos} == {"atendimento-1", "atendimento-2"}
+        assert {l.id for l in historico.laudos} == {"laudo-1"}
+
     def test_clinica_nao_ve_historico_de_paciente_de_outra_clinica(self) -> None:
         pacientes, atendimentos, laudos = self._cenario()
 

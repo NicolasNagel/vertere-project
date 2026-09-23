@@ -53,6 +53,14 @@ class TestBuscarAtendimento:
 
         assert atendimento.id == "atendimento-1"
 
+    @pytest.mark.parametrize("papel", [Papel.ATENDENTE, Papel.TECNICO])
+    def test_papel_interno_ve_qualquer_atendimento(self, papel: Papel) -> None:
+        repo = AtendimentoRepositorioFake([_atendimento("atendimento-1", "clinica-1")])
+
+        atendimento = buscar_atendimento("atendimento-1", _usuario(papel), repo)
+
+        assert atendimento.id == "atendimento-1"
+
     def test_clinica_ve_atendimento_da_propria_clinica(self) -> None:
         repo = AtendimentoRepositorioFake([_atendimento("atendimento-1", "clinica-1")])
 
