@@ -127,7 +127,7 @@ nem expõe seus dados em fixtures ou snapshots.
 - [x] T2 — testes da seam para normalização, referências e coleta acumulada de inconsistências (User Stories: 1, 2, 4, 5)
 - [x] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
 - [x] T4 — testes da seam para deduplicação/canonicalização de pacientes (User Stories: 2, 4, 6)
-- [ ] T5 — implementar planejamento de pacientes derivados de `Dados` (User Stories: 2, 4, 6)
+- [x] T5 — implementar planejamento de pacientes derivados de `Dados` (User Stories: 2, 4, 6)
 - [ ] T6 — testes da seam para exames, atendimentos, preços históricos, totais e proveniência (User Stories: 1, 3, 4, 6)
 - [ ] T7 — implementar planejamento do catálogo mínimo e dos atendimentos históricos (User Stories: 1, 3, 4, 6)
 - [ ] T8 — adicionar `numero_origem`/`protocolo_origem` ao domínio, modelo e migration de atendimentos, mantendo compatibilidade com fluxos existentes (User Stories: 1, 3, 6)

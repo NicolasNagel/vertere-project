@@ -1,6 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
+from datetime import date, datetime, time
 from uuid import uuid5
 
 from vertere_api.importacao.domain import (
@@ -10,7 +11,9 @@ from vertere_api.importacao.domain import (
     DadosPlanilha,
     InconsistenciaImportacao,
     NAMESPACE_CLINICAS,
+    NAMESPACE_PACIENTES,
     NAMESPACE_VETERINARIOS,
+    PacientePlanejado,
     PlanoImportacao,
     SeveridadeInconsistencia,
     ValorCelula,
@@ -58,6 +61,73 @@ def _erro(
         coluna=coluna,
         mensagem=mensagem,
     )
+
+
+def _aviso(
+    codigo: CodigoInconsistencia,
+    aba: str,
+    linha: int,
+    coluna: str,
+    mensagem: str,
+) -> InconsistenciaImportacao:
+    return InconsistenciaImportacao(
+        severidade=SeveridadeInconsistencia.AVISO,
+        codigo=codigo,
+        aba=aba,
+        linha=linha,
+        coluna=coluna,
+        mensagem=mensagem,
+    )
+
+
+def _data_hora(data_valor: ValorCelula, hora_valor: ValorCelula) -> datetime | None:
+    if isinstance(data_valor, datetime):
+        data_convertida = data_valor.date()
+    elif isinstance(data_valor, date):
+        data_convertida = data_valor
+    elif isinstance(data_valor, str):
+        data_convertida = None
+        for formato in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                data_convertida = datetime.strptime(data_valor.strip(), formato).date()
+                break
+            except ValueError:
+                continue
+    else:
+        data_convertida = None
+
+    if isinstance(hora_valor, datetime):
+        hora_convertida = hora_valor.time()
+    elif isinstance(hora_valor, time):
+        hora_convertida = hora_valor
+    elif isinstance(hora_valor, str):
+        hora_convertida = None
+        for formato in ("%H:%M:%S", "%H:%M"):
+            try:
+                hora_convertida = datetime.strptime(hora_valor.strip(), formato).time()
+                break
+            except ValueError:
+                continue
+    else:
+        hora_convertida = None
+
+    if data_convertida is None or hora_convertida is None:
+        return None
+    return datetime.combine(data_convertida, hora_convertida)
+
+
+def _idade(valor: ValorCelula) -> int | None:
+    if isinstance(valor, bool):
+        return None
+    if isinstance(valor, int):
+        return valor if valor >= 0 else None
+    if isinstance(valor, float) and valor.is_integer():
+        inteiro = int(valor)
+        return inteiro if inteiro >= 0 else None
+    texto = _texto(valor)
+    if texto.isdigit():
+        return int(texto)
+    return None
 
 
 def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
@@ -241,13 +311,136 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         veterinarios.append(veterinario)
         crmvs_vistos.add(crmv)
 
+    pacientes_por_chave: dict[
+        tuple[str, str, str], list[tuple[datetime, object]]
+    ] = defaultdict(list)
+    for linha in dados_planilha.atendimentos:
+        chave_clinica = _chave_texto(linha.clinica)
+        candidatas = clinicas_por_nome.get(chave_clinica, [])
+        nome = _texto(linha.paciente)
+        proprietario = _texto(linha.proprietario)
+        campos_texto = {
+            "Paciente": nome,
+            "Espécie": _texto(linha.especie),
+            "Raça": _texto(linha.raca),
+            "Sexo": _texto(linha.sexo),
+            "Proprietário": proprietario,
+        }
+        valido = True
+        for coluna, valor in campos_texto.items():
+            if not valor:
+                inconsistencias.append(
+                    _erro(
+                        CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                        "Dados",
+                        linha.linha,
+                        coluna,
+                        f"{coluna} é obrigatório para formar o cadastro do paciente",
+                    )
+                )
+                valido = False
+
+        idade = _idade(linha.idade)
+        if idade is None:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.VALOR_INVALIDO,
+                    "Dados",
+                    linha.linha,
+                    "Idade",
+                    "Idade deve ser um inteiro não negativo",
+                )
+            )
+            valido = False
+
+        instante = _data_hora(linha.data, linha.hora)
+        if instante is None:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.VALOR_INVALIDO,
+                    "Dados",
+                    linha.linha,
+                    "Data/Hora",
+                    "Data e hora devem formar um instante válido",
+                )
+            )
+            valido = False
+
+        if len(candidatas) != 1:
+            codigo = (
+                CodigoInconsistencia.REFERENCIA_AMBIGUA
+                if len(candidatas) > 1
+                else CodigoInconsistencia.REFERENCIA_INEXISTENTE
+            )
+            inconsistencias.append(
+                _erro(
+                    codigo,
+                    "Dados",
+                    linha.linha,
+                    "Clínica",
+                    "Clínica do paciente não pôde ser resolvida unicamente",
+                )
+            )
+            valido = False
+
+        if not valido:
+            continue
+
+        chave = (candidatas[0].id, _chave_texto(nome), _chave_texto(proprietario))
+        pacientes_por_chave[chave].append((instante, linha))
+
+    pacientes: list[PacientePlanejado] = []
+    for chave, ocorrencias in pacientes_por_chave.items():
+        ocorrencias.sort(key=lambda item: (item[0], item[1].linha))
+        _, linha_canonica = ocorrencias[-1]
+        atributos = {
+            (
+                _chave_texto(item.especie),
+                _chave_texto(item.raca),
+                _chave_texto(item.sexo),
+                _idade(item.idade),
+            )
+            for _, item in ocorrencias
+        }
+        if len(atributos) > 1:
+            inconsistencias.append(
+                _aviso(
+                    CodigoInconsistencia.DADO_HISTORICO_DIVERGENTE,
+                    "Dados",
+                    linha_canonica.linha,
+                    "Paciente",
+                    "Ocorrências do paciente divergem; usada a mais recente",
+                )
+            )
+
+        clinica_id, chave_nome, chave_proprietario = chave
+        pacientes.append(
+            PacientePlanejado(
+                id=str(
+                    uuid5(
+                        NAMESPACE_PACIENTES,
+                        f"{clinica_id}|{chave_nome}|{chave_proprietario}",
+                    )
+                ),
+                nome=_texto(linha_canonica.paciente),
+                especie=_texto(linha_canonica.especie),
+                raca=_texto(linha_canonica.raca),
+                sexo=_texto(linha_canonica.sexo),
+                idade=_idade(linha_canonica.idade),
+                proprietario=_texto(linha_canonica.proprietario),
+                clinica_id=clinica_id,
+            )
+        )
+
     contadores = ContadoresImportacao(
         clinicas=len(clinicas),
         veterinarios=len(veterinarios),
+        pacientes=len(pacientes),
     )
     return PlanoImportacao(
         clinicas=tuple(clinicas),
         veterinarios=tuple(veterinarios),
+        pacientes=tuple(pacientes),
         inconsistencias=tuple(inconsistencias),
         contadores=contadores,
     )
