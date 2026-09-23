@@ -4,6 +4,8 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
+from pydantic import BaseModel, ConfigDict
+
 
 ValorCelula = str | int | float | Decimal | date | datetime | time | None
 
@@ -44,8 +46,11 @@ class InconsistenciaImportacao:
     mensagem: str
 
 
-@dataclass(frozen=True)
-class LinhaClinicaPlanilha:
+class ContratoPlanilha(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+
+class LinhaClinicaPlanilha(ContratoPlanilha):
     linha: int
     nome: ValorCelula
     cnpj: ValorCelula
@@ -55,8 +60,7 @@ class LinhaClinicaPlanilha:
     status: ValorCelula
 
 
-@dataclass(frozen=True)
-class LinhaVeterinarioPlanilha:
+class LinhaVeterinarioPlanilha(ContratoPlanilha):
     linha: int
     clinica: ValorCelula
     nome: ValorCelula
@@ -66,8 +70,7 @@ class LinhaVeterinarioPlanilha:
     status: ValorCelula
 
 
-@dataclass(frozen=True)
-class LinhaAtendimentoPlanilha:
+class LinhaAtendimentoPlanilha(ContratoPlanilha):
     linha: int
     clinica: ValorCelula
     data: ValorCelula
@@ -91,8 +94,7 @@ class LinhaAtendimentoPlanilha:
     valor_total: ValorCelula
 
 
-@dataclass(frozen=True)
-class DadosPlanilha:
+class DadosPlanilha(ContratoPlanilha):
     clinicas: tuple[LinhaClinicaPlanilha, ...]
     veterinarios: tuple[LinhaVeterinarioPlanilha, ...]
     atendimentos: tuple[LinhaAtendimentoPlanilha, ...]

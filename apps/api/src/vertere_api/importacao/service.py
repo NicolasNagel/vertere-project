@@ -13,6 +13,7 @@ from vertere_api.importacao.domain import (
     DadosPlanilha,
     ExamePlanejado,
     InconsistenciaImportacao,
+    LinhaAtendimentoPlanilha,
     NAMESPACE_ATENDIMENTOS,
     NAMESPACE_CLINICAS,
     NAMESPACE_EXAMES,
@@ -51,7 +52,8 @@ def _interpretar_status(valor: ValorCelula) -> bool | None:
     return None
 
 
-def _erro(
+def _inconsistencia(
+    severidade: SeveridadeInconsistencia,
     codigo: CodigoInconsistencia,
     aba: str,
     linha: int,
@@ -59,12 +61,24 @@ def _erro(
     mensagem: str,
 ) -> InconsistenciaImportacao:
     return InconsistenciaImportacao(
-        severidade=SeveridadeInconsistencia.ERRO,
+        severidade=severidade,
         codigo=codigo,
         aba=aba,
         linha=linha,
         coluna=coluna,
         mensagem=mensagem,
+    )
+
+
+def _erro(
+    codigo: CodigoInconsistencia,
+    aba: str,
+    linha: int,
+    coluna: str,
+    mensagem: str,
+) -> InconsistenciaImportacao:
+    return _inconsistencia(
+        SeveridadeInconsistencia.ERRO, codigo, aba, linha, coluna, mensagem
     )
 
 
@@ -75,13 +89,8 @@ def _aviso(
     coluna: str,
     mensagem: str,
 ) -> InconsistenciaImportacao:
-    return InconsistenciaImportacao(
-        severidade=SeveridadeInconsistencia.AVISO,
-        codigo=codigo,
-        aba=aba,
-        linha=linha,
-        coluna=coluna,
-        mensagem=mensagem,
+    return _inconsistencia(
+        SeveridadeInconsistencia.AVISO, codigo, aba, linha, coluna, mensagem
     )
 
 
@@ -151,6 +160,39 @@ def _decimal(valor: ValorCelula, *, vazio_como_zero: bool = False) -> Decimal | 
         except InvalidOperation:
             return None
     return resultado.quantize(Decimal("0.01"))
+
+
+def _validar_ocorrencia_canonica_paciente(
+    linha: LinhaAtendimentoPlanilha,
+) -> tuple[int | None, list[InconsistenciaImportacao]]:
+    inconsistencias: list[InconsistenciaImportacao] = []
+    for coluna, valor in {
+        "Espécie": _texto(linha.especie),
+        "Raça": _texto(linha.raca),
+        "Sexo": _texto(linha.sexo),
+    }.items():
+        if not valor:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                    "Dados",
+                    linha.linha,
+                    coluna,
+                    f"{coluna} é obrigatório na ocorrência canônica do paciente",
+                )
+            )
+    idade = _idade(linha.idade)
+    if idade is None:
+        inconsistencias.append(
+            _erro(
+                CodigoInconsistencia.VALOR_INVALIDO,
+                "Dados",
+                linha.linha,
+                "Idade",
+                "Idade deve ser um inteiro não negativo na ocorrência canônica",
+            )
+        )
+    return idade, inconsistencias
 
 
 def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
@@ -246,6 +288,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
     for linha in dados_planilha.veterinarios:
         nome = _texto(linha.nome)
         crmv = _texto(linha.crmv)
+        chave_crmv = _chave_texto(linha.crmv)
         chave_clinica = _chave_texto(linha.clinica)
         candidatas = clinicas_por_nome.get(chave_clinica, [])
         valido = True
@@ -272,7 +315,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 )
             )
             valido = False
-        elif crmv in crmvs_vistos:
+        elif chave_crmv in crmvs_vistos:
             inconsistencias.append(
                 _erro(
                     CodigoInconsistencia.CHAVE_DUPLICADA,
@@ -283,8 +326,8 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 )
             )
             valido = False
-        if crmv:
-            crmvs_vistos.add(crmv)
+        if chave_crmv:
+            crmvs_vistos.add(chave_crmv)
 
         if not candidatas:
             inconsistencias.append(
@@ -326,7 +369,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             continue
 
         veterinario = VeterinarioPlanejado(
-            id=str(uuid5(NAMESPACE_VETERINARIOS, crmv.casefold())),
+            id=str(uuid5(NAMESPACE_VETERINARIOS, chave_crmv)),
             nome=nome,
             crmv=crmv,
             telefone=_texto(linha.telefone),
@@ -337,7 +380,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         veterinarios.append(veterinario)
 
     pacientes_por_chave: dict[
-        tuple[str, str, str], list[tuple[datetime, object]]
+        tuple[str, str, str], list[tuple[datetime, LinhaAtendimentoPlanilha]]
     ] = defaultdict(list)
     for linha in dados_planilha.atendimentos:
         chave_clinica = _chave_texto(linha.clinica)
@@ -346,9 +389,6 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         proprietario = _texto(linha.proprietario)
         campos_texto = {
             "Paciente": nome,
-            "Espécie": _texto(linha.especie),
-            "Raça": _texto(linha.raca),
-            "Sexo": _texto(linha.sexo),
             "Proprietário": proprietario,
         }
         valido = True
@@ -364,19 +404,6 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                     )
                 )
                 valido = False
-
-        idade = _idade(linha.idade)
-        if idade is None:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.VALOR_INVALIDO,
-                    "Dados",
-                    linha.linha,
-                    "Idade",
-                    "Idade deve ser um inteiro não negativo",
-                )
-            )
-            valido = False
 
         instante = _data_hora(linha.data, linha.hora)
         if instante is None:
@@ -409,6 +436,8 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             valido = False
 
         if not valido:
+            _, erros_canonicos = _validar_ocorrencia_canonica_paciente(linha)
+            inconsistencias.extend(erros_canonicos)
             continue
 
         chave = (candidatas[0].id, _chave_texto(nome), _chave_texto(proprietario))
@@ -418,6 +447,10 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
     for chave, ocorrencias in pacientes_por_chave.items():
         ocorrencias.sort(key=lambda item: (item[0], item[1].linha))
         _, linha_canonica = ocorrencias[-1]
+        idade_canonica, erros_canonicos = _validar_ocorrencia_canonica_paciente(
+            linha_canonica
+        )
+        inconsistencias.extend(erros_canonicos)
         atributos = {
             (
                 _chave_texto(item.especie),
@@ -438,6 +471,9 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 )
             )
 
+        if erros_canonicos:
+            continue
+
         clinica_id, chave_nome, chave_proprietario = chave
         pacientes.append(
             PacientePlanejado(
@@ -451,7 +487,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
                 especie=_texto(linha_canonica.especie),
                 raca=_texto(linha_canonica.raca),
                 sexo=_texto(linha_canonica.sexo),
-                idade=_idade(linha_canonica.idade),
+                idade=idade_canonica,
                 proprietario=_texto(linha_canonica.proprietario),
                 clinica_id=clinica_id,
             )
@@ -470,7 +506,7 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
     }
 
     ocorrencias_exame: dict[
-        tuple[str, str], list[tuple[datetime, object, Decimal]]
+        tuple[str, str], list[tuple[datetime, LinhaAtendimentoPlanilha, Decimal]]
     ] = defaultdict(list)
     atendimentos: list[AtendimentoPlanejado] = []
     protocolos_vistos: set[str] = set()
@@ -677,6 +713,3 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         inconsistencias=tuple(inconsistencias),
         contadores=contadores,
     )
-    AtendimentoPlanejado,
-    NAMESPACE_ATENDIMENTOS,
-    NAMESPACE_EXAMES,

@@ -17,6 +17,8 @@ class PlanoNaoAplicavel(Exception):
 
 class ColisaoDestino(Exception):
     def __init__(self, entidade: str, identificador: str) -> None:
+        self.entidade = entidade
+        self.identificador = identificador
         super().__init__(f"{entidade} {identificador} já existe com conteúdo incompatível")
 
 
@@ -25,23 +27,23 @@ def _igual(modelo: object, esperado: Mapping[str, Any]) -> bool:
 
 
 def _adicionar_ou_validar(
-    session: Session,
+    sessao: Session,
     modelo_tipo: type,
     identificador: str,
     valores: dict[str, Any],
     entidade: str,
 ) -> object:
-    existente = session.get(modelo_tipo, identificador)
+    existente = sessao.get(modelo_tipo, identificador)
     if existente is not None:
         if not _igual(existente, valores):
             raise ColisaoDestino(entidade, identificador)
         return existente
     modelo = modelo_tipo(id=identificador, **valores)
-    session.add(modelo)
+    sessao.add(modelo)
     return modelo
 
 
-def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
+def aplicar_plano(plano: PlanoImportacao, sessao: Session) -> None:
     """Aplica o plano inteiro ou não aplica nada; aceita reexecução idêntica."""
     if not plano.aplicavel:
         raise PlanoNaoAplicavel("Plano contém erros bloqueantes")
@@ -49,7 +51,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
     try:
         for clinica in plano.clinicas:
             _adicionar_ou_validar(
-                session,
+                sessao,
                 ClinicaModel,
                 clinica.id,
                 {
@@ -63,11 +65,11 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
                 },
                 "Clínica",
             )
-        session.flush()
+        sessao.flush()
 
         for veterinario in plano.veterinarios:
             _adicionar_ou_validar(
-                session,
+                sessao,
                 VeterinarioModel,
                 veterinario.id,
                 {
@@ -82,7 +84,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
             )
         for paciente in plano.pacientes:
             _adicionar_ou_validar(
-                session,
+                sessao,
                 PacienteModel,
                 paciente.id,
                 {
@@ -99,7 +101,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
             )
         for exame in plano.exames:
             _adicionar_ou_validar(
-                session,
+                sessao,
                 ExameModel,
                 exame.id,
                 {
@@ -110,7 +112,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
                 },
                 "Exame",
             )
-        session.flush()
+        sessao.flush()
 
         for atendimento in plano.atendimentos:
             valores = {
@@ -128,7 +130,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
                 "protocolo_origem": atendimento.protocolo_origem,
             }
             modelo = _adicionar_ou_validar(
-                session,
+                sessao,
                 AtendimentoModel,
                 atendimento.id,
                 valores,
@@ -156,7 +158,7 @@ def aplicar_plano(plano: PlanoImportacao, session: Session) -> None:
                     )
                 ]
 
-        session.commit()
+        sessao.commit()
     except Exception:
-        session.rollback()
+        sessao.rollback()
         raise

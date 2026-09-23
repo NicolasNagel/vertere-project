@@ -6,8 +6,13 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from vertere_api.importacao.domain import InconsistenciaImportacao, PlanoImportacao
-from vertere_api.importacao.repository import aplicar_plano
+from vertere_api.importacao.domain import (
+    CodigoInconsistencia,
+    InconsistenciaImportacao,
+    PlanoImportacao,
+    SeveridadeInconsistencia,
+)
+from vertere_api.importacao.repository import ColisaoDestino, aplicar_plano
 from vertere_api.importacao.service import planejar_importacao
 from vertere_api.importacao.xlsx import EstruturaPlanilhaInvalida, ler_planilha
 
@@ -46,19 +51,20 @@ def _salvar_relatorio(
     inconsistencias: tuple[InconsistenciaImportacao, ...] = (),
 ) -> None:
     caminho.parent.mkdir(parents=True, exist_ok=True)
+    itens = (*plano.inconsistencias, *inconsistencias) if plano else inconsistencias
     conteudo = {
         "modo": modo,
         "aplicavel": aplicavel,
         "contadores": asdict(plano.contadores) if plano else {},
-        "inconsistencias": [
-            _inconsistencia(item)
-            for item in (plano.inconsistencias if plano else inconsistencias)
-        ],
+        "totais_inconsistencias": {
+            "erros": sum(item.severidade is SeveridadeInconsistencia.ERRO for item in itens),
+            "avisos": sum(item.severidade is SeveridadeInconsistencia.AVISO for item in itens),
+        },
+        "inconsistencias": [_inconsistencia(item) for item in itens],
     }
-    caminho.write_text(
-        json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    serializado = json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n"
+    caminho.write_text(serializado, encoding="utf-8")
+    print(serializado, end="")
 
 
 def executar(argv: list[str] | None = None) -> int:
@@ -86,12 +92,29 @@ def executar(argv: list[str] | None = None) -> int:
 
     modo = "dry-run"
     if argumentos.aplicar:
-        engine = create_engine(argumentos.banco)
+        motor = create_engine(argumentos.banco)
         try:
-            with Session(engine) as session:
-                aplicar_plano(plano, session)
+            with Session(motor) as sessao:
+                aplicar_plano(plano, sessao)
+        except ColisaoDestino as erro:
+            colisao = InconsistenciaImportacao(
+                severidade=SeveridadeInconsistencia.ERRO,
+                codigo=CodigoInconsistencia.COLISAO_DESTINO,
+                aba="Banco de destino",
+                linha=None,
+                coluna=erro.entidade,
+                mensagem="Registro existente possui conteúdo incompatível",
+            )
+            _salvar_relatorio(
+                argumentos.relatorio,
+                modo="falhou",
+                aplicavel=False,
+                plano=plano,
+                inconsistencias=(colisao,),
+            )
+            return 1
         finally:
-            engine.dispose()
+            motor.dispose()
         modo = "aplicado"
 
     _salvar_relatorio(

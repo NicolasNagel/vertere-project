@@ -57,12 +57,12 @@ def _mapear_linha(cabecalhos: tuple[str, ...], valores: tuple[object, ...]) -> d
 
 
 def ler_planilha(caminho: str | Path) -> DadosPlanilha:
-    workbook = load_workbook(caminho, read_only=True, data_only=True)
+    livro = load_workbook(caminho, read_only=True, data_only=True)
     inconsistencias: list[InconsistenciaImportacao] = []
     indices: dict[str, tuple[int, tuple[str, ...]]] = {}
 
     for aba, (linha_cabecalho, esperados) in _CABECALHOS.items():
-        if aba not in workbook.sheetnames:
+        if aba not in livro.sheetnames:
             inconsistencias.append(
                 _erro_estrutura(
                     CodigoInconsistencia.ABA_AUSENTE,
@@ -72,9 +72,9 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
                 )
             )
             continue
-        worksheet = workbook[aba]
+        planilha = livro[aba]
         celulas_cabecalho = next(
-            worksheet.iter_rows(
+            planilha.iter_rows(
                 min_row=linha_cabecalho,
                 max_row=linha_cabecalho,
                 max_col=len(esperados),
@@ -98,14 +98,16 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
         indices[aba] = (linha_cabecalho, esperados)
 
     if inconsistencias:
-        workbook.close()
+        livro.close()
         raise EstruturaPlanilhaInvalida(tuple(inconsistencias))
 
     clinicas: list[LinhaClinicaPlanilha] = []
-    ws_clinicas = workbook["Cadastro Clínicas"]
+    planilha_clinicas = livro["Cadastro Clínicas"]
     inicio, cabecalhos = indices["Cadastro Clínicas"]
     for numero, valores in enumerate(
-        ws_clinicas.iter_rows(min_row=inicio + 1, max_col=len(cabecalhos), values_only=True),
+        planilha_clinicas.iter_rows(
+            min_row=inicio + 1, max_col=len(cabecalhos), values_only=True
+        ),
         start=inicio + 1,
     ):
         if not any(valor is not None for valor in valores):
@@ -124,10 +126,12 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
         )
 
     veterinarios: list[LinhaVeterinarioPlanilha] = []
-    ws_veterinarios = workbook["Cadastro Veterinários"]
+    planilha_veterinarios = livro["Cadastro Veterinários"]
     inicio, cabecalhos = indices["Cadastro Veterinários"]
     for numero, valores in enumerate(
-        ws_veterinarios.iter_rows(min_row=inicio + 1, max_col=len(cabecalhos), values_only=True),
+        planilha_veterinarios.iter_rows(
+            min_row=inicio + 1, max_col=len(cabecalhos), values_only=True
+        ),
         start=inicio + 1,
     ):
         if not any(valor is not None for valor in valores):
@@ -146,10 +150,12 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
         )
 
     atendimentos: list[LinhaAtendimentoPlanilha] = []
-    ws_dados = workbook["Dados"]
+    planilha_dados = livro["Dados"]
     inicio, cabecalhos = indices["Dados"]
     for numero, valores in enumerate(
-        ws_dados.iter_rows(min_row=inicio + 1, max_col=len(cabecalhos), values_only=True),
+        planilha_dados.iter_rows(
+            min_row=inicio + 1, max_col=len(cabecalhos), values_only=True
+        ),
         start=inicio + 1,
     ):
         if not any(valor is not None for valor in valores):
@@ -181,7 +187,7 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
             )
         )
 
-    workbook.close()
+    livro.close()
     return DadosPlanilha(
         clinicas=tuple(clinicas),
         veterinarios=tuple(veterinarios),
