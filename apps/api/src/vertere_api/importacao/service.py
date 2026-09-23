@@ -2,15 +2,20 @@ import re
 import unicodedata
 from collections import defaultdict
 from datetime import date, datetime, time
+from decimal import Decimal, InvalidOperation
 from uuid import uuid5
 
 from vertere_api.importacao.domain import (
+    AtendimentoPlanejado,
     CodigoInconsistencia,
     ClinicaPlanejada,
     ContadoresImportacao,
     DadosPlanilha,
+    ExamePlanejado,
     InconsistenciaImportacao,
+    NAMESPACE_ATENDIMENTOS,
     NAMESPACE_CLINICAS,
+    NAMESPACE_EXAMES,
     NAMESPACE_PACIENTES,
     NAMESPACE_VETERINARIOS,
     PacientePlanejado,
@@ -128,6 +133,24 @@ def _idade(valor: ValorCelula) -> int | None:
     if texto.isdigit():
         return int(texto)
     return None
+
+
+def _decimal(valor: ValorCelula, *, vazio_como_zero: bool = False) -> Decimal | None:
+    if valor is None or _texto(valor) == "":
+        return Decimal("0") if vazio_como_zero else None
+    if isinstance(valor, Decimal):
+        resultado = valor
+    elif isinstance(valor, (int, float)) and not isinstance(valor, bool):
+        resultado = Decimal(str(valor))
+    else:
+        texto = _texto(valor).replace("R$", "").replace(" ", "")
+        if "," in texto:
+            texto = texto.replace(".", "").replace(",", ".")
+        try:
+            resultado = Decimal(texto)
+        except InvalidOperation:
+            return None
+    return resultado.quantize(Decimal("0.01"))
 
 
 def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
@@ -432,15 +455,226 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             )
         )
 
+    veterinarios_por_nome_clinica: dict[
+        tuple[str, str], list[VeterinarioPlanejado]
+    ] = defaultdict(list)
+    for veterinario in veterinarios:
+        veterinarios_por_nome_clinica[
+            (veterinario.clinica_id, _chave_texto(veterinario.nome))
+        ].append(veterinario)
+    pacientes_por_identidade = {
+        (paciente.clinica_id, _chave_texto(paciente.nome), _chave_texto(paciente.proprietario)): paciente
+        for paciente in pacientes
+    }
+
+    ocorrencias_exame: dict[
+        tuple[str, str], list[tuple[datetime, object, Decimal]]
+    ] = defaultdict(list)
+    atendimentos: list[AtendimentoPlanejado] = []
+    protocolos_vistos: set[str] = set()
+    for linha in dados_planilha.atendimentos:
+        valido = True
+        candidatas_clinica = clinicas_por_nome.get(_chave_texto(linha.clinica), [])
+        clinica = candidatas_clinica[0] if len(candidatas_clinica) == 1 else None
+        if clinica is None:
+            valido = False
+
+        veterinarios_candidatos = (
+            veterinarios_por_nome_clinica.get(
+                (clinica.id, _chave_texto(linha.veterinario)), []
+            )
+            if clinica is not None
+            else []
+        )
+        if len(veterinarios_candidatos) != 1:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.REFERENCIA_AMBIGUA
+                    if len(veterinarios_candidatos) > 1
+                    else CodigoInconsistencia.REFERENCIA_INEXISTENTE,
+                    "Dados",
+                    linha.linha,
+                    "Veterinário",
+                    "Veterinário não pôde ser resolvido unicamente na clínica",
+                )
+            )
+            valido = False
+
+        paciente = (
+            pacientes_por_identidade.get(
+                (
+                    clinica.id,
+                    _chave_texto(linha.paciente),
+                    _chave_texto(linha.proprietario),
+                )
+            )
+            if clinica is not None
+            else None
+        )
+        if paciente is None:
+            valido = False
+
+        instante = _data_hora(linha.data, linha.hora)
+        if instante is None:
+            valido = False
+
+        categoria = _texto(linha.categoria_exame)
+        nome_exame = _texto(linha.exame)
+        if not categoria or not nome_exame:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                    "Dados",
+                    linha.linha,
+                    "Tipo de Exame/Exame",
+                    "Categoria e nome do exame são obrigatórios",
+                )
+            )
+            valido = False
+
+        preco = _decimal(linha.valor)
+        desconto = _decimal(linha.desconto, vazio_como_zero=True)
+        adicional = _decimal(linha.adicional, vazio_como_zero=True)
+        total = _decimal(linha.valor_total)
+        financeiros = {
+            "Valor": preco,
+            "Desconto": desconto,
+            "Adicional": adicional,
+            "Valor Total": total,
+        }
+        for coluna, valor in financeiros.items():
+            if valor is None or valor < 0:
+                inconsistencias.append(
+                    _erro(
+                        CodigoInconsistencia.VALOR_INVALIDO,
+                        "Dados",
+                        linha.linha,
+                        coluna,
+                        f"{coluna} deve ser um valor monetário não negativo",
+                    )
+                )
+                valido = False
+        if all(valor is not None and valor >= 0 for valor in financeiros.values()):
+            if preco + adicional - desconto != total:
+                inconsistencias.append(
+                    _erro(
+                        CodigoInconsistencia.TOTAL_DIVERGENTE,
+                        "Dados",
+                        linha.linha,
+                        "Valor Total",
+                        "Valor Total diverge de Valor + Adicional - Desconto",
+                    )
+                )
+                valido = False
+
+        numero = _texto(linha.numero)
+        protocolo = _texto(linha.protocolo)
+        for coluna, valor in (("Nº", numero), ("Protocolo", protocolo)):
+            if not valor:
+                inconsistencias.append(
+                    _erro(
+                        CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                        "Dados",
+                        linha.linha,
+                        coluna,
+                        f"{coluna} é obrigatório para identificar o atendimento",
+                    )
+                )
+                valido = False
+        if protocolo and protocolo in protocolos_vistos:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.CHAVE_DUPLICADA,
+                    "Dados",
+                    linha.linha,
+                    "Protocolo",
+                    "Protocolo duplicado na fonte",
+                )
+            )
+            valido = False
+        if protocolo:
+            protocolos_vistos.add(protocolo)
+
+        metodo_coleta = _texto(linha.metodo_coleta)
+        if not metodo_coleta:
+            inconsistencias.append(
+                _erro(
+                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                    "Dados",
+                    linha.linha,
+                    "Método de Coleta",
+                    "Método de coleta é obrigatório",
+                )
+            )
+            valido = False
+
+        if preco is not None and instante is not None and categoria and nome_exame:
+            chave_exame = (_chave_texto(categoria), _chave_texto(nome_exame))
+            ocorrencias_exame[chave_exame].append((instante, linha, preco))
+        else:
+            chave_exame = None
+
+        if not valido or chave_exame is None:
+            continue
+
+        exame_id = str(uuid5(NAMESPACE_EXAMES, "|".join(chave_exame)))
+        atendimentos.append(
+            AtendimentoPlanejado(
+                id=str(uuid5(NAMESPACE_ATENDIMENTOS, protocolo)),
+                clinica_id=clinica.id,
+                veterinario_id=veterinarios_candidatos[0].id,
+                paciente_id=paciente.id,
+                exame_id=exame_id,
+                preco_unitario=preco,
+                metodo_coleta=metodo_coleta,
+                data_hora=instante,
+                valor_adicional_plantao=adicional,
+                desconto=desconto,
+                valor_total=total,
+                numero_origem=numero,
+                protocolo_origem=protocolo,
+            )
+        )
+
+    exames: list[ExamePlanejado] = []
+    for chave_exame, ocorrencias in ocorrencias_exame.items():
+        ocorrencias.sort(key=lambda item: (item[0], item[1].linha))
+        _, linha_canonica, preco_canonico = ocorrencias[-1]
+        if len({preco for _, _, preco in ocorrencias}) > 1:
+            inconsistencias.append(
+                _aviso(
+                    CodigoInconsistencia.DADO_HISTORICO_DIVERGENTE,
+                    "Dados",
+                    linha_canonica.linha,
+                    "Valor",
+                    "Preços históricos do exame divergem; usado o mais recente no catálogo",
+                )
+            )
+        exames.append(
+            ExamePlanejado(
+                id=str(uuid5(NAMESPACE_EXAMES, "|".join(chave_exame))),
+                categoria=_texto(linha_canonica.categoria_exame),
+                nome=_texto(linha_canonica.exame),
+                preco_base=preco_canonico,
+            )
+        )
+
     contadores = ContadoresImportacao(
         clinicas=len(clinicas),
         veterinarios=len(veterinarios),
         pacientes=len(pacientes),
+        exames=len(exames),
+        atendimentos=len(atendimentos),
     )
     return PlanoImportacao(
         clinicas=tuple(clinicas),
         veterinarios=tuple(veterinarios),
         pacientes=tuple(pacientes),
+        exames=tuple(exames),
+        atendimentos=tuple(atendimentos),
         inconsistencias=tuple(inconsistencias),
         contadores=contadores,
     )
+    AtendimentoPlanejado,
+    NAMESPACE_ATENDIMENTOS,
+    NAMESPACE_EXAMES,
