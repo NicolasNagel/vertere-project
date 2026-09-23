@@ -1,3 +1,4 @@
+from datetime import time, timedelta
 from pathlib import Path
 
 from openpyxl import load_workbook
@@ -54,6 +55,21 @@ def _erro_estrutura(
 
 def _mapear_linha(cabecalhos: tuple[str, ...], valores: tuple[object, ...]) -> dict[str, object]:
     return {cabecalho: valores[indice] for indice, cabecalho in enumerate(cabecalhos)}
+
+
+def _normalizar_hora_excel(valor: object) -> object:
+    if not isinstance(valor, timedelta):
+        return valor
+    segundos = valor.total_seconds()
+    if not 0 <= segundos < 24 * 60 * 60:
+        return str(valor)
+    segundos_inteiros = int(segundos)
+    return time(
+        hour=segundos_inteiros // 3600,
+        minute=(segundos_inteiros % 3600) // 60,
+        second=segundos_inteiros % 60,
+        microsecond=valor.microseconds,
+    )
 
 
 def ler_planilha(caminho: str | Path) -> DadosPlanilha:
@@ -166,7 +182,7 @@ def ler_planilha(caminho: str | Path) -> DadosPlanilha:
                 linha=numero,
                 clinica=item["Clínica"],
                 data=item["Data"],
-                hora=item["Hora"],
+                hora=_normalizar_hora_excel(item["Hora"]),
                 numero=item["Nº"],
                 protocolo=item["Protocolo"],
                 metodo_coleta=item["Método de Coleta"],
