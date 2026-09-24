@@ -81,6 +81,26 @@ def _aviso(
     )
 
 
+def _exigir(
+    condicao: bool,
+    codigo: CodigoInconsistencia,
+    aba: str,
+    linha: int,
+    coluna: str,
+    mensagem: str,
+    inconsistencias: list[InconsistenciaImportacao],
+) -> bool:
+    """Valida `condicao`; se falsa, registra um erro em `inconsistencias`.
+
+    Retorna a própria `condicao`. Sempre roda (não é de curto-circuito) para
+    que o chamador componha `valido = _exigir(...) and valido` sem perder a
+    coleta de inconsistências de checagens seguintes na mesma linha.
+    """
+    if not condicao:
+        inconsistencias.append(_erro(codigo, aba, linha, coluna, mensagem))
+    return condicao
+
+
 def _data_hora(data_valor: ValorCelula, hora_valor: ValorCelula) -> datetime | None:
     if isinstance(data_valor, datetime):
         data_convertida = data_valor.date()
@@ -158,27 +178,25 @@ def _validar_ocorrencia_canonica_paciente(
         "Raça": _texto(linha.raca),
         "Sexo": _texto(linha.sexo),
     }.items():
-        if not valor:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                    "Dados",
-                    linha.linha,
-                    coluna,
-                    f"{coluna} é obrigatório na ocorrência canônica do paciente",
-                )
-            )
-    idade = _idade(linha.idade)
-    if idade is None:
-        inconsistencias.append(
-            _erro(
-                CodigoInconsistencia.VALOR_INVALIDO,
-                "Dados",
-                linha.linha,
-                "Idade",
-                "Idade deve ser um inteiro não negativo na ocorrência canônica",
-            )
+        _exigir(
+            bool(valor),
+            CodigoInconsistencia.CAMPO_OBRIGATORIO,
+            "Dados",
+            linha.linha,
+            coluna,
+            f"{coluna} é obrigatório na ocorrência canônica do paciente",
+            inconsistencias,
         )
+    idade = _idade(linha.idade)
+    _exigir(
+        idade is not None,
+        CodigoInconsistencia.VALOR_INVALIDO,
+        "Dados",
+        linha.linha,
+        "Idade",
+        "Idade deve ser um inteiro não negativo na ocorrência canônica",
+        inconsistencias,
+    )
     return idade, inconsistencias
 
 
@@ -195,17 +213,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         cnpj = _somente_digitos(linha.cnpj)
         valido = True
 
-        if not nome:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                    "Cadastro Clínicas",
-                    linha.linha,
-                    "Clínica",
-                    "Nome da clínica é obrigatório",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            bool(nome),
+            CodigoInconsistencia.CAMPO_OBRIGATORIO,
+            "Cadastro Clínicas",
+            linha.linha,
+            "Clínica",
+            "Nome da clínica é obrigatório",
+            inconsistencias,
+        ) and valido
         if len(cnpj) != 14:
             inconsistencias.append(
                 _erro(
@@ -232,17 +248,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             cnpjs_vistos.add(cnpj)
 
         ativo = _interpretar_status(linha.status)
-        if ativo is None:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.STATUS_INVALIDO,
-                    "Cadastro Clínicas",
-                    linha.linha,
-                    "Status",
-                    "Status deve ser Ativo ou Inativo",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            ativo is not None,
+            CodigoInconsistencia.STATUS_INVALIDO,
+            "Cadastro Clínicas",
+            linha.linha,
+            "Status",
+            "Status deve ser Ativo ou Inativo",
+            inconsistencias,
+        ) and valido
 
         if chave_nome and chave_nome in clinicas_por_nome:
             inconsistencias.append(
@@ -280,17 +294,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         candidatas = clinicas_por_nome.get(chave_clinica, [])
         valido = True
 
-        if not nome:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                    "Cadastro Veterinários",
-                    linha.linha,
-                    "Nome",
-                    "Nome do veterinário é obrigatório",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            bool(nome),
+            CodigoInconsistencia.CAMPO_OBRIGATORIO,
+            "Cadastro Veterinários",
+            linha.linha,
+            "Nome",
+            "Nome do veterinário é obrigatório",
+            inconsistencias,
+        ) and valido
         if not crmv:
             inconsistencias.append(
                 _erro(
@@ -340,17 +352,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             valido = False
 
         ativo = _interpretar_status(linha.status)
-        if ativo is None:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.STATUS_INVALIDO,
-                    "Cadastro Veterinários",
-                    linha.linha,
-                    "Status",
-                    "Status deve ser Ativo ou Inativo",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            ativo is not None,
+            CodigoInconsistencia.STATUS_INVALIDO,
+            "Cadastro Veterinários",
+            linha.linha,
+            "Status",
+            "Status deve ser Ativo ou Inativo",
+            inconsistencias,
+        ) and valido
 
         if not valido:
             continue
@@ -380,47 +390,41 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         }
         valido = True
         for coluna, valor in campos_texto.items():
-            if not valor:
-                inconsistencias.append(
-                    _erro(
-                        CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                        "Dados",
-                        linha.linha,
-                        coluna,
-                        f"{coluna} é obrigatório para formar o cadastro do paciente",
-                    )
-                )
-                valido = False
+            valido = _exigir(
+                bool(valor),
+                CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                "Dados",
+                linha.linha,
+                coluna,
+                f"{coluna} é obrigatório para formar o cadastro do paciente",
+                inconsistencias,
+            ) and valido
 
         instante = _data_hora(linha.data, linha.hora)
-        if instante is None:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.VALOR_INVALIDO,
-                    "Dados",
-                    linha.linha,
-                    "Data/Hora",
-                    "Data e hora devem formar um instante válido",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            instante is not None,
+            CodigoInconsistencia.VALOR_INVALIDO,
+            "Dados",
+            linha.linha,
+            "Data/Hora",
+            "Data e hora devem formar um instante válido",
+            inconsistencias,
+        ) and valido
 
-        if len(candidatas) != 1:
-            codigo = (
-                CodigoInconsistencia.REFERENCIA_AMBIGUA
-                if len(candidatas) > 1
-                else CodigoInconsistencia.REFERENCIA_INEXISTENTE
-            )
-            inconsistencias.append(
-                _erro(
-                    codigo,
-                    "Dados",
-                    linha.linha,
-                    "Clínica",
-                    "Clínica do paciente não pôde ser resolvida unicamente",
-                )
-            )
-            valido = False
+        codigo_referencia_clinica = (
+            CodigoInconsistencia.REFERENCIA_AMBIGUA
+            if len(candidatas) > 1
+            else CodigoInconsistencia.REFERENCIA_INEXISTENTE
+        )
+        valido = _exigir(
+            len(candidatas) == 1,
+            codigo_referencia_clinica,
+            "Dados",
+            linha.linha,
+            "Clínica",
+            "Clínica do paciente não pôde ser resolvida unicamente",
+            inconsistencias,
+        ) and valido
 
         if not valido:
             _, erros_canonicos = _validar_ocorrencia_canonica_paciente(linha)
@@ -511,19 +515,20 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             if clinica is not None
             else []
         )
-        if len(veterinarios_candidatos) != 1:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.REFERENCIA_AMBIGUA
-                    if len(veterinarios_candidatos) > 1
-                    else CodigoInconsistencia.REFERENCIA_INEXISTENTE,
-                    "Dados",
-                    linha.linha,
-                    "Veterinário",
-                    "Veterinário não pôde ser resolvido unicamente na clínica",
-                )
-            )
-            valido = False
+        codigo_referencia_veterinario = (
+            CodigoInconsistencia.REFERENCIA_AMBIGUA
+            if len(veterinarios_candidatos) > 1
+            else CodigoInconsistencia.REFERENCIA_INEXISTENTE
+        )
+        valido = _exigir(
+            len(veterinarios_candidatos) == 1,
+            codigo_referencia_veterinario,
+            "Dados",
+            linha.linha,
+            "Veterinário",
+            "Veterinário não pôde ser resolvido unicamente na clínica",
+            inconsistencias,
+        ) and valido
 
         paciente = (
             pacientes_por_identidade.get(
@@ -545,17 +550,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
 
         categoria = _texto(linha.categoria_exame)
         nome_exame = _texto(linha.exame)
-        if not categoria or not nome_exame:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                    "Dados",
-                    linha.linha,
-                    "Tipo de Exame/Exame",
-                    "Categoria e nome do exame são obrigatórios",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            bool(categoria) and bool(nome_exame),
+            CodigoInconsistencia.CAMPO_OBRIGATORIO,
+            "Dados",
+            linha.linha,
+            "Tipo de Exame/Exame",
+            "Categoria e nome do exame são obrigatórios",
+            inconsistencias,
+        ) and valido
 
         preco = _decimal(linha.valor)
         desconto = _decimal(linha.desconto, vazio_como_zero=True)
@@ -568,17 +571,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             "Valor Total": total,
         }
         for coluna, valor in financeiros.items():
-            if valor is None or valor < 0:
-                inconsistencias.append(
-                    _erro(
-                        CodigoInconsistencia.VALOR_INVALIDO,
-                        "Dados",
-                        linha.linha,
-                        coluna,
-                        f"{coluna} deve ser um valor monetário não negativo",
-                    )
-                )
-                valido = False
+            valido = _exigir(
+                valor is not None and valor >= 0,
+                CodigoInconsistencia.VALOR_INVALIDO,
+                "Dados",
+                linha.linha,
+                coluna,
+                f"{coluna} deve ser um valor monetário não negativo",
+                inconsistencias,
+            ) and valido
         if all(valor is not None and valor >= 0 for valor in financeiros.values()):
             if preco + adicional - desconto != total:
                 inconsistencias.append(
@@ -595,17 +596,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
         numero = _texto(linha.numero)
         protocolo = _texto(linha.protocolo)
         for coluna, valor in (("Nº", numero), ("Protocolo", protocolo)):
-            if not valor:
-                inconsistencias.append(
-                    _erro(
-                        CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                        "Dados",
-                        linha.linha,
-                        coluna,
-                        f"{coluna} é obrigatório para identificar o atendimento",
-                    )
-                )
-                valido = False
+            valido = _exigir(
+                bool(valor),
+                CodigoInconsistencia.CAMPO_OBRIGATORIO,
+                "Dados",
+                linha.linha,
+                coluna,
+                f"{coluna} é obrigatório para identificar o atendimento",
+                inconsistencias,
+            ) and valido
         if protocolo and protocolo in protocolos_vistos:
             inconsistencias.append(
                 _erro(
@@ -621,17 +620,15 @@ def planejar_importacao(dados_planilha: DadosPlanilha) -> PlanoImportacao:
             protocolos_vistos.add(protocolo)
 
         metodo_coleta = _texto(linha.metodo_coleta)
-        if not metodo_coleta:
-            inconsistencias.append(
-                _erro(
-                    CodigoInconsistencia.CAMPO_OBRIGATORIO,
-                    "Dados",
-                    linha.linha,
-                    "Método de Coleta",
-                    "Método de coleta é obrigatório",
-                )
-            )
-            valido = False
+        valido = _exigir(
+            bool(metodo_coleta),
+            CodigoInconsistencia.CAMPO_OBRIGATORIO,
+            "Dados",
+            linha.linha,
+            "Método de Coleta",
+            "Método de coleta é obrigatório",
+            inconsistencias,
+        ) and valido
 
         if preco is not None and instante is not None and categoria and nome_exame:
             chave_exame = (_chave_texto(categoria), _chave_texto(nome_exame))
