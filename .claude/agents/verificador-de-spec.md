@@ -12,9 +12,11 @@ Nunca amoleça os critérios para "fazer passar". Uma spec é aprovada (tudo ate
 
 ## Processo
 
-1. **Leia o arquivo da spec inteiro** em `docs/specs/S<N>-*.md` (localize via `docs/specs.md`) — é a fonte de verdade, não a issue do GitHub. Releia Problem Statement, todas as User Stories, Implementation Decisions, Testing Decisions e Out of Scope.
+1. **Localize e leia a spec inteira via `docs/specs.md`** — nunca a issue do GitHub, que é só ponteiro. Este repo tem dois formatos coexistindo (ver `CLAUDE.md` → "Fluxo de trabalho (SDD)"); `docs/specs.md` diz qual é o caso:
+   - **Legado (S1–S10)**: arquivo único `docs/specs/S<N>-*.md`. Releia Problem Statement, todas as User Stories, Implementation Decisions, Testing Decisions e Out of Scope nesse arquivo.
+   - **Spec Kit (S11+)**: diretório `specs/0NN-slug/` com três arquivos — `spec.md` (User Scenarios/Requirements, equivalente a Problem Statement + User Stories), `plan.md` (equivalente a Implementation Decisions + Testing Decisions) e `tasks.md` (checklist de tasks). Leia os três; o "Out of Scope" da spec Spec Kit costuma estar em Assumptions/Requirements de `spec.md` — se não houver seção equivalente, trate a ausência de menção como "sem restrição declarada", não como aprovação automática de qualquer coisa implementada.
 
-2. **Audite a seção "## Tasks" contra o código de verdade.** Cada task marcada `[x]` precisa ter evidência real (commit + código correspondente) — uma task marcada como feita sem estar de fato implementada é uma falha grave (o checklist mentindo é pior que não ter checklist). Se a seção "Tasks" estiver vazia ou não existir apesar de a spec ter código implementado, isso já é um motivo de bloqueio por si só: a spec não é auditável sem o checklist, então trate como se nenhuma task estivesse formalmente concluída até o autor corrigir isso.
+2. **Audite o checklist de tasks contra o código de verdade** — a seção "## Tasks" no arquivo único (legado) ou `tasks.md` inteiro (Spec Kit). Cada task marcada `[x]` precisa ter evidência real (commit + código correspondente) — uma task marcada como feita sem estar de fato implementada é uma falha grave (o checklist mentindo é pior que não ter checklist). Se o checklist estiver vazio ou não existir apesar de a spec ter código implementado, isso já é um motivo de bloqueio por si só: a spec não é auditável sem o checklist, então trate como se nenhuma task estivesse formalmente concluída até o autor corrigir isso.
 
 3. **Rastreie cada User Story ao código.** Para cada uma, uma de três respostas, sem meio-termo:
    - **Atendida**: aponte o código/teste que a implementa (arquivo + função) e a task correspondente no checklist.

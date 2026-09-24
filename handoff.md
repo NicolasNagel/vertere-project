@@ -34,42 +34,50 @@
   (`docs/specs/relatorios/S10-verificacao.md`) e o resumo do `/code-review`. Não requer mais nenhum
   fix antes disso.
 
-## Spec Kit (`specify-cli`) — adoção como harness complementar
+## Spec Kit (`specify-cli`) — é o ponto de entrada padrão a partir de S11 (decisão tomada, não mais provisória)
 
-Nesta sessão, a pedido do usuário: instalado `specify-cli` (já estava instalado globalmente por uma
-sessão anterior) e rodado `specify init --here --force --non-interactive --integration claude` na
-raiz do repo, na branch `chore/spec-kit-harness` (não em cima de S9/S10, para não misturar harness
-com spec). Isso criou:
+Nesta sessão, a pedido explícito do usuário: instalado `specify-cli` e rodado `specify init --here
+--force --non-interactive --integration claude` na raiz do repo, na branch `chore/spec-kit-harness`
+(não em cima de S9/S10, para não misturar harness com spec). Isso criou `.specify/` (templates,
+scripts PowerShell, constitution) e `.claude/skills/speckit-*/` (namespace próprio, sem colidir com
+`/spec-write`, `/spec-start`, `/fechar-spec`, `/code-review`).
 
-- `.specify/` — templates, scripts PowerShell (`--script ps`, ambiente Windows), constitution.
-- `.claude/skills/speckit-*/` — skills namespaced (`speckit-specify`, `speckit-plan`, `speckit-tasks`,
-  `speckit-implement`, `speckit-analyze`, `speckit-clarify`, `speckit-checklist`, `speckit-constitution`,
-  `speckit-converge`, `speckit-taskstoissues`). Não colidem com os comandos próprios do projeto
-  (`/spec-write`, `/spec-start`, `/fechar-spec`, `/code-review`).
+**Decisão final (perguntada e confirmada com o usuário nesta sessão, não presumida)**: a partir de
+S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o fluxo
+**padrão** de qualquer spec nova — substitui `/spec-write` + `/spec-start` como ponto de entrada.
+`/spec-write`/`/spec-start` continuam instalados só para manutenção de S1–S10 (formato de arquivo
+único). `/fechar-spec` e `/code-review` **não mudam** — o Spec Kit não tem gate equivalente a
+nenhum dos dois, então ambos continuam sendo acionados manualmente antes do PR, exatamente como
+antes.
 
-`.specify/memory/constitution.md` foi preenchido (v1.0.0) com o contexto real do projeto — Regra de
-Ouro, `authorize()` centralizado, domínio em PT-BR, seam de teste na camada de service, e o próprio
-fluxo de SDD com verificação independente já documentado no `CLAUDE.md`. A constitution declara
-explicitamente que o Spec Kit **não substitui** os comandos do projeto — convive com eles.
+**Formato de spec escolhido para S11+ (segunda pergunta feita e respondida nesta sessão)**: o
+formato **nativo** do Spec Kit — `specs/0NN-slug/{spec.md,plan.md,tasks.md}` — não uma customização
+dos templates para imitar `docs/specs/S-XX-nome.md`. Consequência prática: `docs/specs.md` agora
+documenta os dois formatos coexistindo; `.claude/agents/verificador-de-spec.md` foi atualizado para
+ler os três arquivos (S11+) ou o arquivo único (S1–S10), conforme o que `docs/specs.md` indicar;
+`/commit` foi atualizado para referenciar `specs/0NN-slug/spec.md` como "Spec:" quando aplicável.
 
-**Decisão explícita registrada na constitution (seção Governance)**: em caso de conflito de leitura
-entre `CLAUDE.md` e a constitution do Spec Kit, `CLAUDE.md` prevalece para processo já em vigor; a
-constitution é o que deve ser atualizado para acompanhar, não o inverso.
+**Numeração — ponto de atenção real para quem criar S11**: o Spec Kit, por conta própria, numeraria
+a primeira spec nova como `specs/001-slug` (ele só escaneia o diretório `specs/`, que ainda não
+existe). Isso colidiria com a sequência `S<N>` já em uso (S1–S10 existem). `CLAUDE.md` documenta que
+o próximo número é `011`, mas **isso depende de quem rodar `/speckit-specify` prestar atenção nisso
+na hora** — o Spec Kit não sabe da numeração histórica do projeto sozinho. Se uma sessão futura rodar
+`/speckit-specify` sem essa atenção, o diretório sairia como `specs/001-slug` e precisaria ser
+renomeado manualmente para `specs/011-slug` antes de registrar em `docs/specs.md`.
 
-**TODO em aberto na constitution**: `RATIFICATION_DATE` ficou como `TODO(RATIFICATION_DATE)` — a
-data exata em que o processo de SDD (spec + issue-ponteiro + `/fechar-spec`) foi adotado pela
-primeira vez neste repo não foi levantada nesta sessão (dá para inferir olhando o primeiro commit
-`spec(...)` do histórico, se algum dia isso importar).
+`.specify/memory/constitution.md` está em **v1.1.0** (Principle V reescrito para descrever o Spec
+Kit como ponto de entrada padrão, não mais como camada opcional). `RATIFICATION_DATE` continua como
+`TODO(RATIFICATION_DATE)` — não levantado nesta sessão.
 
-**Ainda não decidido / não feito**: se e quando usar de fato os comandos `speckit-*` (ex:
-`speckit-specify`/`speckit-plan`/`speckit-tasks`) para uma spec nova, em paralelo ou em vez de
-`/spec-write` + `/spec-start` — isso não foi pedido nem decidido nesta sessão, só a infraestrutura
-foi instalada e contextualizada. Não presumir que uma spec futura deva usar o fluxo Spec Kit sem
-confirmar com o usuário primeiro.
+**Arquivos tocados por essa decisão nesta sessão** (todos no commit de harness desta branch):
+`CLAUDE.md` (seção "Fluxo de trabalho (SDD)" reescrita + nova seção "Spec Kit"), `docs/specs.md`
+(header explica os dois formatos), `.claude/agents/verificador-de-spec.md` (lê os dois formatos),
+`.claude/commands/spec-write.md` e `.claude/commands/spec-start.md` (nota de legado no topo),
+`.claude/commands/commit.md` (linha "Spec:" ciente dos dois formatos), `.specify/memory/constitution.md`.
 
-**Próximo passo real**: decidir se esta branch (`chore/spec-kit-harness`) vira um commit
-`chore(harness): adota Spec Kit como camada complementar de harness` + PR direto, ou se o usuário
-quer revisar a constitution antes. Ainda não commitado nesta sessão até este handoff ser escrito.
+**Próximo passo real**: nenhuma spec S11 foi criada ainda nesta sessão — só a decisão de harness foi
+tomada e documentada. Quando alguém for criar a primeira spec via `/speckit-specify`, prestar atenção
+na numeração (parágrafo acima) antes de prosseguir.
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 

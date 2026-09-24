@@ -1,15 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: [TEMPLATE] → 1.0.0 (initial ratification — first concrete constitution content, replacing template placeholders)
-- Modified principles: n/a (template placeholders replaced with 5 concrete principles)
-- Added sections: Core Principles (I–V), Stack Tecnológico e Contratos, Fluxo de Desenvolvimento (SDD), Governance
-- Removed sections: none (template structure preserved)
-- Templates requiring updates: .specify/templates/plan-template.md (⚠ pending manual check against new principles),
-  .specify/templates/spec-template.md (⚠ pending manual check — this project's own docs/specs/S-XX template already
-  covers most of this; reconcile before relying on speckit-specify output), .specify/templates/tasks-template.md
-  (⚠ pending manual check against "task = commit" rule below)
-- Follow-up TODOs: TODO(RATIFICATION_DATE) — exact date the SDD process (spec file + issue-ponteiro + /fechar-spec)
-  was first adopted in this repo is not recorded; using first spec-related commit history to backfill is a follow-up.
+- Version change: 1.0.0 → 1.1.0 (Principle V mechanism updated: Spec Kit is now the default entry
+  point for new specs, S11+, not just a complementary/optional layer)
+- Modified principles: V. Especificação Como Fonte de Verdade — mechanism section rewritten to
+  describe speckit-specify/plan/tasks/implement as the default flow for S11+; legacy /spec-write +
+  /spec-start kept only for S1–S10 maintenance. Verification gate (/fechar-spec, /code-review)
+  unchanged — Spec Kit has no equivalent, so it stays exactly as before.
+- Added sections: none
+- Removed sections: none
+- Templates requiring updates: none — this project intentionally does NOT customize
+  .specify/templates/{spec,plan,tasks}-template.md (avoids fighting `specify upgrade`); numbering
+  continuity with the legacy S<N> sequence is handled by explicit instruction in CLAUDE.md, not by
+  template/script edits.
+- Follow-up TODOs: TODO(RATIFICATION_DATE) — exact date the SDD process (spec file + issue-ponteiro +
+  /fechar-spec) was first adopted in this repo is not recorded; using first spec-related commit
+  history to backfill is a follow-up.
 -->
 
 # Vertere Lab Constitution
@@ -60,22 +65,29 @@ rápido e independente de infraestrutura, e é o único jeito de rodar centenas 
 clínica/papel sem subir Postgres a cada teste.
 
 ### V. Especificação Como Fonte de Verdade, Fechada Só por Verificação Independente
-Cada funcionalidade nasce como um arquivo de spec versionado em `docs/specs/S-XX-nome.md`
-(frontmatter `codigo`/`modulo`/`issue`/`status`), com uma issue do GitHub como ponteiro de
-rastreamento — nunca cópia do conteúdo. Se arquivo e issue divergirem, o arquivo vence. Cada spec
-vive numa branch `spec/s-XX-nome` a partir de `main`, com uma seção "## Tasks" (checklist
-`- [ ] T<N> — descrição`) que é a fonte de verdade de progresso entre sessões, não uma lista
-efêmera. Cada task concluída é um commit próprio (nunca várias tasks acumuladas num commit).
-Nenhuma spec se encerra por autoavaliação de quem implementou: o encerramento exige um subagente de
-verificação independente, acionado só com o código da spec (sem contexto adicional do autor), que
-audita cada task marcada contra o código real, roda a suíte de testes de verdade, confere a seam de
-teste e a aderência ao "Out of Scope" da própria spec, e produz um veredito binário (aprovada ou
-bloqueada) em relatório versionado. Sem veredito aprovado, não existe PR. Uma revisão de padrão de
-código e aderência à spec roda em seguida (dois eixos: Standards e Spec), e todo achado bloqueante é
-corrigido na mesma branch antes de abrir o PR — nunca depois.
+Cada funcionalidade nasce como uma spec versionada antes de qualquer código de produção. A partir de
+S11, o ponto de entrada padrão é o Spec Kit: `/speckit-specify` cria `specs/0NN-slug/spec.md`,
+`/speckit-plan` cria `plan.md`, `/speckit-tasks` cria `tasks.md` (checklist de progresso entre
+sessões, não lista efêmera), `/speckit-implement` executa task por task. Uma issue do GitHub segue
+sendo criada como ponteiro de rastreamento — nunca cópia do conteúdo — e `docs/specs.md` continua
+sendo o índice único de toda spec, legada ou nova. Specs S1–S10 (formato legado, arquivo único em
+`docs/specs/S-XX-nome.md`, criadas por `/spec-write` + `/spec-start`) não são reescritas
+retroativamente; esse fluxo permanece disponível só para ajuste/manutenção delas. Cada task
+concluída é um commit próprio (nunca várias tasks acumuladas num commit), em qualquer um dos dois
+formatos.
+Nenhuma spec se encerra por autoavaliação de quem implementou, e isso **não muda com o Spec Kit**:
+o encerramento exige um subagente de verificação independente (`/fechar-spec`), acionado só com o
+código da spec (sem contexto adicional do autor), que audita cada task marcada contra o código real,
+roda a suíte de testes de verdade, confere a seam de teste e a aderência ao "Out of Scope" (ou
+Assumptions/Requirements, no formato Spec Kit) da própria spec, e produz um veredito binário
+(aprovada ou bloqueada) em relatório versionado. Sem veredito aprovado, não existe PR. Uma revisão
+de padrão de código e aderência à spec roda em seguida (dois eixos: Standards e Spec), e todo achado
+bloqueante é corrigido na mesma branch antes de abrir o PR — nunca depois. O Spec Kit não tem
+equivalente para este gate; ele continua sendo do projeto, não do Spec Kit.
 Rationale: quem implementou uma funcionalidade já "sabe" que está certo, e esse saber tende a fazer
 a própria revisão relaxar; separar a verificação numa sessão sem esse contexto prévio é o único jeito
-real de pegar o que a sessão de implementação não vê em si mesma.
+real de pegar o que a sessão de implementação não vê em si mesma — isso vale independente de qual
+ferramenta gerou a spec.
 
 ## Stack Tecnológico e Contratos
 
@@ -93,12 +105,22 @@ reabrir porque...") em vez de silenciosamente divergir.
 ## Fluxo de Desenvolvimento (SDD)
 
 O processo de Spec-Driven Development deste projeto já existia antes da adoção do Spec Kit
-(`specify-cli`) e continua sendo operado pelos comandos próprios do repositório: `/spec-write`
-(escreve a spec + issue-ponteiro), `/spec-start` (implementa test-first, task por task),
-`/fechar-spec` (aciona a verificação independente descrita no Princípio V), e `/code-review`
-(auditoria de padrão de código e aderência à spec, dois sub-agentes em paralelo). O Spec Kit é
-adotado como camada complementar de harness — convive com esse fluxo, não o substitui; comandos
-`speckit.*` não reescrevem nem contornam `/spec-write`, `/spec-start` ou `/fechar-spec`.
+(`specify-cli`). A partir de S11, o Spec Kit é o ponto de entrada padrão: qualquer instrução ou
+comando do usuário que não nomeie explicitamente uma skill é tratado como pedido de spec e entra por
+`speckit-specify` → `speckit-plan` → `speckit-tasks` → `speckit-implement` (`speckit-clarify`,
+`speckit-analyze` e `speckit-checklist` são reforços opcionais nos pontos apropriados do meio do
+fluxo). Os comandos legados `/spec-write` e `/spec-start` continuam instalados, mas só para
+retomar/ajustar as specs S1–S10 já existentes no formato de arquivo único — não são mais o fluxo de
+entrada por padrão. `/fechar-spec` (verificação independente) e `/code-review` (Standards + Spec)
+continuam exatamente como eram: o Spec Kit não tem gate equivalente a nenhum dos dois, então ambos
+seguem sendo do projeto, acionados manualmente depois de `/speckit-implement` (ou de `/spec-start`,
+no caso legado), antes de qualquer PR.
+
+Numeração: o Spec Kit, sozinho, numeraria a primeira spec nova como `001` (contagem de diretórios em
+`specs/`). Este projeto instrui explicitamente a continuar a sequência `S<N>` já em uso — a próxima
+spec depois de S10 é `specs/011-slug`, não `specs/001-slug`. Essa continuidade é responsabilidade de
+quem opera o fluxo (documentado em `CLAUDE.md`), não uma customização de template/script do Spec
+Kit.
 
 Antes de cada task de implementação, consulta-se `dev-router` (`.claude/skills/dev-router/SKILL.md`)
 para verificar se a fase de trabalho bate com uma skill especializada já instalada (design de
@@ -125,5 +147,5 @@ trabalho, refletir a mudança de volta no `CLAUDE.md`. Toda spec e todo `/code-r
 compatíveis com os princípios aqui declarados; uma violação encontrada é tratada como achado
 bloqueante do eixo Standards, não como nota informativa.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): data exata de adoção do processo SDD
+**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): data exata de adoção do processo SDD
 anterior ao Spec Kit não está registrada no histórico consultado | **Last Amended**: 2026-09-24
