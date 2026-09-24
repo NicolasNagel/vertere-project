@@ -20,6 +20,12 @@ de dúvidas para clientes, suporte a análise, e dashboard analítico — sob os
   para vê-lo — a checagem é sempre via `authorize()`, nunca uma regra reimplementada no prompt.
 
 ## Documentos normativos (ler antes de implementar qualquer spec)
+- `handoff.md` (raiz do repo) — **ler primeiro, sempre, antes de qualquer outra coisa nesta seção**:
+  estado transitório entre sessões (branches em andamento, o que outra sessão/agente deixou pronto
+  ou pendente, decisões de harness ainda não commitadas). Múltiplos agentes de IA trabalham neste
+  repo (Claude Code, Codex CLI, outros) sem compartilhar contexto entre si — o estado real do git
+  (`git status`, `git branch -a`, `git log --oneline -10`) é sempre a fonte de verdade sobre código,
+  mas `handoff.md` é o que evita repetir trabalho ou presumir errado sobre o que já foi decidido.
 - `issues/prd.md` — PRD: problema, solução, user stories e decisões do MVP; origem de tudo abaixo
 - `docs/adr/` — decisões arquiteturais (ADR-0001 stack, ADR-0002 frameworks/ferramentas, ...)
 - `docs/specs/S-XX-*.md` — a spec em execução é a **fonte de verdade** da sessão (não a issue)
@@ -96,6 +102,10 @@ de dúvidas para clientes, suporte a análise, e dashboard analítico — sob os
 - Atualizar o status da spec (frontmatter do arquivo + `docs/specs.md`) a cada transição.
 - Toda spec é encerrada **exclusivamente** por `/fechar-spec` — nunca por autoavaliação da sessão
   que implementou.
+- **Atualizar `handoff.md` ao final de qualquer sessão que mude estado relevante**: spec fechada,
+  branch trocada/criada, decisão de harness tomada, ou trabalho deixado pendente para outra sessão
+  continuar. Não é um resumo de conversa — é o que a próxima sessão (deste ou de outro agente de IA
+  no mesmo repo) precisa saber antes de agir, sem precisar reconstruir isso lendo `git log` inteiro.
 
 ## Agent skills
 
