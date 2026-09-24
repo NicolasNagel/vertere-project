@@ -20,7 +20,7 @@ Argumentos recebidos (`$ARGUMENTS`): opcionalmente o escopo (ex: `s1`, `adr`, `h
 
 4. **Monte a mensagem.**
    - **Título**: `tipo(escopo): resumo curto no imperativo` — ex: `feat(s1): implementa authenticate/authorize com testes`.
-   - **Corpo**: lista do que foi feito e por quê — a decisão, não só o diff. Referencie a spec (`Spec: docs/specs/S<N>-*.md`) e a issue-ponteiro (`Refs #<issue>`) quando houver.
+   - **Corpo**: lista do que foi feito e por quê — a decisão, não só o diff. Referencie a spec e a issue-ponteiro (`Refs #<issue>`) quando houver: `Spec: docs/specs/S<N>-*.md` para specs legadas (S1–S10), ou `Spec: specs/0NN-slug/spec.md` para specs criadas pelo Spec Kit (S11+) — confira `docs/specs.md` para saber qual formato a spec ativa usa.
    - Termine com as linhas de atribuição indicadas pelo system-reminder da conversa (Co-Authored-By / Claude-Session).
 
 5. **Confirme escopo e arquivos staged** com o usuário antes de commitar, a menos que ele já tenha aprovado explicitamente um commit automático nesta conversa.

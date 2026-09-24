@@ -1,7 +1,11 @@
 ---
-description: Inicia o desenvolvimento de uma spec publicada (S1/S2/...) numa branch dedicada - lê o arquivo, planeja, implementa test-first, um commit por task.
+description: "[LEGADO — só para manutenção de S1-S10] Inicia o desenvolvimento de uma spec publicada (S1/S2/...) numa branch dedicada - lê o arquivo, planeja, implementa test-first, um commit por task."
 argument-hint: S<N>
 ---
+
+> **Legado**: a partir de S11, implementação entra por `/speckit-implement` (Spec Kit) sobre o
+> `tasks.md` gerado por `/speckit-tasks` — ver `CLAUDE.md` → "Fluxo de trabalho (SDD)". Este comando
+> continua existindo só para retomar/ajustar specs S1–S10 no formato de arquivo único.
 
 Você vai começar (ou retomar) a implementação de uma spec já publicada. Este comando não escreve a spec (use `/spec-write`) nem decide se ela está pronta para seguir em frente (use `/fechar-spec`) — só cobre o desenvolvimento. Idealmente esta spec roda numa sessão nova dedicada a ela (convenção do projeto, ver `CLAUDE.md`); se esta sessão já vem de outro trabalho, avise o usuário mas não bloqueie.
 

@@ -1,8 +1,23 @@
 # Registro de Specs
 
-Índice rápido `S<N> → arquivo → issue`. A **fonte de verdade de cada spec é o arquivo** em `docs/specs/S<N>-*.md` (frontmatter `status:`); a issue do GitHub é só um ponteiro de rastreamento. Consultado por `/spec-write`, `/spec-start`, `/fechar-spec` e `/commit`.
+Índice único `S<N> → spec → issue → status`, cobrindo os dois formatos de spec que coexistem neste
+repo (ver `CLAUDE.md` → "Fluxo de trabalho (SDD)"):
 
-**Ciclo de vida**: `/spec-write` cria o arquivo (`status: rascunho` → `pronta`) e a issue-ponteiro → `/spec-start` cria a branch `spec/s-XX-nome`, implementa, muda para `em-desenvolvimento` → `/fechar-spec` roda o `verificador-de-spec`; se aprovado, `entregue`; se bloqueado, permanece `em-desenvolvimento` com pendências na seção "Verificação" do arquivo.
+- **S1–S10 (legado)**: arquivo único em `docs/specs/S<N>-*.md` (frontmatter `status:`) — a **fonte
+  de verdade é o arquivo**; a issue do GitHub é só ponteiro de rastreamento. Fluxo: `/spec-write` +
+  `/spec-start`.
+- **S11+ (Spec Kit)**: diretório `specs/0NN-slug/` com `spec.md` + `plan.md` + `tasks.md` — a
+  **fonte de verdade é o conjunto dos três arquivos**; a issue continua sendo criada manualmente
+  como ponteiro. Diretório `0NN-slug` = spec `S<NN>` (número sem os zeros à esquerda). Fluxo:
+  `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement`.
+
+Em ambos os formatos, este arquivo (`docs/specs.md`) é o índice consultado por `/fechar-spec` (via
+`verificador-de-spec`) e por `/commit` para resolver escopo.
+
+**Ciclo de vida**: spec criada (`rascunho` → `pronta`) → implementação muda para
+`em-desenvolvimento` → `/fechar-spec` roda o `verificador-de-spec`; se aprovado, `entregue`; se
+bloqueado, permanece `em-desenvolvimento` com pendências registradas (seção "Verificação" no
+arquivo único, para legado; ou anotadas em `tasks.md`/relatório, para Spec Kit).
 
 | Código | Módulo | Spec | Issue | Status |
 |--------|--------|------|-------|--------|

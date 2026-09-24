@@ -1,7 +1,12 @@
 ---
-description: Escreve uma nova spec como arquivo versionado em docs/specs/, com issue-ponteiro no GitHub, seguindo o template e o processo de seams do projeto.
+description: "[LEGADO — só para manutenção de S1-S10] Escreve uma nova spec como arquivo versionado em docs/specs/, com issue-ponteiro no GitHub, seguindo o template e o processo de seams do projeto."
 argument-hint: [módulo ou tema da spec]
 ---
+
+> **Legado**: a partir de S11, spec nova entra por `/speckit-specify` (Spec Kit), não por aqui —
+> ver `CLAUDE.md` → "Fluxo de trabalho (SDD)". Este comando continua existindo só para reabrir ou
+> ajustar o formato de arquivo único das specs S1–S10 já existentes. Se o pedido for de uma spec
+> nova sem o usuário citar explicitamente `/spec-write`, prefira `/speckit-specify`.
 
 Você vai produzir uma nova spec para este projeto. A spec é um **arquivo**, não a issue — a issue é só um ponteiro de rastreamento. Uma spec só é aceitável se puder alimentar diretamente `/spec-start` sem ambiguidade: outro agente (sessão nova, sem esta conversa) deve conseguir implementá-la lendo só o arquivo da spec, o PRD e os ADRs.
 
