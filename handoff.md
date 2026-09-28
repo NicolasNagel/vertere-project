@@ -7,77 +7,88 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-09-24, por sessão Claude Code (Sonnet 5).
+**Última atualização**: 2026-09-28, por sessão Claude Code (Sonnet 5).
 
-## Estado atual dos branches de spec
+## Estado atual dos branches
 
 | Branch | Spec | Status | Observação |
 |---|---|---|---|
-| `main` | — | — | Contém até S9 mergeado (Portal da Clínica, entregue) |
-| `spec/s9-portal-clinica` | S9 | entregue, mergeado | `/fechar-spec` aprovado; PR já deve ter sido aberto/mergeado — confirmar com `gh pr list --state all` |
-| `spec/s10-importacao-dados-historicos` | S10 | entregue, verificado, `/code-review` feito | Ver "S10 — pendências" abaixo |
-| `chore/spec-kit-harness` | — (harness, sem spec) | em andamento | Branch desta sessão — ver "Spec Kit" abaixo |
+| `main` | — | — | Até S9 mergeado (Portal da Clínica, entregue) |
+| `chore/spec-kit-harness` | — (harness) | PR #23 aberto, não mergeado | Adoção do Spec Kit como ponto de entrada padrão a partir de S11 — ver seção própria abaixo |
+| `spec/s10-importacao-dados-historicos` | S10 | entregue, verificado, `/code-review` feito — **PR ainda não aberto** | Ver "S10" abaixo |
+| `spec/s11-frontend-web` | S11 | em desenvolvimento (specify→plan→tasks→implement completos; `/fechar-spec` ainda não rodado) | Ver "S11" abaixo — branch atual desta sessão |
 
-## S10 — Importação de Dados Históricos (pronta para PR)
+## S10 — Importação de Dados Históricos (pronta para PR, PR ainda não aberto)
 
-- 14/14 tasks implementadas, `/fechar-spec S10` aprovado na segunda rodada (a primeira bloqueou por
-  `openpyxl` retornar `datetime.timedelta` numa célula de Hora da planilha real — corrigido em
-  `xlsx.py::_normalizar_hora_excel`, com teste dedicado).
-- `/code-review` (Standards + Spec) rodou sem achados bloqueantes. Achado de Standards já aplicado:
-  extração do helper `_exigir` em `importacao/service.py` para colapsar ~15 repetições do padrão
-  "checar condição → registrar erro → `valido = False`" (commit `refactor(s10): extrai _exigir...`).
-- **Pendente, não bloqueante** (achados de Standards ainda não aplicados, ficam a critério de quem
-  retomar): extrair `planejar_importacao` (~520 linhas) em sub-funções por entidade
-  (`_planejar_clinicas`, `_planejar_veterinarios`, ...); considerar tipo nomeado para o "clump" de
-  4 campos financeiros (`preco`/`desconto`/`adicional`/`total`).
-- **Próximo passo real**: abrir o PR para `main` (`Closes #22`), linkando o relatório de verificação
-  (`docs/specs/relatorios/S10-verificacao.md`) e o resumo do `/code-review`. Não requer mais nenhum
-  fix antes disso.
+- 14/14 tasks implementadas, `/fechar-spec S10` aprovado, `/code-review` sem achados bloqueantes
+  (um achado de Standards já aplicado: helper `_exigir` em `importacao/service.py`).
+- **Próximo passo real**: abrir o PR para `main` (`Closes #22`). Nenhum fix pendente.
 
-## Spec Kit (`specify-cli`) — é o ponto de entrada padrão a partir de S11 (decisão tomada, não mais provisória)
+## S11 — Autenticação e Shell Autenticado do Frontend (specs/011-autenticacao-web/)
 
-Nesta sessão, a pedido explícito do usuário: instalado `specify-cli` e rodado `specify init --here
---force --non-interactive --integration claude` na raiz do repo, na branch `chore/spec-kit-harness`
-(não em cima de S9/S10, para não misturar harness com spec). Isso criou `.specify/` (templates,
-scripts PowerShell, constitution) e `.claude/skills/speckit-*/` (namespace próprio, sem colidir com
-`/spec-write`, `/spec-start`, `/fechar-spec`, `/code-review`).
+Primeira spec de frontend do projeto (`apps/web` criado do zero nesta sessão). Fluxo completo do
+Spec Kit executado: `spec.md` → `plan.md`/`research.md`/`data-model.md`/`quickstart.md` →
+`tasks.md` (39 tasks) → implementação de T001 a T037+T039 (T038 pendente, ver abaixo). Issue
+ponteiro: #24.
 
-**Decisão final (perguntada e confirmada com o usuário nesta sessão, não presumida)**: a partir de
-S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o fluxo
-**padrão** de qualquer spec nova — substitui `/spec-write` + `/spec-start` como ponto de entrada.
-`/spec-write`/`/spec-start` continuam instalados só para manutenção de S1–S10 (formato de arquivo
-único). `/fechar-spec` e `/code-review` **não mudam** — o Spec Kit não tem gate equivalente a
-nenhum dos dois, então ambos continuam sendo acionados manualmente antes do PR, exatamente como
-antes.
+**Design system**: a pedido do usuário, herdado de `github.com/NicolasNagel/vertere-lab` (versão
+anterior deste mesmo produto) — paleta (`--color-brand-ink` #2c4768, `--color-surface-cream`
+#eeeae0, etc.), tipografia (Big Shoulders Display/Cormorant Garamond/Manrope/JetBrains Mono),
+layout de login em painel duplo, sidebar fixa 220px. Sem Tailwind/Radix — CSS custom properties +
+um arquivo `.css` por componente, mesma técnica da referência. Melhorias de UI/UX aplicadas sobre o
+mock estático original: `<label>`+`<input>` semânticos de verdade, alternância de senha acessível,
+erro anunciado via `role="alert"`, `:focus-visible` global, contraste calculado (não estimado) —
+todos os pares texto/fundo passam WCAG AA, a maioria AAA. Ver `research.md` para o raciocínio
+completo.
 
-**Formato de spec escolhido para S11+ (segunda pergunta feita e respondida nesta sessão)**: o
-formato **nativo** do Spec Kit — `specs/0NN-slug/{spec.md,plan.md,tasks.md}` — não uma customização
-dos templates para imitar `docs/specs/S-XX-nome.md`. Consequência prática: `docs/specs.md` agora
-documenta os dois formatos coexistindo; `.claude/agents/verificador-de-spec.md` foi atualizado para
-ler os três arquivos (S11+) ou o arquivo único (S1–S10), conforme o que `docs/specs.md` indicar;
-`/commit` foi atualizado para referenciar `specs/0NN-slug/spec.md` como "Spec:" quando aplicável.
+**Duas correções de design feitas durante a implementação** (não durante o planejamento — vale ler
+antes de continuar esta spec ou usar `itensDeNavegacao`/`SessaoContext` como referência):
 
-**Numeração — ponto de atenção real para quem criar S11**: o Spec Kit, por conta própria, numeraria
-a primeira spec nova como `specs/001-slug` (ele só escaneia o diretório `specs/`, que ainda não
-existe). Isso colidiria com a sequência `S<N>` já em uso (S1–S10 existem). `CLAUDE.md` documenta que
-o próximo número é `011`, mas **isso depende de quem rodar `/speckit-specify` prestar atenção nisso
-na hora** — o Spec Kit não sabe da numeração histórica do projeto sozinho. Se uma sessão futura rodar
-`/speckit-specify` sem essa atenção, o diretório sairia como `specs/001-slug` e precisaria ser
-renomeado manualmente para `specs/011-slug` antes de registrar em `docs/specs.md`.
+1. **`itensDeNavegacao` para o papel `clinica`**: o plano inicial (data-model.md) mandava espelhar
+   literalmente `auth/service.py::_PERMISSOES` para todos os papéis. Isso estava errado — a S9
+   (Portal da Clínica) já estabeleceu que `clinica` navega um namespace próprio e mais restrito
+   (`/portal/*`: só Pacientes/Atendimentos/Laudos, escopados por clínica), não as mesmas telas
+   administrativas que staff usa, mesmo que o backend conceda a `clinica` algumas `Acao` de leitura
+   para fluxos internos. Corrigido usando o próprio Acceptance Scenario 3 de `spec.md` (que já
+   estava certo) como fonte de verdade. `itensDeNavegacao.ts` agora tem `ItemDeNavegacao` distintos
+   para `clinica` (rota `/portal/*`), não os mesmos itens de staff com `clinica` adicionado à lista
+   de papéis permitidos.
+2. **`useSessao` virou `SessaoContext` (Provider)**: o plano original tratava sessão como um hook
+   comum (`useState` por componente). Ao implementar "sessão expirada" (US3), ficou claro que um
+   handler global de 401 não conseguiria notificar componentes já montados com seu próprio estado
+   local desatualizado. Virou um Context único (`SessaoProvider`, montado em `App.tsx`) — estado
+   compartilhado por toda a árvore. Qualquer código futuro que precise de sessão usa
+   `useSessao()` de `autenticacao/SessaoContext.tsx`, não existe mais `autenticacao/useSessao.ts`.
 
-`.specify/memory/constitution.md` está em **v1.1.0** (Principle V reescrito para descrever o Spec
-Kit como ponto de entrada padrão, não mais como camada opcional). `RATIFICATION_DATE` continua como
-`TODO(RATIFICATION_DATE)` — não levantado nesta sessão.
+**Testes**: 25 testes (Vitest + Testing Library) cobrindo as 3 user stories, todos passando. Build
+(`tsc -b && vite build`) OK.
 
-**Arquivos tocados por essa decisão nesta sessão** (todos no commit de harness desta branch):
-`CLAUDE.md` (seção "Fluxo de trabalho (SDD)" reescrita + nova seção "Spec Kit"), `docs/specs.md`
-(header explica os dois formatos), `.claude/agents/verificador-de-spec.md` (lê os dois formatos),
-`.claude/commands/spec-write.md` e `.claude/commands/spec-start.md` (nota de legado no topo),
-`.claude/commands/commit.md` (linha "Spec:" ciente dos dois formatos), `.specify/memory/constitution.md`.
+**T038 pendente — real, não cosmético**: rodar os 9 cenários de `quickstart.md` manualmente contra
+o backend real não foi possível nesta sessão porque a extensão Claude in Chrome não estava
+conectada neste ambiente (sem acesso a navegador). O que foi verificado sem navegador: build limpo,
+servidor dev responde HTTP 200 com HTML/fontes corretos, suíte automatizada cobre cada cenário
+isoladamente. **Isso não é o mesmo que verificação visual/E2E real** — uma sessão com navegador
+disponível precisa rodar isso antes de `/fechar-spec S11` declarar a spec funcional de ponta a
+ponta (é exatamente o que o `verificador-de-spec` vai exigir, ver seu passo "Funcional de ponta a
+ponta").
 
-**Próximo passo real**: nenhuma spec S11 foi criada ainda nesta sessão — só a decisão de harness foi
-tomada e documentada. Quando alguém for criar a primeira spec via `/speckit-specify`, prestar atenção
-na numeração (parágrafo acima) antes de prosseguir.
+**Próximo passo real**: rodar T038 (precisa de navegador), depois `/fechar-spec S11`, depois
+`/code-review` na branch, depois abrir o PR — mesmo fluxo de sempre a partir daqui (Spec Kit só
+mudou specify/plan/tasks/implement, o resto do pipeline é idêntico).
+
+## Spec Kit (`specify-cli`) — ponto de entrada padrão a partir de S11 (decisão já tomada, PR aberto)
+
+Decisão confirmada explicitamente com o usuário (não presumida): a partir de S11,
+`/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o fluxo padrão de
+spec nova, no formato **nativo** do Spec Kit (`specs/0NN-slug/{spec.md,plan.md,tasks.md}`, não uma
+customização para imitar `docs/specs/S-XX-nome.md`). `/fechar-spec`/`/code-review` não mudam.
+`/spec-write`/`/spec-start` continuam instalados só para manutenção de S1–S10.
+
+Detalhes completos (arquivos tocados, `constitution.md` v1.1.0, nota de numeração) estão na branch
+`chore/spec-kit-harness` (PR #23, ainda não mergeado) e em `CLAUDE.md` → "Fluxo de trabalho (SDD)".
+**Numeração confirmada funcionando na prática**: S11 usou `specs/011-autenticacao-web/` corretamente
+(número escolhido manualmente, não pelo Speckit sozinho) — o processo documentado em `CLAUDE.md`
+funcionou.
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 
