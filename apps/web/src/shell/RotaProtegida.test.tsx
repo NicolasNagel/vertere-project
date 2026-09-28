@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import * as useSessaoModulo from '../autenticacao/useSessao'
+import * as useSessaoModulo from '../autenticacao/SessaoContext'
 import { RotaProtegida } from './RotaProtegida'
 
 function renderizar() {

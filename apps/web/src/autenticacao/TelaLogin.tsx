@@ -4,7 +4,7 @@ import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
 import { PainelMarca } from './PainelMarca'
 import './tela-login.css'
-import { useSessao } from './useSessao'
+import { useSessao } from './SessaoContext'
 
 function IconeUsuario() {
   return (

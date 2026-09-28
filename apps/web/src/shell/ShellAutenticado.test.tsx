@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import * as useSessaoModulo from '../autenticacao/useSessao'
+import * as useSessaoModulo from '../autenticacao/SessaoContext'
 import { ShellAutenticado } from './ShellAutenticado'
 
 function renderizarComoPapel(papel: 'admin' | 'atendente' | 'tecnico' | 'clinica', sair = vi.fn()) {

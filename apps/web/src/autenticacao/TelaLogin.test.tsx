@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import * as useSessaoModulo from './useSessao'
+import * as useSessaoModulo from './SessaoContext'
 import { TelaLogin } from './TelaLogin'
 
 function renderizarNaRota() {

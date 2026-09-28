@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router'
-import { useSessao } from '../autenticacao/useSessao'
+import { useSessao } from '../autenticacao/SessaoContext'
 import type { Papel } from '../tipos'
 
 interface RotaProtegidaProps {

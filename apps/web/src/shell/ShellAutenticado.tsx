@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import marcaVertere from '../assets/vertere-mark.png'
-import { useSessao } from '../autenticacao/useSessao'
+import { useSessao } from '../autenticacao/SessaoContext'
 import { itensParaPapel } from './itensDeNavegacao'
 import './shell-autenticado.css'
 
