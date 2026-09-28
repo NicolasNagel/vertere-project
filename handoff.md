@@ -9,86 +9,61 @@
 
 **Última atualização**: 2026-09-28, por sessão Claude Code (Sonnet 5).
 
-## Estado atual dos branches
+## Estado atual: 3 PRs abertos, ordem de merge importa
 
-| Branch | Spec | Status | Observação |
-|---|---|---|---|
-| `main` | — | — | Até S9 mergeado (Portal da Clínica, entregue) |
-| `chore/spec-kit-harness` | — (harness) | PR #23 aberto, não mergeado | Adoção do Spec Kit como ponto de entrada padrão a partir de S11 — ver seção própria abaixo |
-| `spec/s10-importacao-dados-historicos` | S10 | entregue, verificado, `/code-review` feito — **PR ainda não aberto** | Ver "S10" abaixo |
-| `spec/s11-frontend-web` | S11 | em desenvolvimento (specify→plan→tasks→implement completos; `/fechar-spec` ainda não rodado) | Ver "S11" abaixo — branch atual desta sessão |
+| PR | Branch | Base | Status | Observação |
+|---|---|---|---|---|
+| [#23](https://github.com/NicolasNagel/vertere-project/pull/23) | `chore/spec-kit-harness` | `main` | Aberto, não mergeado | Adoção do Spec Kit — **mergear primeiro** |
+| [#25](https://github.com/NicolasNagel/vertere-project/pull/25) | `spec/s10-importacao-dados-historicos` | `main` | Aberto, não mergeado | S10 — independente das outras duas, pode mergear a qualquer momento |
+| [#26](https://github.com/NicolasNagel/vertere-project/pull/26) | `spec/s11-frontend-web` | `chore/spec-kit-harness` | Aberto, não mergeado | S11 — **empilhado sobre #23**, mergear depois dele |
 
-## S10 — Importação de Dados Históricos (pronta para PR, PR ainda não aberto)
+**Ordem recomendada**: #23 primeiro (harness), depois #26 (S11, que é baseado nele — o GitHub vai
+re-basear a comparação automaticamente contra `main` assim que #23 mergear), #25 (S10) a qualquer
+momento, independente das outras duas.
 
-- 14/14 tasks implementadas, `/fechar-spec S10` aprovado, `/code-review` sem achados bloqueantes
-  (um achado de Standards já aplicado: helper `_exigir` em `importacao/service.py`).
-- **Próximo passo real**: abrir o PR para `main` (`Closes #22`). Nenhum fix pendente.
+## S9, S10, S11 — todas `/fechar-spec` aprovadas, `/code-review` sem achados bloqueantes
 
-## S11 — Autenticação e Shell Autenticado do Frontend (specs/011-autenticacao-web/)
+Nenhuma tem trabalho de código pendente. S9 já está em `main` (mergeada). S10 e S11 só esperam
+review/merge dos PRs acima.
 
-Primeira spec de frontend do projeto (`apps/web` criado do zero nesta sessão). Fluxo completo do
-Spec Kit executado: `spec.md` → `plan.md`/`research.md`/`data-model.md`/`quickstart.md` →
-`tasks.md` (39 tasks) → implementação de T001 a T037+T039 (T038 pendente, ver abaixo). Issue
-ponteiro: #24.
+## S11 — Autenticação e Shell Autenticado do Frontend (detalhes para quem continuar o frontend)
 
-**Design system**: a pedido do usuário, herdado de `github.com/NicolasNagel/vertere-lab` (versão
-anterior deste mesmo produto) — paleta (`--color-brand-ink` #2c4768, `--color-surface-cream`
-#eeeae0, etc.), tipografia (Big Shoulders Display/Cormorant Garamond/Manrope/JetBrains Mono),
-layout de login em painel duplo, sidebar fixa 220px. Sem Tailwind/Radix — CSS custom properties +
-um arquivo `.css` por componente, mesma técnica da referência. Melhorias de UI/UX aplicadas sobre o
-mock estático original: `<label>`+`<input>` semânticos de verdade, alternância de senha acessível,
-erro anunciado via `role="alert"`, `:focus-visible` global, contraste calculado (não estimado) —
-todos os pares texto/fundo passam WCAG AA, a maioria AAA. Ver `research.md` para o raciocínio
-completo.
+Primeira spec de frontend do projeto. `apps/web` existe agora com: tela de login, shell autenticado
+com navegação por papel, tratamento de sessão expirada. Todas as seções do menu (Clínicas,
+Pacientes, Atendimentos, Laudos, etc.) são `TelaEmConstrucao` — **nenhuma tela de conteúdo real
+existe ainda**. Isso é o que vem depois (S12+).
 
-**Duas correções de design feitas durante a implementação** (não durante o planejamento — vale ler
-antes de continuar esta spec ou usar `itensDeNavegacao`/`SessaoContext` como referência):
+**Duas correções de design encontradas durante a implementação** (não durante o planejamento —
+ler antes de tocar em `itensDeNavegacao.ts` ou `SessaoContext.tsx`):
+1. `clinica` não espelha `auth/service.py::_PERMISSOES` literalmente — navega o namespace
+   `/portal/*` próprio (S9), com `ItemDeNavegacao` distintos dos itens de staff mesmo quando o
+   rótulo é igual (ex: "Pacientes" aparece duas vezes na lista, uma para staff em `/pacientes`,
+   outra para `clinica` em `/portal/pacientes`).
+2. Sessão é um Context (`SessaoContext.tsx`), não um hook com `useState` local — necessário para o
+   handler global de sessão expirada notificar toda a árvore, não só o componente que disparou.
 
-1. **`itensDeNavegacao` para o papel `clinica`**: o plano inicial (data-model.md) mandava espelhar
-   literalmente `auth/service.py::_PERMISSOES` para todos os papéis. Isso estava errado — a S9
-   (Portal da Clínica) já estabeleceu que `clinica` navega um namespace próprio e mais restrito
-   (`/portal/*`: só Pacientes/Atendimentos/Laudos, escopados por clínica), não as mesmas telas
-   administrativas que staff usa, mesmo que o backend conceda a `clinica` algumas `Acao` de leitura
-   para fluxos internos. Corrigido usando o próprio Acceptance Scenario 3 de `spec.md` (que já
-   estava certo) como fonte de verdade. `itensDeNavegacao.ts` agora tem `ItemDeNavegacao` distintos
-   para `clinica` (rota `/portal/*`), não os mesmos itens de staff com `clinica` adicionado à lista
-   de papéis permitidos.
-2. **`useSessao` virou `SessaoContext` (Provider)**: o plano original tratava sessão como um hook
-   comum (`useState` por componente). Ao implementar "sessão expirada" (US3), ficou claro que um
-   handler global de 401 não conseguiria notificar componentes já montados com seu próprio estado
-   local desatualizado. Virou um Context único (`SessaoProvider`, montado em `App.tsx`) — estado
-   compartilhado por toda a árvore. Qualquer código futuro que precise de sessão usa
-   `useSessao()` de `autenticacao/SessaoContext.tsx`, não existe mais `autenticacao/useSessao.ts`.
+**Limitação real, não bloqueante, documentada no relatório de verificação**: nenhuma tela ainda faz
+fetch de dados próprio, então o cenário de "sessão expirada durante navegação" só é testável
+forçando a chamada manualmente (`clienteHttp.requisitar`), não organicamente pela UI. Resolve
+sozinho quando a primeira tela de conteúdo real (S12+) existir.
 
-**Testes**: 25 testes (Vitest + Testing Library) cobrindo as 3 user stories, todos passando. Build
-(`tsc -b && vite build`) OK.
+**Bug de infra encontrado e corrigido durante verificação manual com navegador real**: `apps/api`
+não tinha CORS configurado — nenhuma chamada do frontend funcionava (bloqueada pelo navegador,
+preflight `OPTIONS` retornava 405). Os testes automatizados não pegam isso (`TestClient` não aplica
+política de CORS). Corrigido em `apps/api/src/vertere_api/main.py` + `settings.py`
+(`fix(s11): adiciona CORS ao backend`).
 
-**T038 pendente — real, não cosmético**: rodar os 9 cenários de `quickstart.md` manualmente contra
-o backend real não foi possível nesta sessão porque a extensão Claude in Chrome não estava
-conectada neste ambiente (sem acesso a navegador). O que foi verificado sem navegador: build limpo,
-servidor dev responde HTTP 200 com HTML/fontes corretos, suíte automatizada cobre cada cenário
-isoladamente. **Isso não é o mesmo que verificação visual/E2E real** — uma sessão com navegador
-disponível precisa rodar isso antes de `/fechar-spec S11` declarar a spec funcional de ponta a
-ponta (é exatamente o que o `verificador-de-spec` vai exigir, ver seu passo "Funcional de ponta a
-ponta").
+## Spec Kit — decisão em vigor, primeira spec real já validou o processo
 
-**Próximo passo real**: rodar T038 (precisa de navegador), depois `/fechar-spec S11`, depois
-`/code-review` na branch, depois abrir o PR — mesmo fluxo de sempre a partir daqui (Spec Kit só
-mudou specify/plan/tasks/implement, o resto do pipeline é idêntico).
+A partir de S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o
+fluxo padrão (`specs/0NN-slug/`), `/fechar-spec`/`/code-review` continuam iguais. Numeração manual
+(011, não 001) funcionou. Detalhes completos: `CLAUDE.md` → "Fluxo de trabalho (SDD)" e PR #23.
 
-## Spec Kit (`specify-cli`) — ponto de entrada padrão a partir de S11 (decisão já tomada, PR aberto)
+## Próximo passo real para quem continuar
 
-Decisão confirmada explicitamente com o usuário (não presumida): a partir de S11,
-`/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o fluxo padrão de
-spec nova, no formato **nativo** do Spec Kit (`specs/0NN-slug/{spec.md,plan.md,tasks.md}`, não uma
-customização para imitar `docs/specs/S-XX-nome.md`). `/fechar-spec`/`/code-review` não mudam.
-`/spec-write`/`/spec-start` continuam instalados só para manutenção de S1–S10.
-
-Detalhes completos (arquivos tocados, `constitution.md` v1.1.0, nota de numeração) estão na branch
-`chore/spec-kit-harness` (PR #23, ainda não mergeado) e em `CLAUDE.md` → "Fluxo de trabalho (SDD)".
-**Numeração confirmada funcionando na prática**: S11 usou `specs/011-autenticacao-web/` corretamente
-(número escolhido manualmente, não pelo Speckit sozinho) — o processo documentado em `CLAUDE.md`
-funcionou.
+1. Revisar e mergear os 3 PRs (ordem: #23 → #26, #25 quando quiser).
+2. Depois disso, a próxima spec (S12) é a primeira tela de conteúdo real do frontend — qual seção
+   vem primeiro (Pacientes? Atendimentos?) é decisão do usuário, não presumir.
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 
