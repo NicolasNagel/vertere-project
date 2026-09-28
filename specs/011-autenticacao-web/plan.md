@@ -16,7 +16,8 @@ backend (`authorize()`), replicando no frontend a Regra de Ouro do projeto.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x sobre React 18, Node.js 20 LTS para tooling (build/test).
+**Language/Version**: TypeScript 6.x sobre React 19 (versão instalada pelo scaffold atual do Vite —
+corrigido de "React 18" na primeira redação deste plano), Node.js 20+ para tooling (build/test).
 
 **Primary Dependencies**:
 - `react` + `react-dom` — já fixado em `CLAUDE.md`.
