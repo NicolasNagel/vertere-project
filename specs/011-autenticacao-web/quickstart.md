@@ -10,6 +10,10 @@ que os testes passam.
   Postgres de dev configurado e ao menos um usuário de cada papel existente (`admin`, `atendente`,
   `tecnico`, `clinica`) — usar os mesmos fixtures/seed já usados pelos testes de router do backend
   (`apps/api/tests/test_auth_router.py` mostra como criar cada um via `UsuarioModel`).
+- CORS: `apps/api` precisa aceitar a origem do Vite dev server (`http://localhost:5173`) — já
+  configurado por padrão em `settings.cors_origins`. Sem isso, o navegador bloqueia toda chamada do
+  frontend com um preflight `OPTIONS` 405 (achado real durante a primeira execução deste quickstart,
+  ver "Verificação" em `tasks.md` T038).
 - Frontend instalado: `cd apps/web && pnpm install`.
 - Variável de ambiente do frontend apontando para a URL do backend local (definida na T de setup do
   projeto em `tasks.md`, ex: `VITE_API_URL=http://localhost:8000`).
