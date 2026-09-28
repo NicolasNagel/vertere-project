@@ -21,6 +21,7 @@ export async function login(email: string, senha: string): Promise<SessaoUsuario
   return {
     token: resposta.access_token,
     papel: usuario.papel,
+    email: usuario.email,
     clinicaId: usuario.clinica_id ?? null,
   }
 }

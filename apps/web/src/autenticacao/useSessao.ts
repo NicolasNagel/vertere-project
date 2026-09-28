@@ -33,6 +33,7 @@ export function useSessao() {
   return {
     autenticado: sessao !== null,
     papel: sessao?.papel ?? null,
+    email: sessao?.email ?? null,
     erro,
     carregando,
     login,

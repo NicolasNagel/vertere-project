@@ -6,6 +6,7 @@ export type Papel = components['schemas']['Papel']
 export interface SessaoUsuario {
   token: string
   papel: Papel
+  email: string
   clinicaId: string | null
 }
 

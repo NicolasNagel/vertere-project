@@ -1,10 +1,13 @@
 import { createBrowserRouter } from 'react-router'
 import { TelaLogin } from './autenticacao/TelaLogin'
+import { itensDeNavegacao } from './shell/itensDeNavegacao'
+import { RotaProtegida } from './shell/RotaProtegida'
+import { ShellAutenticado } from './shell/ShellAutenticado'
+import { TelaEmConstrucao } from './shell/TelaEmConstrucao'
+import type { Papel } from './tipos'
 
-/**
- * `/` ainda é um placeholder — US2 substitui por `ShellAutenticado` + as rotas de
- * `itensDeNavegacao`, cada uma envolvida por `RotaProtegida`.
- */
+const TODOS_OS_PAPEIS: Papel[] = ['admin', 'atendente', 'tecnico', 'clinica']
+
 export function criarRotas() {
   return createBrowserRouter([
     {
@@ -13,7 +16,25 @@ export function criarRotas() {
     },
     {
       path: '/',
-      element: <div>Vertere Lab</div>,
+      element: (
+        <RotaProtegida papeisPermitidos={TODOS_OS_PAPEIS}>
+          <ShellAutenticado />
+        </RotaProtegida>
+      ),
+      children: [
+        {
+          index: true,
+          element: <TelaEmConstrucao titulo="Vertere Lab" />,
+        },
+        ...itensDeNavegacao.map((item) => ({
+          path: item.rota.replace(/^\//, ''),
+          element: (
+            <RotaProtegida papeisPermitidos={item.papeisPermitidos}>
+              <TelaEmConstrucao titulo={item.rotulo} />
+            </RotaProtegida>
+          ),
+        })),
+      ],
     },
   ])
 }

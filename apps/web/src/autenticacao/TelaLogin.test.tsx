@@ -26,6 +26,7 @@ describe('TelaLogin', () => {
     vi.spyOn(useSessaoModulo, 'useSessao').mockReturnValue({
       autenticado: false,
       papel: null,
+      email: null,
       erro: null,
       carregando: false,
       login,
@@ -46,6 +47,7 @@ describe('TelaLogin', () => {
     vi.spyOn(useSessaoModulo, 'useSessao').mockReturnValue({
       autenticado: false,
       papel: null,
+      email: null,
       erro: 'E-mail ou senha inválidos',
       carregando: false,
       login: vi.fn(),
@@ -61,6 +63,7 @@ describe('TelaLogin', () => {
     vi.spyOn(useSessaoModulo, 'useSessao').mockReturnValue({
       autenticado: true,
       papel: 'admin',
+      email: 'admin@vertere.com',
       erro: null,
       carregando: false,
       login: vi.fn(),

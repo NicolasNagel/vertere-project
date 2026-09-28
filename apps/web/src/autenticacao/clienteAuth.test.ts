@@ -35,7 +35,12 @@ describe('clienteAuth.login', () => {
 
     const sessao = await login('admin@vertere.com', 'senha-correta')
 
-    expect(sessao).toEqual({ token: 'token-123', papel: 'admin', clinicaId: null })
+    expect(sessao).toEqual({
+      token: 'token-123',
+      papel: 'admin',
+      email: 'admin@vertere.com',
+      clinicaId: null,
+    })
     expect(fetchMock).toHaveBeenCalledTimes(2)
 
     const [, primeiraChamada] = fetchMock.mock.calls[0] as [string, RequestInit]

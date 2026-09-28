@@ -18,6 +18,7 @@ describe('useSessao', () => {
     vi.spyOn(clienteAuth, 'login').mockResolvedValue({
       token: 'token-123',
       papel: 'admin',
+      email: 'admin@vertere.com',
       clinicaId: null,
     })
 
@@ -63,6 +64,7 @@ describe('useSessao', () => {
     vi.spyOn(clienteAuth, 'login').mockResolvedValue({
       token: 'token-123',
       papel: 'admin',
+      email: 'admin@vertere.com',
       clinicaId: null,
     })
     const { result } = renderHook(() => useSessao())
