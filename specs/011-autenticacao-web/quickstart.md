@@ -48,6 +48,14 @@ Abre em `http://localhost:5173` (padrão do Vite) ou a porta que o terminal indi
    (ex: `sessoes_store.limpar_sessoes()` num shell Python, ou esperar o expirar natural) e disparar
    qualquer chamada à API (ex: navegar entre seções) → deve redirecionar ao login com a mensagem de
    sessão expirada, sem tela em branco.
+   > **Limitação real de cobertura, não bloqueante** (apontada por `/fechar-spec`): nenhuma seção do
+   > shell faz uma chamada de API própria hoje — todas são `TelaEmConstrucao` (FR-008), e a única
+   > chamada pós-login é o `GET /auth/me` do próprio login. Navegar entre seções, sozinho, **não**
+   > dispara esse cenário organicamente. Para exercitar de verdade, force uma chamada manualmente
+   > (ex: `await (await import('/src/api/clienteHttp.ts')).requisitar('/pacientes')` no console do
+   > navegador, com o token corrompido) — é assim que a verificação desta spec confirmou o mecanismo.
+   > Isso deixa de ser uma limitação assim que uma spec futura adicionar a primeira tela com fetch de
+   > dados de verdade.
 8. **Refresh preserva sessão (Edge Case)**: logado, apertar F5 → deve continuar no shell, sem pedir
    login de novo.
 9. **Placeholder de seção não implementada (FR-008)**: clicar em uma seção do menu que ainda não tem

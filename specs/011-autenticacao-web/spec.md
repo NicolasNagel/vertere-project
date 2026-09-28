@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-24
 
-**Status**: Draft
+**Status**: Entregue (aprovada em `/fechar-spec` — ver `docs/specs/relatorios/S11-verificacao.md`)
 
 **Input**: User description: "Frontend web (apps/web, React + Vite + TypeScript) do Vertere Lab, começando pela tela de login e pelo shell autenticado com navegação por papel — primeira spec de frontend do projeto, backend do MVP (S1–S10) já está completo."
 
