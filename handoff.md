@@ -9,61 +9,56 @@
 
 **Última atualização**: 2026-09-28, por sessão Claude Code (Sonnet 5).
 
-## Estado atual: 3 PRs abertos, ordem de merge importa
+## `main` está com tudo mergeado — S1 a S11 entregues
 
-| PR | Branch | Base | Status | Observação |
-|---|---|---|---|---|
-| [#23](https://github.com/NicolasNagel/vertere-project/pull/23) | `chore/spec-kit-harness` | `main` | Aberto, não mergeado | Adoção do Spec Kit — **mergear primeiro** |
-| [#25](https://github.com/NicolasNagel/vertere-project/pull/25) | `spec/s10-importacao-dados-historicos` | `main` | Aberto, não mergeado | S10 — independente das outras duas, pode mergear a qualquer momento |
-| [#26](https://github.com/NicolasNagel/vertere-project/pull/26) | `spec/s11-frontend-web` | `chore/spec-kit-harness` | Aberto, não mergeado | S11 — **empilhado sobre #23**, mergear depois dele |
+PRs #23 (harness), #26 (S11) e #25 (S10) todos squash-mergeados em `main`, nesta ordem. Issues #20,
+#22, #24 fecharam automaticamente. `docs/specs.md` reflete o estado final: S1–S11 `entregue`.
 
-**Ordem recomendada**: #23 primeiro (harness), depois #26 (S11, que é baseado nele — o GitHub vai
-re-basear a comparação automaticamente contra `main` assim que #23 mergear), #25 (S10) a qualquer
-momento, independente das outras duas.
+**Nota técnica para quem for mexer com branches empilhadas de novo**: #26 (S11) tinha sido aberto
+contra `chore/spec-kit-harness` (não `main`), porque a branch da S11 partiu dali. Depois do squash-
+merge de #23, retargetar #26 para `main` deu conflito (`git rebase origin/main` direto também deu
+conflito "add/add", porque replaying commits já squashados em `main` confunde o git) — resolvido com
+`git rebase --onto origin/main chore/spec-kit-harness spec/s11-frontend-web` (só replay dos commits
+exclusivos da S11, não os do harness) + `push --force-with-lease`. Para #25 (S10, que não tinha essa
+relação de stack), um `git merge origin/main` simples resolveu o único conflito real
+(`docs/specs.md`, ambas as branches editando a mesma tabela) antes do squash-merge funcionar.
 
-## S9, S10, S11 — todas `/fechar-spec` aprovadas, `/code-review` sem achados bloqueantes
+Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos` e
+`spec/s11-frontend-web` **não foram deletadas** (merge feito com `--delete-branch=false`) — seguro
+deletar quando quiser, ninguém mais devia precisar delas.
 
-Nenhuma tem trabalho de código pendente. S9 já está em `main` (mergeada). S10 e S11 só esperam
-review/merge dos PRs acima.
+## Backend (S1–S10) e frontend (S11) completos, prontos para a próxima spec
 
-## S11 — Autenticação e Shell Autenticado do Frontend (detalhes para quem continuar o frontend)
+- Backend: todos os módulos do MVP (auth, clínicas, veterinários, pacientes, exames, atendimentos,
+  laudos, financeiro, portal, importação histórica).
+- Frontend (`apps/web`): login + shell autenticado com navegação por papel. **Todas as seções de
+  conteúdo são `TelaEmConstrucao`** — nenhuma tela real ainda (Pacientes, Atendimentos, etc.).
 
-Primeira spec de frontend do projeto. `apps/web` existe agora com: tela de login, shell autenticado
-com navegação por papel, tratamento de sessão expirada. Todas as seções do menu (Clínicas,
-Pacientes, Atendimentos, Laudos, etc.) são `TelaEmConstrucao` — **nenhuma tela de conteúdo real
-existe ainda**. Isso é o que vem depois (S12+).
+**Duas correções de design da S11 encontradas durante a implementação** (ler antes de tocar em
+`itensDeNavegacao.ts` ou `SessaoContext.tsx`):
+1. `clinica` não espelha `auth/service.py::_PERMISSOES` literalmente — navega `/portal/*` (S9), com
+   `ItemDeNavegacao` distintos dos itens de staff mesmo com rótulo igual.
+2. Sessão é `SessaoContext` (Context compartilhado), não hook com `useState` local — necessário para
+   o handler global de sessão expirada notificar toda a árvore.
 
-**Duas correções de design encontradas durante a implementação** (não durante o planejamento —
-ler antes de tocar em `itensDeNavegacao.ts` ou `SessaoContext.tsx`):
-1. `clinica` não espelha `auth/service.py::_PERMISSOES` literalmente — navega o namespace
-   `/portal/*` próprio (S9), com `ItemDeNavegacao` distintos dos itens de staff mesmo quando o
-   rótulo é igual (ex: "Pacientes" aparece duas vezes na lista, uma para staff em `/pacientes`,
-   outra para `clinica` em `/portal/pacientes`).
-2. Sessão é um Context (`SessaoContext.tsx`), não um hook com `useState` local — necessário para o
-   handler global de sessão expirada notificar toda a árvore, não só o componente que disparou.
+**Limitação real, não bloqueante**: nenhuma tela ainda faz fetch próprio, então "sessão expirada
+durante navegação" só é testável forçando a chamada manualmente. Resolve quando a primeira tela de
+conteúdo real (S12+) existir.
 
-**Limitação real, não bloqueante, documentada no relatório de verificação**: nenhuma tela ainda faz
-fetch de dados próprio, então o cenário de "sessão expirada durante navegação" só é testável
-forçando a chamada manualmente (`clienteHttp.requisitar`), não organicamente pela UI. Resolve
-sozinho quando a primeira tela de conteúdo real (S12+) existir.
+**Bug de infra corrigido durante verificação manual**: `apps/api` não tinha CORS — corrigido em
+`fix(s11)`, já em `main`.
 
-**Bug de infra encontrado e corrigido durante verificação manual com navegador real**: `apps/api`
-não tinha CORS configurado — nenhuma chamada do frontend funcionava (bloqueada pelo navegador,
-preflight `OPTIONS` retornava 405). Os testes automatizados não pegam isso (`TestClient` não aplica
-política de CORS). Corrigido em `apps/api/src/vertere_api/main.py` + `settings.py`
-(`fix(s11): adiciona CORS ao backend`).
-
-## Spec Kit — decisão em vigor, primeira spec real já validou o processo
+## Spec Kit — em vigor, primeira spec real (S11) já validou o processo
 
 A partir de S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o
 fluxo padrão (`specs/0NN-slug/`), `/fechar-spec`/`/code-review` continuam iguais. Numeração manual
-(011, não 001) funcionou. Detalhes completos: `CLAUDE.md` → "Fluxo de trabalho (SDD)" e PR #23.
+(011, não 001) funcionou na prática. Detalhes: `CLAUDE.md` → "Fluxo de trabalho (SDD)".
 
-## Próximo passo real para quem continuar
+## Próximo passo real
 
-1. Revisar e mergear os 3 PRs (ordem: #23 → #26, #25 quando quiser).
-2. Depois disso, a próxima spec (S12) é a primeira tela de conteúdo real do frontend — qual seção
-   vem primeiro (Pacientes? Atendimentos?) é decisão do usuário, não presumir.
+A próxima spec (S12) é a primeira tela de conteúdo real do frontend — qual seção vem primeiro
+(Pacientes? Atendimentos?) é decisão do usuário, não presumir. Ponto de entrada: `/speckit-specify`,
+numeração `012` (confirmar contra `docs/specs.md` antes, o Spec Kit sozinho não sabe da sequência).
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 
