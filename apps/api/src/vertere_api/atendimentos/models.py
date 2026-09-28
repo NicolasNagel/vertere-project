@@ -26,6 +26,10 @@ class AtendimentoModel(Base):
     desconto: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     status: Mapped[str] = mapped_column(String(20))
+    numero_origem: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    protocolo_origem: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, unique=True, index=True
+    )
 
     itens_exame: Mapped[list["AtendimentoItemExameModel"]] = relationship(
         back_populates="atendimento",

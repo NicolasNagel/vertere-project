@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import datetime
 from decimal import Decimal
 
@@ -142,6 +143,20 @@ class TestSQLAlchemyAtendimentoRepository:
         encontrado = repo.buscar_por_id("atendimento-1")
 
         assert encontrado == novo
+
+    def test_preserva_identificadores_de_origem(
+        self, session: Session, clinica: Clinica, veterinario: Veterinario, paciente: Paciente, exame: Exame
+    ) -> None:
+        repo = SQLAlchemyAtendimentoRepository(session)
+        historico = replace(
+            _atendimento(clinica, veterinario, paciente, exame),
+            numero_origem="42",
+            protocolo_origem="PROTO-42",
+        )
+
+        repo.salvar(historico)
+
+        assert repo.buscar_por_id(historico.id) == historico
 
     def test_salvar_atualiza_atendimento_existente_substituindo_itens(
         self, session: Session, clinica: Clinica, veterinario: Veterinario, paciente: Paciente, exame: Exame

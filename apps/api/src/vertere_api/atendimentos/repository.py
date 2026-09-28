@@ -31,6 +31,8 @@ class SQLAlchemyAtendimentoRepository:
         modelo.desconto = atendimento.desconto
         modelo.valor_total = atendimento.valor_total
         modelo.status = atendimento.status.value
+        modelo.numero_origem = atendimento.numero_origem
+        modelo.protocolo_origem = atendimento.protocolo_origem
         modelo.itens_exame = [
             AtendimentoItemExameModel(
                 exame_id=item.exame_id,
@@ -67,4 +69,6 @@ class SQLAlchemyAtendimentoRepository:
             desconto=modelo.desconto,
             valor_total=modelo.valor_total,
             status=StatusAtendimento(modelo.status),
+            numero_origem=modelo.numero_origem,
+            protocolo_origem=modelo.protocolo_origem,
         )

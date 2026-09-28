@@ -41,3 +41,5 @@ class Atendimento:
     desconto: Decimal
     valor_total: Decimal
     status: StatusAtendimento
+    numero_origem: str | None = None
+    protocolo_origem: str | None = None

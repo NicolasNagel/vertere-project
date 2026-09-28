@@ -32,6 +32,8 @@ class AtendimentoResponse(BaseModel):
     desconto: Decimal
     valor_total: Decimal
     status: str
+    numero_origem: str | None
+    protocolo_origem: str | None
 
 
 class CriarAtendimentoRequest(BaseModel):

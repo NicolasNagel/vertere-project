@@ -2,7 +2,7 @@
 codigo: S10
 modulo: Importação de Dados Históricos
 issue: https://github.com/NicolasNagel/vertere-project/issues/22
-status: pronta
+status: entregue
 ---
 
 ## Problem Statement
@@ -123,20 +123,20 @@ nem expõe seus dados em fixtures ou snapshots.
 
 ## Tasks
 
-- [ ] T1 — modelos de entrada, inconsistência, contadores e `PlanoImportacao`, incluindo namespaces UUIDv5 e códigos de erro (User Stories: 4, 5, 6)
-- [ ] T2 — testes da seam para normalização, referências e coleta acumulada de inconsistências (User Stories: 1, 2, 4, 5)
-- [ ] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
-- [ ] T4 — testes da seam para deduplicação/canonicalização de pacientes (User Stories: 2, 4, 6)
-- [ ] T5 — implementar planejamento de pacientes derivados de `Dados` (User Stories: 2, 4, 6)
-- [ ] T6 — testes da seam para exames, atendimentos, preços históricos, totais e proveniência (User Stories: 1, 3, 4, 6)
-- [ ] T7 — implementar planejamento do catálogo mínimo e dos atendimentos históricos (User Stories: 1, 3, 4, 6)
-- [ ] T8 — adicionar `numero_origem`/`protocolo_origem` ao domínio, modelo e migration de atendimentos, mantendo compatibilidade com fluxos existentes (User Stories: 1, 3, 6)
-- [ ] T9 — testes do adapter XLSX com fixture mínimo e estruturas inválidas (User Stories: 1, 4, 5)
-- [ ] T10 — implementar leitura XLSX tipada e adicionar `openpyxl` às dependências (User Stories: 1, 4, 5)
-- [ ] T11 — testes do adapter SQLAlchemy para aplicação, reexecução idempotente e rollback (User Stories: 1, 3, 4, 6)
-- [ ] T12 — implementar aplicação transacional do plano no banco (User Stories: 1, 3, 4, 6)
-- [ ] T13 — testes da CLI para dry-run, bloqueio por inconsistência, `--aplicar` e relatório JSON (User Stories: 4, 5)
-- [ ] T14 — implementar CLI e documentar comandos operacionais de validação/aplicação (User Stories: 1, 4, 5)
+- [x] T1 — modelos de entrada, inconsistência, contadores e `PlanoImportacao`, incluindo namespaces UUIDv5 e códigos de erro (User Stories: 4, 5, 6)
+- [x] T2 — testes da seam para normalização, referências e coleta acumulada de inconsistências (User Stories: 1, 2, 4, 5)
+- [x] T3 — implementar normalização e planejamento de clínicas/veterinários (User Stories: 1, 4, 5, 6)
+- [x] T4 — testes da seam para deduplicação/canonicalização de pacientes (User Stories: 2, 4, 6)
+- [x] T5 — implementar planejamento de pacientes derivados de `Dados` (User Stories: 2, 4, 6)
+- [x] T6 — testes da seam para exames, atendimentos, preços históricos, totais e proveniência (User Stories: 1, 3, 4, 6)
+- [x] T7 — implementar planejamento do catálogo mínimo e dos atendimentos históricos (User Stories: 1, 3, 4, 6)
+- [x] T8 — adicionar `numero_origem`/`protocolo_origem` ao domínio, modelo e migration de atendimentos, mantendo compatibilidade com fluxos existentes (User Stories: 1, 3, 6)
+- [x] T9 — testes do adapter XLSX com fixture mínimo e estruturas inválidas (User Stories: 1, 4, 5)
+- [x] T10 — implementar leitura XLSX tipada e adicionar `openpyxl` às dependências (User Stories: 1, 4, 5)
+- [x] T11 — testes do adapter SQLAlchemy para aplicação, reexecução idempotente e rollback (User Stories: 1, 3, 4, 6)
+- [x] T12 — implementar aplicação transacional do plano no banco (User Stories: 1, 3, 4, 6)
+- [x] T13 — testes da CLI para dry-run, bloqueio por inconsistência, `--aplicar` e relatório JSON (User Stories: 4, 5)
+- [x] T14 — implementar CLI e documentar comandos operacionais de validação/aplicação (User Stories: 1, 4, 5)
 
 ## Out of Scope
 
@@ -163,4 +163,9 @@ local e não deve ser usada como fixture de teste.
 
 ## Verificação
 
-<!-- Preenchido por /fechar-spec -->
+✅ Aprovada em 2026-09-23. Relatório: [S10-verificacao.md](relatorios/S10-verificacao.md).
+
+A rodada anterior bloqueou por `ler_planilha` abortar com `ValidationError` quando `openpyxl` lê uma
+célula de `Hora` como `datetime.timedelta` (linha 545 da planilha real). Corrigido normalizando o
+`timedelta` para `datetime.time` em `xlsx.py`, com teste dedicado cobrindo esse formato. Reexecução
+da CLI contra a planilha real confirma dry-run completo, sem traceback, com relatório JSON válido.

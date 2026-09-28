@@ -30,7 +30,7 @@ arquivo único, para legado; ou anotadas em `tasks.md`/relatório, para Spec Kit
 | S7 | Laudos | [docs/specs/S7-laudos.md](specs/S7-laudos.md) | [#15](https://github.com/NicolasNagel/vertere-project/issues/15) | entregue |
 | S8 | Fechamento Financeiro | [docs/specs/S8-fechamento-financeiro.md](specs/S8-fechamento-financeiro.md) | [#18](https://github.com/NicolasNagel/vertere-project/issues/18) | entregue |
 | S9 | Portal da Clínica | [docs/specs/S9-portal-clinica.md](specs/S9-portal-clinica.md) | [#20](https://github.com/NicolasNagel/vertere-project/issues/20) | entregue |
-| S10 | Importação de Dados Históricos | [docs/specs/S10-importacao-dados-historicos.md](specs/S10-importacao-dados-historicos.md) | [#22](https://github.com/NicolasNagel/vertere-project/issues/22) | pronta |
+| S10 | Importação de Dados Históricos | [docs/specs/S10-importacao-dados-historicos.md](specs/S10-importacao-dados-historicos.md) | [#22](https://github.com/NicolasNagel/vertere-project/issues/22) | entregue |
 | S11 | Autenticação e Shell Autenticado do Frontend | [specs/011-autenticacao-web/spec.md](../specs/011-autenticacao-web/spec.md) | [#24](https://github.com/NicolasNagel/vertere-project/issues/24) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
