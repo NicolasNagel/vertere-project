@@ -1,11 +1,16 @@
 import { createBrowserRouter } from 'react-router'
+import { TelaLogin } from './autenticacao/TelaLogin'
 
 /**
- * Esqueleto do roteador (fase Foundational) — sem guard de papel ainda (US2 adiciona
- * `RotaProtegida`) e sem a tela de login de verdade ainda (US1 adiciona `/login`).
+ * `/` ainda é um placeholder — US2 substitui por `ShellAutenticado` + as rotas de
+ * `itensDeNavegacao`, cada uma envolvida por `RotaProtegida`.
  */
 export function criarRotas() {
   return createBrowserRouter([
+    {
+      path: '/login',
+      element: <TelaLogin />,
+    },
     {
       path: '/',
       element: <div>Vertere Lab</div>,
