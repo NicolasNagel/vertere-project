@@ -30,10 +30,12 @@ backend (`authorize()`), replicando no frontend a Regra de Ouro do projeto.
   reescritos). Cliente HTTP fino por cima (`fetch` nativo), sem biblioteca de data-fetching (React
   Query etc.) nesta spec — o volume de chamadas de login/shell não justifica cache/invalidação
   sofisticados ainda; reavaliar quando uma spec futura precisar de fato de cache entre telas.
-- Estilo: Tailwind CSS + primitivas Radix UI (via componentes locais estilo shadcn — copiados para o
-  repo, não uma dependência de design system fechada) para os elementos interativos acessíveis
-  (menu, foco de teclado) que este shell já precisa (US2, FR-004/FR-005) — ver `research.md` para a
-  justificativa completa da escolha visual/estrutural.
+- Estilo: **sem framework de utilitário** — tokens de design (`:root { --color-*; --font-* }`) +
+  um arquivo CSS por componente, herdados de `github.com/NicolasNagel/vertere-lab` (versão anterior
+  do mesmo produto, indicada pelo usuário como referência de marca) e refinados com práticas de
+  acessibilidade que o mock original (HTML estático) não precisava resolver. Revisão de uma decisão
+  anterior desta mesma spec (Tailwind + Radix) — ver `research.md` para o antes/depois completo e a
+  justificativa da mudança.
 
 **Storage**: `sessionStorage` do navegador para o token de sessão (não `localStorage`) — decisão de
 segurança: encerra automaticamente ao fechar a aba/navegador, reduzindo a janela de um token
@@ -116,22 +118,35 @@ apps/web/                          # novo — primeiro código de frontend do pr
 ├── src/
 │   ├── main.tsx                   # bootstrap React + Router
 │   ├── App.tsx                    # composição raiz (Router + Provider de sessão)
+│   ├── index.css                  # tokens de design (:root --color-*/--font-*), herdados de vertere-lab
 │   ├── autenticacao/
-│   │   ├── TelaLogin.tsx           # US1
+│   │   ├── TelaLogin.tsx           # US1 — layout de painel duplo (marca + formulário)
+│   │   ├── tela-login.css
+│   │   ├── PainelMarca.tsx         # painel esquerdo (logo, slogan, círculos decorativos)
+│   │   ├── painel-marca.css
 │   │   ├── useSessao.ts            # hook: estado de sessão (token, papel), login(), sair()
 │   │   ├── useSessao.test.ts
 │   │   └── clienteAuth.ts          # POST /auth/login + GET /auth/me em sequência (login não retorna papel, ver data-model.md)
 │   ├── shell/
 │   │   ├── ShellAutenticado.tsx    # US2 — layout + menu
+│   │   ├── shell-autenticado.css
 │   │   ├── itensDeNavegacao.ts     # US2 — mapa papel -> itens de menu (dado puro, testável)
 │   │   ├── itensDeNavegacao.test.ts
 │   │   ├── RotaProtegida.tsx       # US2/FR-005 — guarda de rota por papel
 │   │   └── TelaEmConstrucao.tsx    # FR-008 — placeholder por seção
+│   ├── ui/
+│   │   ├── Botao.tsx               # variantes primário/secundário/ghost (mesmos tokens do vertere-lab)
+│   │   ├── botao.css
+│   │   ├── CampoTexto.tsx          # <label>+<input> acessível com ícone opcional
+│   │   └── campo-texto.css
 │   ├── api/
 │   │   ├── clienteHttp.ts          # fetch fino + interceptação de 401 (US3/FR-007)
 │   │   └── tipos.gerados.ts        # gerado por `openapi-typescript` a partir de /openapi.json — NUNCA editado à mão
+│   ├── assets/
+│   │   ├── vertere-logo-white.png  # reaproveitado de vertere-lab/assets/features (mesma marca)
+│   │   └── vertere-mark.png
 │   └── rotas.tsx                   # definição de rotas + associação a itensDeNavegacao
-├── index.html
+├── index.html                      # inclui as fontes (Big Shoulders Display, Cormorant Garamond, Manrope, JetBrains Mono) via Google Fonts
 ├── vite.config.ts
 ├── tsconfig.json
 ├── package.json                    # pnpm, conforme CLAUDE.md
@@ -144,8 +159,10 @@ apps/web/                          # novo — primeiro código de frontend do pr
 (`autenticacao/`, `shell/`) em vez de pastas por *tipo técnico* (`components/`, `pages/` genéricos)
 — mesma filosofia do backend (`auth/`, `pacientes/`, `laudos/`, cada um com seu `service.py`/
 `domain.py`), para que a mesma pessoa navegando o backend reconheça a organização do frontend.
-`api/` é a única pasta técnica-transversal, porque cliente HTTP e tipos gerados são infraestrutura
-compartilhada por todas as features futuras, não um conceito de domínio.
+`api/` e `ui/` são as únicas pastas técnica-transversais: cliente HTTP e tipos gerados
+(`api/`) são infraestrutura compartilhada por todas as features futuras, e os componentes de
+interface genéricos sem significado de domínio (`Botao`, `CampoTexto`) vivem em `ui/` porque vão ser
+reutilizados por toda spec de frontend futura, não só por esta.
 
 ## Complexity Tracking
 

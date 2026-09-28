@@ -45,45 +45,85 @@ ficou como `NEEDS CLARIFICATION` pendente de resposta do usuário.
   corpo da resposta — fora do escopo desta spec, que assume a API S1 como está; anotado como
   possível reforço de segurança para uma spec futura, não implementado aqui sem decisão do PO).
 
-## Decisão: Tailwind CSS + primitivas Radix UI copiadas ao repo (estilo shadcn)
+## Decisão: CSS custom properties (design tokens) + CSS por componente, sem Tailwind/Radix
 
-- **Decisão**: Tailwind CSS para estilo utilitário + componentes acessíveis (menu, foco de teclado)
-  construídos sobre primitivas Radix UI, copiados para `apps/web/src/` (não importados como
-  dependência de design system fechada tipo MUI/Ant Design).
-- **Rationale**: um sistema interno B2B (equipe do laboratório + usuários de clínica) precisa de
-  clareza e confiabilidade acima de personalidade visual forte — Tailwind dá controle direto sobre
-  espaçamento/tipografia sem a sobrecarga visual de um kit de componentes genérico (o "kit de card
-  arredondado com sombra igual em tudo" é exatamente o padrão a evitar). Radix resolve o que é
-  genuinamente difícil de acertar sozinho (acessibilidade de teclado/foco em menu e diálogo, que
-  FR-004/FR-005 já exigem via navegação por teclado implícita em qualquer app real) sem prender o
-  projeto a um design system opinativo. Copiar os componentes (em vez de depender de um pacote
-  fechado) mantém a mesma filosofia do backend de "nenhuma dependência que o projeto não controla
-  para algo central" — o componente vive no repo, pode ser lido e ajustado como qualquer outro
-  código.
-- **Alternatives considered**: Material UI/Ant Design (rejeitado — personalidade visual forte demais
-  e genérica ao mesmo tempo, exatamente o "SaaS-card kit" que produz telas indistinguíveis de
-  qualquer outro sistema); CSS puro/CSS Modules sem utilitário (rejeitado — mais lento para iterar
-  sem um sistema de design tokens já estabelecido, e o projeto não tem nenhuma convenção CSS prévia
-  para herdar).
+- **Decisão** (revista após o usuário indicar `github.com/NicolasNagel/vertere-lab` como referência
+  de marca): tokens de cor/tipografia como `:root { --color-*; --font-* }`, um arquivo CSS por
+  componente (nome em kebab-case espelhando o componente, ex: `login-form.css`), sem Tailwind nem
+  Radix.
+- **Rationale**: `vertere-lab` é uma versão anterior deste mesmo produto (mesma marca, mesmo domínio
+  — ver `issues/prd.md` → Further Notes, que já menciona uma versão anterior removida do disco) com
+  um frontend React/Vite/TS já construído (`frontend/src/`) usando exatamente essa técnica —
+  variáveis CSS globais em `index.css` + um arquivo `.css` por componente, sem framework de
+  utilitário. Adotar a mesma técnica, não só a mesma paleta, é o que realmente conta como "usar como
+  design system": a paleta sozinha sem a estrutura que a sustenta (nomes de token, convenção de
+  arquivo) se perderia na primeira tela nova. Também substitui a decisão anterior desta spec
+  (Tailwind + Radix) — revisão registrada aqui em vez de silenciosamente sobrescrita: Tailwind fazia
+  sentido sem nenhuma referência visual; com uma referência real e coerente já existindo, adicionar
+  uma camada de utilitário por cima só duplicaria decisão de espaçamento/cor que os tokens já
+  resolvem.
+- **Alternatives considered**: manter Tailwind e mapear os tokens do `vertere-lab` para
+  `tailwind.config` (rejeitado — dá duas fontes de verdade para a mesma paleta, tokens CSS *e*
+  config Tailwind, sem ganho real já que os componentes desta spec são poucos e não precisam de
+  utilitário de layout complexo); CSS Modules (rejeitado — mesma convenção de nomes globais BEM-ish
+  já funciona no `vertere-lab` referência, não há necessidade de escopo automático por módulo para o
+  volume desta spec).
 
-## Direção visual (paleta e tipografia) para as telas desta spec
+## Direção visual: paleta, tipografia e layout herdados de `vertere-lab`, com melhorias de UI/UX
 
-Resumo da consulta à skill `frontend-design`, aplicada com moderação por ser um sistema operacional
-interno (não uma peça de marketing) — a identidade visual não deve competir com a tarefa do usuário:
+Tokens extraídos de `vertere-lab/frontend/src/index.css` (arquivo real, não recriado de memória):
 
-- **Paleta base**: `#0F2A3D` (azul-petróleo escuro, cor de marca/cabeçalho — evoca ambiente clínico/
-  laboratorial sem ser o azul genérico de SaaS `#2563EB`), `#F7F5F0` (fundo neutro quente, não o
-  cinza-frio padrão de dashboard), `#1B7A6E` (verde-teal de destaque para ações primárias — remete a
-  bioquímica/laboratório sem ser o verde-clínico clichê `#10B981`), `#B3492A` (terracota para erro/
-  alerta — aquecido, não o vermelho puro `#EF4444` genérico), `#1A1A1A` (texto principal, nunca
-  `#000` puro).
-- **Tipografia**: uma única família sem-serifa de uso geral (ex: Inter ou similar já disponível via
-  `fonts.googleapis.com`) para texto e títulos — não há necessidade de uma segunda família de
-  destaque nas duas telas desta spec (login + shell), que são funcionais, não uma landing page.
-- **Layout**: login centralizado, card único, sem imagem de fundo decorativa (o valor da tela é ser
-  rápida e óbvia, não impressionante); shell com cabeçalho fixo estreito (marca + usuário/sair) e
-  menu lateral persistente em desktop, colapsável em telas estreitas — alinhamento à esquerda no
-  menu, conteúdo principal ocupando o restante da largura sem centralizar artificialmente.
-- **Princípio**: nenhum elemento decorativo que não carregue informação (sem gradientes, sem ícones
-  numerados fora de contexto) — a estrutura visual do menu já é a informação (o que está lá é o que
-  o papel pode acessar).
+```css
+--color-brand-ink: #2c4768;        /* ações primárias, texto de marca */
+--color-brand-ink-deep: #1f3450;   /* sidebar, títulos de maior peso */
+--color-text-primary: #1a2d45;
+--color-text-secondary: #596979;
+--color-surface-cream: #eeeae0;    /* fundo da página */
+--color-surface-form: #fbfaf6;     /* painel de formulário */
+--color-border: #e5e2db;
+--color-accent-mist: #9cbfc2;      /* destaque/hover, badges */
+
+--font-display: 'Big Shoulders Display', system-ui, sans-serif;  /* títulos, uppercase, peso 800 */
+--font-script: 'Cormorant Garamond', Georgia, serif;              /* itálico de ênfase dentro de título */
+--font-body: 'Manrope', system-ui, sans-serif;
+--font-mono: 'JetBrains Mono', ui-monospace, monospace;           /* eyebrows, labels técnicos */
+```
+
+Layout de referência (`vertere-lab/assets/features/screens/1-login.html` +
+`frontend/src/features/auth/components/*.css`): login em painel duplo — esquerda `--color-brand-ink`
+com o logo, um slogan em `--font-display` com ênfase em `--font-script` ("Cada amostra, *uma
+história*. Cada resultado, *um cuidado*.") e dois círculos decorativos translúcidos; direita
+`--color-surface-form` com o formulário. Shell: sidebar fixa 220px em `--color-brand-ink-deep`,
+item ativo com borda esquerda em `--color-accent-mist`, rótulos de seção em `--font-mono` maiúsculo,
+avatar circular no rodapé da sidebar. Botão primário: cantos quase retos (2px), maiúsculo,
+letter-spacing largo — deliberadamente não o botão arredondado genérico de SaaS.
+
+**O que é reutilizado como está**: paleta completa, as duas famílias de destaque
+(`--font-display`/`--font-script`), o slogan de marca, o layout de painel duplo do login, a sidebar
+fixa com rótulos de seção em mono, o raio de borda pequeno (2-4px) em vez de cantos arredondados.
+
+**Melhorias de UI/UX aplicadas sobre a referência** (ela é um mock estático em HTML/inline-style;
+esta spec entrega um app real, então corrige o que um mock não precisa resolver):
+- Formulário com `<label for>` + `<input>` semânticos de verdade (o mock usa `<div>`/`<span>`
+  estilizados para parecer campo de formulário) — necessário para leitor de tela e para o navegador
+  oferecer autopreenchimento/gerenciador de senha nativamente.
+- Alternância de mostrar/ocultar senha como `<button type="button" aria-pressed>`, não um `<span>`
+  com texto "mostrar" sem função nenhuma no mock.
+- Mensagem de erro de login anunciada via `role="alert"`/`aria-live="polite"`, para leitor de tela
+  perceber a falha sem precisar navegar até o texto.
+- Estados de foco de teclado visíveis (`:focus-visible`) em todo elemento interativo — o mock não
+  define nenhum, porque não precisa (é uma imagem estática de referência visual).
+- Contraste checado: `--color-text-secondary` (#596979) sobre `--color-surface-cream` (#eeeae0) dá
+  ~4.6:1 — passa WCAG AA para texto normal; mantido como está. `--color-accent-mist` (#9cbfc2) só é
+  usado como fundo de destaque/borda, nunca como texto sobre claro, porque sozinho não passaria AA.
+- Motion: transição de abrir/fechar a sidebar no mobile já existe no CSS de referência
+  (`transform` + `transition`) — mantida, mas com `prefers-reduced-motion` respeitado (transição
+  removida para quem pediu menos movimento no SO).
+
+**Descoberta registrada, não implementada nesta spec**: o mock de login tem um checkbox "Manter
+conectada" (implica sessão persistente opcional, ou seja, `localStorage` quando marcado). A decisão
+já tomada nesta spec (ver seção `sessionStorage` acima) é sessão não-persistente sempre, e nenhuma
+user story de `spec.md` pede a opção de manter conectado. Em vez de expandir escopo por conta
+própria a partir de uma referência visual, o checkbox é **omitido** do formulário desta
+implementação — vira uma nota para o PO decidir se quer essa opção como spec futura (ou ajuste nesta
+mesma, se preferir agora).
