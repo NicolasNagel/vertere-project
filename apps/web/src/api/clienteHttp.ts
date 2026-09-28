@@ -28,12 +28,21 @@ export interface OpcoesRequisicao extends RequestInit {}
  * handler de sessão expirada — mas só quando a própria requisição enviou um token (uma falha de
  * login sem sessão prévia é responsabilidade de quem chama `POST /auth/login`, não um evento de
  * "sessão expirada": ver US1 vs. US3 em spec.md).
+ *
+ * `tokenSubstituto` existe só para `clienteAuth.login`: o token acabou de ser emitido por
+ * `POST /auth/login` e ainda não está salvo em `armazenamentoSessao` quando `GET /auth/me` precisa
+ * dele — nenhum outro chamador deveria precisar disso.
  */
-export async function requisitar<T>(caminho: string, opcoes: OpcoesRequisicao = {}): Promise<T> {
+export async function requisitar<T>(
+  caminho: string,
+  opcoes: OpcoesRequisicao = {},
+  tokenSubstituto?: string,
+): Promise<T> {
   const sessao = obter()
+  const token = tokenSubstituto ?? sessao?.token
   const cabecalhos = new Headers(opcoes.headers)
-  if (sessao) {
-    cabecalhos.set('Authorization', `Bearer ${sessao.token}`)
+  if (token) {
+    cabecalhos.set('Authorization', `Bearer ${token}`)
   }
   if (opcoes.body && !cabecalhos.has('Content-Type')) {
     cabecalhos.set('Content-Type', 'application/json')
@@ -42,7 +51,7 @@ export async function requisitar<T>(caminho: string, opcoes: OpcoesRequisicao = 
   const resposta = await fetch(`${URL_BASE}${caminho}`, { ...opcoes, headers: cabecalhos })
 
   if (resposta.status === 401) {
-    if (sessao) {
+    if (token) {
       aoReceberNaoAutorizado?.()
     }
     throw new ErroHttp(resposta.status, await resposta.text())
