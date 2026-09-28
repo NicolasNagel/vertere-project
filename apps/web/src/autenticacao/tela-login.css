@@ -1,0 +1,90 @@
+.tela-login {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-cream);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.tela-login__cartao {
+  width: 100%;
+  max-width: 80rem; /* 1280px, largura do mock de referência */
+  max-height: 100%;
+  display: flex;
+  background: #ffffff;
+  border-radius: 0.25rem;
+  overflow-y: auto;
+  box-shadow:
+    0 1px 3px rgba(28, 45, 69, 0.08),
+    0 8px 32px rgba(28, 45, 69, 0.06);
+}
+
+.tela-login__painel-formulario {
+  flex: 1 1 56.25%;
+  background: var(--color-surface-form);
+  padding: 3rem 3.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.tela-login__formulario {
+  width: 100%;
+  max-width: 23.75rem;
+  margin: 0 auto;
+}
+
+.tela-login__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.tela-login__titulo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--color-brand-ink-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.tela-login__titulo em {
+  font-family: var(--font-script);
+  font-style: italic;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-brand-ink);
+}
+
+.tela-login__erro {
+  color: var(--color-error);
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+}
+
+.tela-login__ajuda {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .tela-login__cartao {
+    flex-direction: column;
+  }
+
+  .tela-login__painel-formulario {
+    padding: 2.5rem 2rem;
+  }
+}

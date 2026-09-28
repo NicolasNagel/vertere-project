@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from vertere_api.settings import settings
 
 from vertere_api.auth.router import router as auth_router
 from vertere_api.auth.usuarios_router import router as usuarios_router
@@ -12,6 +15,13 @@ from vertere_api.financeiro.router import router as financeiro_router
 from vertere_api.portal.router import router as portal_router
 
 app = FastAPI(title="Vertere Lab API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(auth_router)
 app.include_router(usuarios_router)
 app.include_router(clinicas_router)

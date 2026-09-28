@@ -1,0 +1,58 @@
+/* Tokens de design herdados de github.com/NicolasNagel/vertere-lab (versão anterior deste mesmo
+   produto — ver specs/011-autenticacao-web/research.md para a decisão completa). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Paleta da marca */
+  --color-brand-ink: #2c4768;
+  --color-brand-ink-deep: #1f3450;
+  --color-text-primary: #1a2d45;
+  --color-text-secondary: #596979;
+  --color-surface-cream: #eeeae0;
+  --color-surface-form: #fbfaf6;
+  --color-border: #e5e2db;
+  --color-accent-mist: #9cbfc2;
+  --color-error: #b3261e;
+
+  --font-display: 'Big Shoulders Display', system-ui, sans-serif;
+  --font-script: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background-color: #ffffff;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-surface-cream);
+}
+
+/* Foco de teclado visível em qualquer elemento interativo — o mock estático de referência não
+   precisava disso, mas um app real precisa (melhoria de UI/UX sobre a referência, ver research.md). */
+:focus-visible {
+  outline: 2px solid var(--color-accent-mist);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

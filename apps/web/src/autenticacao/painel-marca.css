@@ -1,0 +1,87 @@
+.painel-marca {
+  flex: 0 0 43.75%; /* 560px do mock, proporcional */
+  background: var(--color-brand-ink);
+  color: #ffffff;
+  padding: 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.painel-marca__circulo {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(156, 191, 194, 0.08);
+  pointer-events: none;
+}
+
+.painel-marca__circulo--topo {
+  right: -11.25rem;
+  top: -10rem;
+  width: 32.5rem;
+  height: 32.5rem;
+}
+
+.painel-marca__circulo--base {
+  right: -2.5rem;
+  bottom: -12.5rem;
+  width: 23.75rem;
+  height: 23.75rem;
+  background: rgba(156, 191, 194, 0.06);
+}
+
+.painel-marca__conteudo {
+  position: relative;
+  z-index: 1;
+}
+
+.painel-marca__logo {
+  width: 100%;
+  max-width: 13.75rem;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.painel-marca__slogan {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  font-size: 2.25rem;
+  line-height: 1.08;
+  margin: 2rem 0 0;
+  max-width: 27.5rem;
+}
+
+.painel-marca__slogan em {
+  font-family: var(--font-script);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: var(--color-accent-mist);
+}
+
+.painel-marca__rodape {
+  position: relative;
+  z-index: 1;
+  font-size: 0.6875rem;
+  color: #c5ced8;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .painel-marca {
+    flex-basis: auto;
+    padding: 2.5rem 2rem;
+  }
+
+  .painel-marca__slogan {
+    font-size: 2rem;
+    margin-top: 2.5rem;
+  }
+}

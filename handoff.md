@@ -7,77 +7,63 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-09-24, por sessão Claude Code (Sonnet 5).
+**Última atualização**: 2026-09-28, por sessão Claude Code (Sonnet 5).
 
-## Estado atual dos branches de spec
+## Estado atual: 3 PRs abertos, ordem de merge importa
 
-| Branch | Spec | Status | Observação |
-|---|---|---|---|
-| `main` | — | — | Contém até S9 mergeado (Portal da Clínica, entregue) |
-| `spec/s9-portal-clinica` | S9 | entregue, mergeado | `/fechar-spec` aprovado; PR já deve ter sido aberto/mergeado — confirmar com `gh pr list --state all` |
-| `spec/s10-importacao-dados-historicos` | S10 | entregue, verificado, `/code-review` feito | Ver "S10 — pendências" abaixo |
-| `chore/spec-kit-harness` | — (harness, sem spec) | em andamento | Branch desta sessão — ver "Spec Kit" abaixo |
+| PR | Branch | Base | Status | Observação |
+|---|---|---|---|---|
+| [#23](https://github.com/NicolasNagel/vertere-project/pull/23) | `chore/spec-kit-harness` | `main` | Aberto, não mergeado | Adoção do Spec Kit — **mergear primeiro** |
+| [#25](https://github.com/NicolasNagel/vertere-project/pull/25) | `spec/s10-importacao-dados-historicos` | `main` | Aberto, não mergeado | S10 — independente das outras duas, pode mergear a qualquer momento |
+| [#26](https://github.com/NicolasNagel/vertere-project/pull/26) | `spec/s11-frontend-web` | `chore/spec-kit-harness` | Aberto, não mergeado | S11 — **empilhado sobre #23**, mergear depois dele |
 
-## S10 — Importação de Dados Históricos (pronta para PR)
+**Ordem recomendada**: #23 primeiro (harness), depois #26 (S11, que é baseado nele — o GitHub vai
+re-basear a comparação automaticamente contra `main` assim que #23 mergear), #25 (S10) a qualquer
+momento, independente das outras duas.
 
-- 14/14 tasks implementadas, `/fechar-spec S10` aprovado na segunda rodada (a primeira bloqueou por
-  `openpyxl` retornar `datetime.timedelta` numa célula de Hora da planilha real — corrigido em
-  `xlsx.py::_normalizar_hora_excel`, com teste dedicado).
-- `/code-review` (Standards + Spec) rodou sem achados bloqueantes. Achado de Standards já aplicado:
-  extração do helper `_exigir` em `importacao/service.py` para colapsar ~15 repetições do padrão
-  "checar condição → registrar erro → `valido = False`" (commit `refactor(s10): extrai _exigir...`).
-- **Pendente, não bloqueante** (achados de Standards ainda não aplicados, ficam a critério de quem
-  retomar): extrair `planejar_importacao` (~520 linhas) em sub-funções por entidade
-  (`_planejar_clinicas`, `_planejar_veterinarios`, ...); considerar tipo nomeado para o "clump" de
-  4 campos financeiros (`preco`/`desconto`/`adicional`/`total`).
-- **Próximo passo real**: abrir o PR para `main` (`Closes #22`), linkando o relatório de verificação
-  (`docs/specs/relatorios/S10-verificacao.md`) e o resumo do `/code-review`. Não requer mais nenhum
-  fix antes disso.
+## S9, S10, S11 — todas `/fechar-spec` aprovadas, `/code-review` sem achados bloqueantes
 
-## Spec Kit (`specify-cli`) — é o ponto de entrada padrão a partir de S11 (decisão tomada, não mais provisória)
+Nenhuma tem trabalho de código pendente. S9 já está em `main` (mergeada). S10 e S11 só esperam
+review/merge dos PRs acima.
 
-Nesta sessão, a pedido explícito do usuário: instalado `specify-cli` e rodado `specify init --here
---force --non-interactive --integration claude` na raiz do repo, na branch `chore/spec-kit-harness`
-(não em cima de S9/S10, para não misturar harness com spec). Isso criou `.specify/` (templates,
-scripts PowerShell, constitution) e `.claude/skills/speckit-*/` (namespace próprio, sem colidir com
-`/spec-write`, `/spec-start`, `/fechar-spec`, `/code-review`).
+## S11 — Autenticação e Shell Autenticado do Frontend (detalhes para quem continuar o frontend)
 
-**Decisão final (perguntada e confirmada com o usuário nesta sessão, não presumida)**: a partir de
-S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o fluxo
-**padrão** de qualquer spec nova — substitui `/spec-write` + `/spec-start` como ponto de entrada.
-`/spec-write`/`/spec-start` continuam instalados só para manutenção de S1–S10 (formato de arquivo
-único). `/fechar-spec` e `/code-review` **não mudam** — o Spec Kit não tem gate equivalente a
-nenhum dos dois, então ambos continuam sendo acionados manualmente antes do PR, exatamente como
-antes.
+Primeira spec de frontend do projeto. `apps/web` existe agora com: tela de login, shell autenticado
+com navegação por papel, tratamento de sessão expirada. Todas as seções do menu (Clínicas,
+Pacientes, Atendimentos, Laudos, etc.) são `TelaEmConstrucao` — **nenhuma tela de conteúdo real
+existe ainda**. Isso é o que vem depois (S12+).
 
-**Formato de spec escolhido para S11+ (segunda pergunta feita e respondida nesta sessão)**: o
-formato **nativo** do Spec Kit — `specs/0NN-slug/{spec.md,plan.md,tasks.md}` — não uma customização
-dos templates para imitar `docs/specs/S-XX-nome.md`. Consequência prática: `docs/specs.md` agora
-documenta os dois formatos coexistindo; `.claude/agents/verificador-de-spec.md` foi atualizado para
-ler os três arquivos (S11+) ou o arquivo único (S1–S10), conforme o que `docs/specs.md` indicar;
-`/commit` foi atualizado para referenciar `specs/0NN-slug/spec.md` como "Spec:" quando aplicável.
+**Duas correções de design encontradas durante a implementação** (não durante o planejamento —
+ler antes de tocar em `itensDeNavegacao.ts` ou `SessaoContext.tsx`):
+1. `clinica` não espelha `auth/service.py::_PERMISSOES` literalmente — navega o namespace
+   `/portal/*` próprio (S9), com `ItemDeNavegacao` distintos dos itens de staff mesmo quando o
+   rótulo é igual (ex: "Pacientes" aparece duas vezes na lista, uma para staff em `/pacientes`,
+   outra para `clinica` em `/portal/pacientes`).
+2. Sessão é um Context (`SessaoContext.tsx`), não um hook com `useState` local — necessário para o
+   handler global de sessão expirada notificar toda a árvore, não só o componente que disparou.
 
-**Numeração — ponto de atenção real para quem criar S11**: o Spec Kit, por conta própria, numeraria
-a primeira spec nova como `specs/001-slug` (ele só escaneia o diretório `specs/`, que ainda não
-existe). Isso colidiria com a sequência `S<N>` já em uso (S1–S10 existem). `CLAUDE.md` documenta que
-o próximo número é `011`, mas **isso depende de quem rodar `/speckit-specify` prestar atenção nisso
-na hora** — o Spec Kit não sabe da numeração histórica do projeto sozinho. Se uma sessão futura rodar
-`/speckit-specify` sem essa atenção, o diretório sairia como `specs/001-slug` e precisaria ser
-renomeado manualmente para `specs/011-slug` antes de registrar em `docs/specs.md`.
+**Limitação real, não bloqueante, documentada no relatório de verificação**: nenhuma tela ainda faz
+fetch de dados próprio, então o cenário de "sessão expirada durante navegação" só é testável
+forçando a chamada manualmente (`clienteHttp.requisitar`), não organicamente pela UI. Resolve
+sozinho quando a primeira tela de conteúdo real (S12+) existir.
 
-`.specify/memory/constitution.md` está em **v1.1.0** (Principle V reescrito para descrever o Spec
-Kit como ponto de entrada padrão, não mais como camada opcional). `RATIFICATION_DATE` continua como
-`TODO(RATIFICATION_DATE)` — não levantado nesta sessão.
+**Bug de infra encontrado e corrigido durante verificação manual com navegador real**: `apps/api`
+não tinha CORS configurado — nenhuma chamada do frontend funcionava (bloqueada pelo navegador,
+preflight `OPTIONS` retornava 405). Os testes automatizados não pegam isso (`TestClient` não aplica
+política de CORS). Corrigido em `apps/api/src/vertere_api/main.py` + `settings.py`
+(`fix(s11): adiciona CORS ao backend`).
 
-**Arquivos tocados por essa decisão nesta sessão** (todos no commit de harness desta branch):
-`CLAUDE.md` (seção "Fluxo de trabalho (SDD)" reescrita + nova seção "Spec Kit"), `docs/specs.md`
-(header explica os dois formatos), `.claude/agents/verificador-de-spec.md` (lê os dois formatos),
-`.claude/commands/spec-write.md` e `.claude/commands/spec-start.md` (nota de legado no topo),
-`.claude/commands/commit.md` (linha "Spec:" ciente dos dois formatos), `.specify/memory/constitution.md`.
+## Spec Kit — decisão em vigor, primeira spec real já validou o processo
 
-**Próximo passo real**: nenhuma spec S11 foi criada ainda nesta sessão — só a decisão de harness foi
-tomada e documentada. Quando alguém for criar a primeira spec via `/speckit-specify`, prestar atenção
-na numeração (parágrafo acima) antes de prosseguir.
+A partir de S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o
+fluxo padrão (`specs/0NN-slug/`), `/fechar-spec`/`/code-review` continuam iguais. Numeração manual
+(011, não 001) funcionou. Detalhes completos: `CLAUDE.md` → "Fluxo de trabalho (SDD)" e PR #23.
+
+## Próximo passo real para quem continuar
+
+1. Revisar e mergear os 3 PRs (ordem: #23 → #26, #25 quando quiser).
+2. Depois disso, a próxima spec (S12) é a primeira tela de conteúdo real do frontend — qual seção
+   vem primeiro (Pacientes? Atendimentos?) é decisão do usuário, não presumir.
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 
