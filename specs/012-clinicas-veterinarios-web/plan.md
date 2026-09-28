@@ -1,113 +1,134 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Telas de Clínicas e Veterinários (Web)
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `spec/s12-clinicas-veterinarios-web` | **Date**: 2026-09-28 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Input**: Feature specification from `specs/012-clinicas-veterinarios-web/spec.md`
 
 **Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Substituir o placeholder `TelaEmConstrucao` por telas reais de listagem/CRUD de Clínicas e
+Veterinários em `apps/web`, consumindo os endpoints já existentes de S2 (`/clinicas`) e S3
+(`/veterinarios`) via o cliente HTTP genérico já existente (`requisitar<T>` em `clienteHttp.ts`).
+Nenhuma mudança de backend: contratos, autorização (`Acao.CLINICA_*`/`Acao.VETERINARIO_*`) e regras
+de negócio (CNPJ, CRMV, prazo de pagamento, ativo/inativo) já existem e são apenas consumidos.
+Segue exatamente os padrões já estabelecidos na S11 (roteamento por `itensDeNavegacao`, sessão via
+`SessaoContext`, handler de sessão expirada) — esta é a primeira feature a de fato ligar uma tela
+de conteúdo a esse shell.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: TypeScript 6.0 (frontend), React 19.2
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: React Router 8 (rotas já existentes), cliente HTTP interno
+(`apps/web/src/api/clienteHttp.ts`, wrapper fino de `fetch`), tipos gerados a partir do OpenAPI
+(`apps/web/src/api/tipos.gerados.ts`) — nenhuma dependência nova (sem lib de formulário/estado; o
+projeto usa hooks nativos do React, seguindo o padrão já em `TelaLogin.tsx`)
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: N/A nesta feature — persistência é 100% no backend existente (PostgreSQL via S2/S3),
+o frontend não guarda estado de domínio fora da sessão do componente
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: Vitest + `@testing-library/react` + `@testing-library/user-event` (mesmo stack de
+`TelaLogin.test.tsx`/`SessaoContext.test.tsx`); testes de componente com fetch mockado, sem servidor
+real
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: Navegador web (SPA servida por Vite/`apps/web`)
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: Web application — feature é só frontend (`apps/web`); backend (`apps/api`, S2/S3)
+já existe e não é modificado
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: Sem meta numérica nova; segue o padrão implícito de SPA já em uso (resposta
+percebida imediata em listagem de dezenas de registros, sem paginação — ver Assumptions da spec)
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: Reaproveitar integralmente o controle de acesso por papel do shell (S11) —
+nenhuma checagem de permissão nova nesta feature; reaproveitar o handler global de sessão expirada
+(`definirHandlerNaoAutorizado`) já conectado em `App.tsx`; identificadores/UI em português (domínio
+PT-BR, Princípio III da constituição)
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: 2 seções de navegação (`/clinicas`, `/veterinarios`), 4 user stories, ~10-15
+componentes/arquivos novos (lista + formulário + hooks de dados por entidade), sem paginação
+(volume pequeno assumido no domínio real do laboratório)
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Princípio I (Regra de Ouro)**: N/A direto — feature não envolve IA nem cálculo financeiro novo;
+  a tela de clínica apenas exibe/edita `prazo_pagamento_dias` já calculado/validado pelo backend.
+  PASS.
+- **Princípio II (`authorize()` centralizado)**: feature não introduz checagem de permissão nova —
+  reaproveita `RotaProtegida`/`itensDeNavegacao` (que já espelham as `Acao` do backend) e o próprio
+  backend continua sendo quem decide via `exigir_acao`/`authorize()`. Nenhum `if papel === ...` novo
+  no frontend além do que `RotaProtegida` já faz. PASS.
+- **Princípio III (Domínio em Português)**: todo componente, hook, arquivo e rótulo de UI desta
+  feature em português, seguindo o padrão de `TelaLogin.tsx`/`ShellAutenticado.tsx`. PASS (a
+  verificar na implementação).
+- **Princípio IV (Seam de teste na camada mais alta possível)**: a seam natural do frontend para
+  esta feature é o hook de dados por entidade (ex: `usarClinicas`/`usarVeterinarios`), testável com
+  fetch mockado, sem montar o componente de tela inteiro para cada regra — mesmo padrão de
+  `clienteAuth.test.ts`. Componentes de tela testados por cima disso (Testing Library), não
+  reimplementando a mesma cobertura de regra de negócio (essa já está testada no backend S2/S3).
+  PASS.
+- **Princípio V (Spec como fonte de verdade)**: este plano decorre diretamente de `spec.md`; tasks
+  serão geradas por `/speckit-tasks` e fechamento por `/fechar-spec` antes do PR. PASS.
+
+Nenhuma violação a justificar em Complexity Tracking.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
+specs/012-clinicas-veterinarios-web/
 ├── plan.md              # This file (/speckit-plan command output)
 ├── research.md          # Phase 0 output (/speckit-plan command)
 ├── data-model.md        # Phase 1 output (/speckit-plan command)
 ├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
+├── contracts/           # Phase 1 output (/speckit-plan command) — N/A, ver nota abaixo
 └── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```
 
+Sem `contracts/`: o contrato HTTP consumido por esta feature já existe e está publicado em
+`apps/api` (S2/S3) e espelhado em `apps/web/src/api/tipos.gerados.ts` (gerado do OpenAPI). Esta
+feature não expõe nenhuma interface nova a terceiros — é puramente um consumidor.
+
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+apps/web/src/
+├── clinicas/
+│   ├── clinicasApi.ts          # chamadas HTTP tipadas: listar, buscar, criar, editar,
+│   │                           # inativar/reativar, definir prazo de pagamento
+│   ├── usarClinicas.ts         # hook de estado/carregamento (seam de teste principal)
+│   ├── usarClinicas.test.ts
+│   ├── TelaClinicas.tsx        # lista + ação de abrir formulário de cadastro/edição
+│   ├── TelaClinicas.test.tsx
+│   ├── FormularioClinica.tsx   # formulário de criar/editar clínica
+│   └── FormularioClinica.test.tsx
+├── veterinarios/
+│   ├── veterinariosApi.ts      # chamadas HTTP tipadas: listar (com filtro clinica_id), buscar,
+│   │                           # criar, editar, inativar/reativar
+│   ├── usarVeterinarios.ts
+│   ├── usarVeterinarios.test.ts
+│   ├── TelaVeterinarios.tsx
+│   ├── TelaVeterinarios.test.tsx
+│   ├── FormularioVeterinario.tsx
+│   └── FormularioVeterinario.test.tsx
+├── shell/itensDeNavegacao.ts    # `implementado: true` para Clínicas e Veterinários
+├── rotas.tsx                    # roteia /clinicas e /veterinarios para as telas reais,
+│                                 # em vez de TelaEmConstrucao
+└── ui/                           # reaproveita Botao.tsx, CampoTexto.tsx já existentes;
+                                   # nova primitiva de tabela/lista só se não houver equivalente
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: sem `backend/`/`frontend/` separados porque o repositório já usa
+`apps/api` + `apps/web` como estrutura de monorepo fixa (ADR-0001/0002); esta feature só adiciona
+código em `apps/web/src/{clinicas,veterinarios}/`, seguindo o padrão de módulo-por-domínio já usado
+em `apps/web/src/autenticacao/`. Cada domínio (clínicas, veterinários) é uma pasta própria com
+API client + hook + tela + formulário + testes, em vez de uma pasta `pages/`/`services/` genérica —
+mantém a mesma organização por domínio de negócio que o backend já usa em `apps/api/src/vertere_api/`.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+*Sem violações da Constitution Check — seção não aplicável.*
