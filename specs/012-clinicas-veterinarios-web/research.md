@@ -23,7 +23,7 @@ complexo ou revalidação em background justificável nesta fase do produto).
 ## Gerenciamento de estado do formulário/lista
 
 **Decision**: hooks nativos do React (`useState`/`useEffect`) encapsulados num hook por domínio
-(`usarClinicas`, `usarVeterinarios`), seguindo o padrão de `SessaoContext.tsx`.
+(`useClinicas`, `useVeterinarios`), seguindo o padrão de `SessaoContext.tsx`.
 
 **Rationale**: consistente com o resto do frontend (nenhuma lib de state management ou formulário
 foi adotada até aqui — ver `package.json`); a lógica de CRUD aqui é simples o suficiente (uma lista,
@@ -35,7 +35,7 @@ o erro retornado, sem lógica de validação client-side sofisticada.
 
 ## Seam de teste no frontend
 
-**Decision**: seam principal é o hook de dados (`usarClinicas`/`usarVeterinarios`), testado com
+**Decision**: seam principal é o hook de dados (`useClinicas`/`useVeterinarios`), testado com
 `fetch` mockado — não o componente de tela inteiro.
 
 **Rationale**: espelha o Princípio IV da constituição ("seam de teste na camada mais alta possível")

@@ -45,7 +45,8 @@ describe('itensDeNavegacao', () => {
     expect(itemPacientesAdmin?.rota).toBe('/pacientes')
   })
 
-  it('nenhum item implementado ainda (FR-008 desta spec só entrega placeholders)', () => {
-    expect(itensDeNavegacao.every((item) => item.implementado === false)).toBe(true)
+  it('Clínicas é a única seção implementada até aqui (S12, US1) — as demais continuam placeholder', () => {
+    const implementados = itensDeNavegacao.filter((item) => item.implementado).map((item) => item.rotulo)
+    expect(implementados).toEqual(['Clínicas'])
   })
 })

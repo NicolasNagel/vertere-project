@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ErroHttp } from '../api/clienteHttp'
 import * as clinicasApi from './clinicasApi'
-import { usarClinicas } from './usarClinicas'
+import { useClinicas } from './useClinicas'
 
 vi.mock('./clinicasApi')
 
@@ -17,7 +17,7 @@ const clinicaA = {
   prazo_pagamento_dias: 30,
 }
 
-describe('usarClinicas', () => {
+describe('useClinicas', () => {
   beforeEach(() => {
     vi.mocked(clinicasApi.listarClinicas).mockReset()
     vi.mocked(clinicasApi.criarClinica).mockReset()
@@ -26,7 +26,7 @@ describe('usarClinicas', () => {
   it('carrega a lista de clínicas ao montar', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
 
-    const { result } = renderHook(() => usarClinicas())
+    const { result } = renderHook(() => useClinicas())
 
     await waitFor(() => expect(result.current.carregando).toBe(false))
     expect(result.current.clinicas).toEqual([clinicaA])
@@ -36,7 +36,7 @@ describe('usarClinicas', () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
     vi.mocked(clinicasApi.criarClinica).mockResolvedValueOnce(clinicaA)
 
-    const { result } = renderHook(() => usarClinicas())
+    const { result } = renderHook(() => useClinicas())
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
     await act(async () => {
@@ -59,7 +59,7 @@ describe('usarClinicas', () => {
       new ErroHttp(422, '{"detail":"CNPJ inválido"}'),
     )
 
-    const { result } = renderHook(() => usarClinicas())
+    const { result } = renderHook(() => useClinicas())
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
     await act(async () => {
@@ -81,7 +81,7 @@ describe('usarClinicas', () => {
       new ErroHttp(409, '{"detail":"Já existe uma clínica com o CNPJ 123"}'),
     )
 
-    const { result } = renderHook(() => usarClinicas())
+    const { result } = renderHook(() => useClinicas())
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
     await act(async () => {

@@ -11,7 +11,7 @@ import type { ItemDeNavegacao, Papel } from '../tipos'
  * a alguns itens de staff, mas rota e permissão próprias — nunca o mesmo `ItemDeNavegacao`.
  */
 export const itensDeNavegacao: ItemDeNavegacao[] = [
-  { rotulo: 'Clínicas', rota: '/clinicas', papeisPermitidos: ['admin', 'atendente', 'tecnico'], implementado: false },
+  { rotulo: 'Clínicas', rota: '/clinicas', papeisPermitidos: ['admin', 'atendente', 'tecnico'], implementado: true },
   {
     rotulo: 'Veterinários',
     rota: '/veterinarios',

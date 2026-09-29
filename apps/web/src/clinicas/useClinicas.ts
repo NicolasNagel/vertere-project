@@ -22,7 +22,7 @@ function mensagemDeErro(erro: ErroHttp): string {
   return detalhe
 }
 
-export function usarClinicas() {
+export function useClinicas() {
   const [clinicas, setClinicas] = useState<ClinicaResponse[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)

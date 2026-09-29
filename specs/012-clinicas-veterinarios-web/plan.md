@@ -65,7 +65,7 @@ componentes/arquivos novos (lista + formulário + hooks de dados por entidade), 
   feature em português, seguindo o padrão de `TelaLogin.tsx`/`ShellAutenticado.tsx`. PASS (a
   verificar na implementação).
 - **Princípio IV (Seam de teste na camada mais alta possível)**: a seam natural do frontend para
-  esta feature é o hook de dados por entidade (ex: `usarClinicas`/`usarVeterinarios`), testável com
+  esta feature é o hook de dados por entidade (ex: `useClinicas`/`useVeterinarios`), testável com
   fetch mockado, sem montar o componente de tela inteiro para cada regra — mesmo padrão de
   `clienteAuth.test.ts`. Componentes de tela testados por cima disso (Testing Library), não
   reimplementando a mesma cobertura de regra de negócio (essa já está testada no backend S2/S3).
@@ -100,8 +100,8 @@ apps/web/src/
 ├── clinicas/
 │   ├── clinicasApi.ts          # chamadas HTTP tipadas: listar, buscar, criar, editar,
 │   │                           # inativar/reativar, definir prazo de pagamento
-│   ├── usarClinicas.ts         # hook de estado/carregamento (seam de teste principal)
-│   ├── usarClinicas.test.ts
+│   ├── useClinicas.ts         # hook de estado/carregamento (seam de teste principal)
+│   ├── useClinicas.test.ts
 │   ├── TelaClinicas.tsx        # lista + ação de abrir formulário de cadastro/edição
 │   ├── TelaClinicas.test.tsx
 │   ├── FormularioClinica.tsx   # formulário de criar/editar clínica
@@ -109,8 +109,8 @@ apps/web/src/
 ├── veterinarios/
 │   ├── veterinariosApi.ts      # chamadas HTTP tipadas: listar (com filtro clinica_id), buscar,
 │   │                           # criar, editar, inativar/reativar
-│   ├── usarVeterinarios.ts
-│   ├── usarVeterinarios.test.ts
+│   ├── useVeterinarios.ts
+│   ├── useVeterinarios.test.ts
 │   ├── TelaVeterinarios.tsx
 │   ├── TelaVeterinarios.test.tsx
 │   ├── FormularioVeterinario.tsx

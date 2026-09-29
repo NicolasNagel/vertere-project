@@ -81,8 +81,8 @@ específica sem duplicar o registro.
       `buscarClinicasPorNome(nome, apenasAtivas?)` chama `GET /clinicas/busca?nome=...`;
       `criarClinica(dados)` chama `POST /clinicas` com o body serializado e repassa `ErroHttp` sem
       capturá-lo (tradução de erro não é responsabilidade desta camada)
-- [X] T005 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/usarClinicas.ts` em
-      `apps/web/src/clinicas/usarClinicas.test.ts`, mockando `clinicasApi.ts`: carregamento inicial
+- [X] T005 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/useClinicas.ts` em
+      `apps/web/src/clinicas/useClinicas.test.ts`, mockando `clinicasApi.ts`: carregamento inicial
       popula `clinicas`; `criar(dados)` bem-sucedido adiciona a clínica retornada ao estado local
       sem novo `GET`; `criar` com erro HTTP 422 cujo detalhe é sobre CNPJ resulta em
       `erro === "CNPJ inválido — verifique o formato informado."` (data-model.md); `criar` com erro
@@ -93,26 +93,26 @@ específica sem duplicar o registro.
 - [X] T006 [US1] Implementar `apps/web/src/clinicas/clinicasApi.ts` com `listarClinicas`,
       `buscarClinicasPorNome`, `criarClinica`, usando `requisitar<T>` e os tipos `ClinicaResponse`/
       `CriarClinicaRequest` de `apps/web/src/api/tipos.gerados.ts`, até T004 passar
-- [X] T007 [US1] Implementar `apps/web/src/clinicas/usarClinicas.ts` (hook com
+- [X] T007 [US1] Implementar `apps/web/src/clinicas/useClinicas.ts` (hook com
       `clinicas`, `carregando`, `erro`, `recarregar`, `criar`), usando `clinicasApi.ts` e
       `extrairDetalheErro` (T002) para montar as mensagens da tabela de `data-model.md`, até T005
       passar
-- [ ] T008 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/FormularioClinica.tsx` em
+- [X] T008 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/FormularioClinica.tsx` em
       `apps/web/src/clinicas/FormularioClinica.test.tsx`: submissão com todos os campos
       preenchidos chama `aoSalvar` com os valores digitados; submissão com `nome` ou `cnpj` vazio é
       bloqueada pelo próprio formulário (validação HTML nativa `required`, sem chamada a `aoSalvar`)
-- [ ] T009 [US1] Implementar `apps/web/src/clinicas/FormularioClinica.tsx` (campos nome, cnpj,
+- [X] T009 [US1] Implementar `apps/web/src/clinicas/FormularioClinica.tsx` (campos nome, cnpj,
       endereço, telefone, e-mail, reaproveitando `CampoTexto`/`Botao` de `apps/web/src/ui/`), até
       T008 passar
-- [ ] T010 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/TelaClinicas.tsx` em
-      `apps/web/src/clinicas/TelaClinicas.test.tsx`, mockando `usarClinicas`: lista renderizada a
+- [X] T010 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/TelaClinicas.tsx` em
+      `apps/web/src/clinicas/TelaClinicas.test.tsx`, mockando `useClinicas`: lista renderizada a
       partir do hook; abrir o formulário, cadastrar uma clínica nova e vê-la aparecer na lista sem
       reload; erro de CNPJ duplicado exibido na tela (`role="alert"`, seguindo o padrão de
       `tela-login__erro` em `TelaLogin.tsx`)
-- [ ] T011 [US1] Implementar `apps/web/src/clinicas/TelaClinicas.tsx` (lista + botão "Nova
+- [X] T011 [US1] Implementar `apps/web/src/clinicas/TelaClinicas.tsx` (lista + botão "Nova
       clínica" que abre `FormularioClinica`, exibindo `erro`/`carregando` do hook), até T010
       passar
-- [ ] T012 [US1] Ligar a rota `/clinicas`: em `apps/web/src/shell/itensDeNavegacao.ts` marcar a
+- [X] T012 [US1] Ligar a rota `/clinicas`: em `apps/web/src/shell/itensDeNavegacao.ts` marcar a
       entrada de Clínicas como `implementado: true`; em `apps/web/src/rotas.tsx` registrar
       `<TelaClinicas />` em `componentePorRota` (T003) para a rota `/clinicas`; atualizar
       `apps/web/src/shell/itensDeNavegacao.test.ts` (o teste atual afirma que todos os itens têm
@@ -138,7 +138,7 @@ lista), reativá-la (status volta), e alterar o prazo de pagamento.
       `editarClinica(id, dados)` (`PATCH /clinicas/{id}`), `inativarClinica(id)`
       (`POST /clinicas/{id}/inativar`), `reativarClinica(id)` (`POST /clinicas/{id}/reativar`),
       `definirPrazoPagamento(id, dias)` (`POST /clinicas/{id}/prazo-pagamento`)
-- [ ] T014 [P] [US2] Estender `apps/web/src/clinicas/usarClinicas.test.ts` com testes falhos para
+- [ ] T014 [P] [US2] Estender `apps/web/src/clinicas/useClinicas.test.ts` com testes falhos para
       `editar`, `inativar`, `reativar`, `definirPrazoPagamento`: cada um atualiza a clínica
       correspondente no estado local em vez de refazer o `GET` completo; erro HTTP 404 em
       qualquer uma dessas ações resulta em
@@ -148,7 +148,7 @@ lista), reativá-la (status volta), e alterar o prazo de pagamento.
 
 - [ ] T015 [US2] Estender `apps/web/src/clinicas/clinicasApi.ts` implementando `editarClinica`,
       `inativarClinica`, `reativarClinica`, `definirPrazoPagamento`, até T013 passar
-- [ ] T016 [US2] Estender `apps/web/src/clinicas/usarClinicas.ts` implementando `editar`,
+- [ ] T016 [US2] Estender `apps/web/src/clinicas/useClinicas.ts` implementando `editar`,
       `inativar`, `reativar`, `definirPrazoPagamento` (atualização local do item na lista), até
       T014 passar
 - [ ] T017 [P] [US2] Estender `apps/web/src/clinicas/FormularioClinica.test.tsx`: modo edição
@@ -183,8 +183,8 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
       `listarVeterinarios(clinicaId?, apenasAtivos?)` chama `GET /veterinarios?clinica_id=...&apenas_ativos=...`;
       `buscarVeterinariosPorNome(nome, clinicaId?, apenasAtivos?)` chama `GET /veterinarios/busca?...`;
       `criarVeterinario(dados)` chama `POST /veterinarios`
-- [ ] T022 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/usarVeterinarios.ts`
-      em `apps/web/src/veterinarios/usarVeterinarios.test.ts`, mockando `veterinariosApi.ts`:
+- [ ] T022 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/useVeterinarios.ts`
+      em `apps/web/src/veterinarios/useVeterinarios.test.ts`, mockando `veterinariosApi.ts`:
       carregamento inicial popula `veterinarios`; filtrar por `clinicaId` refaz a listagem
       filtrada; `criar` bem-sucedido adiciona à lista; `criar` com erro 422 cujo detalhe é
       "CRMV não pode ser vazio" resulta em `erro === "Informe o CRMV do veterinário."`; `criar`
@@ -199,7 +199,7 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
 - [ ] T023 [US3] Implementar `apps/web/src/veterinarios/veterinariosApi.ts` com
       `listarVeterinarios`, `buscarVeterinariosPorNome`, `criarVeterinario`, usando
       `VeterinarioResponse`/`CriarVeterinarioRequest` de `tipos.gerados.ts`, até T021 passar
-- [ ] T024 [US3] Implementar `apps/web/src/veterinarios/usarVeterinarios.ts` (hook com
+- [ ] T024 [US3] Implementar `apps/web/src/veterinarios/useVeterinarios.ts` (hook com
       `veterinarios`, `carregando`, `erro`, `filtroClinicaId`, `recarregar`, `criar`), usando
       `veterinariosApi.ts` e `extrairDetalheErro` para distinguir os dois erros 422 por substring
       do detalhe, até T022 passar
@@ -213,8 +213,8 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
       passar
 - [ ] T027 [P] [US3] Escrever testes falhos para
       `apps/web/src/veterinarios/TelaVeterinarios.tsx` em
-      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, mockando `usarVeterinarios` e
-      `usarClinicas` (para a lista de clínicas do formulário): lista renderizada; filtro por
+      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, mockando `useVeterinarios` e
+      `useClinicas` (para a lista de clínicas do formulário): lista renderizada; filtro por
       clínica reduz a lista exibida; cadastro de veterinário reflete na lista sem reload; erro de
       CRMV vazio exibido na tela
 - [ ] T028 [US3] Implementar `apps/web/src/veterinarios/TelaVeterinarios.tsx` (lista + filtro por
@@ -244,7 +244,7 @@ na lista), reativá-lo (status volta).
       falhos para `editarVeterinario(id, dados)` (`PATCH /veterinarios/{id}`),
       `inativarVeterinario(id)` (`POST /veterinarios/{id}/inativar`), `reativarVeterinario(id)`
       (`POST /veterinarios/{id}/reativar`)
-- [ ] T031 [P] [US4] Estender `apps/web/src/veterinarios/usarVeterinarios.test.ts` com testes
+- [ ] T031 [P] [US4] Estender `apps/web/src/veterinarios/useVeterinarios.test.ts` com testes
       falhos para `editar`, `inativar`, `reativar`: cada um atualiza o veterinário correspondente
       no estado local; erro HTTP 404 resulta em
       `erro === "Veterinário não encontrado — pode ter sido removido por outra sessão."`
@@ -253,7 +253,7 @@ na lista), reativá-lo (status volta).
 
 - [ ] T032 [US4] Estender `apps/web/src/veterinarios/veterinariosApi.ts` implementando
       `editarVeterinario`, `inativarVeterinario`, `reativarVeterinario`, até T030 passar
-- [ ] T033 [US4] Estender `apps/web/src/veterinarios/usarVeterinarios.ts` implementando `editar`,
+- [ ] T033 [US4] Estender `apps/web/src/veterinarios/useVeterinarios.ts` implementando `editar`,
       `inativar`, `reativar`, até T031 passar
 - [ ] T034 [P] [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`: modo
       edição (prop `veterinario` preenchida) exibe os valores já preenchidos e torna CRMV e
@@ -296,7 +296,7 @@ na lista), reativá-lo (status volta).
 - **User Stories (Phase 3-6)**: T012 e T029 dependem de T002+T003; as demais tasks de cada story
   não dependem da Foundational além de T002 (erroApi, usada nos hooks)
   - US2 (Phase 4) depende de US1 (Phase 3) estar pronta: reaproveita `clinicasApi.ts`,
-    `usarClinicas.ts`, `FormularioClinica.tsx`, `TelaClinicas.tsx` já criados por US1 — não é uma
+    `useClinicas.ts`, `FormularioClinica.tsx`, `TelaClinicas.tsx` já criados por US1 — não é uma
     dependência de dado, é o mesmo conjunto de arquivos sendo estendido
   - US4 (Phase 6) depende de US3 (Phase 5) pela mesma razão, no módulo de veterinários
   - US3 (Phase 5) depende de US1 estar pronta **como dado**, não como código: precisa existir ao
@@ -325,7 +325,7 @@ na lista), reativá-lo (status volta).
 ```bash
 # Tests de US1 que podem ser escritos em paralelo (arquivos diferentes):
 Task: "Escrever testes falhos para clinicasApi.ts em apps/web/src/clinicas/clinicasApi.test.ts"
-Task: "Escrever testes falhos para usarClinicas.ts em apps/web/src/clinicas/usarClinicas.test.ts"
+Task: "Escrever testes falhos para useClinicas.ts em apps/web/src/clinicas/useClinicas.test.ts"
 ```
 
 ---
