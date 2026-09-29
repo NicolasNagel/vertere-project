@@ -2,10 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { extrairDetalheErro } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import type { components } from '../api/tipos.gerados'
-import { criarVeterinario, listarVeterinarios } from './veterinariosApi'
+import {
+  criarVeterinario,
+  editarVeterinario,
+  inativarVeterinario,
+  listarVeterinarios,
+  reativarVeterinario,
+} from './veterinariosApi'
 
 type VeterinarioResponse = components['schemas']['VeterinarioResponse']
 type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
+type EditarVeterinarioRequest = components['schemas']['EditarVeterinarioRequest']
 
 /**
  * Mensagens de erro da UI para Veterinários — ver data-model.md → "Erros mapeados para mensagem
@@ -69,5 +76,47 @@ export function useVeterinarios() {
     }
   }, [])
 
-  return { veterinarios, carregando, erro, filtroClinicaId, definirFiltroClinicaId, recarregar, criar }
+  function substituirNoEstado(veterinario: VeterinarioResponse) {
+    setVeterinarios((atual) => atual.map((v) => (v.id === veterinario.id ? veterinario : v)))
+  }
+
+  async function executarAcaoSobreVeterinario(acao: () => Promise<VeterinarioResponse>) {
+    setErro(null)
+    try {
+      substituirNoEstado(await acao())
+    } catch (erroRequisicao) {
+      if (erroRequisicao instanceof ErroHttp) {
+        setErro(mensagemDeErro(erroRequisicao))
+      }
+    }
+  }
+
+  const editar = useCallback(
+    (id: string, dados: EditarVeterinarioRequest) =>
+      executarAcaoSobreVeterinario(() => editarVeterinario(id, dados)),
+    [],
+  )
+
+  const inativar = useCallback(
+    (id: string) => executarAcaoSobreVeterinario(() => inativarVeterinario(id)),
+    [],
+  )
+
+  const reativar = useCallback(
+    (id: string) => executarAcaoSobreVeterinario(() => reativarVeterinario(id)),
+    [],
+  )
+
+  return {
+    veterinarios,
+    carregando,
+    erro,
+    filtroClinicaId,
+    definirFiltroClinicaId,
+    recarregar,
+    criar,
+    editar,
+    inativar,
+    reativar,
+  }
 }

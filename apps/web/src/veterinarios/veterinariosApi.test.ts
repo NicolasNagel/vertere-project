@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { requisitar } from '../api/clienteHttp'
-import { buscarVeterinariosPorNome, criarVeterinario, listarVeterinarios } from './veterinariosApi'
+import {
+  buscarVeterinariosPorNome,
+  criarVeterinario,
+  editarVeterinario,
+  inativarVeterinario,
+  listarVeterinarios,
+  reativarVeterinario,
+} from './veterinariosApi'
 
 vi.mock('../api/clienteHttp', () => ({
   requisitar: vi.fn(),
@@ -47,5 +54,27 @@ describe('veterinariosApi', () => {
       method: 'POST',
       body: JSON.stringify(dados),
     })
+  })
+
+  it('editarVeterinario chama PATCH /veterinarios/{id} com o body serializado', async () => {
+    const dados = { nome: 'Dr. João', telefone: '999', email: 'joao@vet.com' }
+    vi.mocked(requisitar).mockResolvedValueOnce({})
+    await editarVeterinario('1', dados)
+    expect(requisitar).toHaveBeenCalledWith('/veterinarios/1', {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    })
+  })
+
+  it('inativarVeterinario chama POST /veterinarios/{id}/inativar', async () => {
+    vi.mocked(requisitar).mockResolvedValueOnce({})
+    await inativarVeterinario('1')
+    expect(requisitar).toHaveBeenCalledWith('/veterinarios/1/inativar', { method: 'POST' })
+  })
+
+  it('reativarVeterinario chama POST /veterinarios/{id}/reativar', async () => {
+    vi.mocked(requisitar).mockResolvedValueOnce({})
+    await reativarVeterinario('1')
+    expect(requisitar).toHaveBeenCalledWith('/veterinarios/1/reativar', { method: 'POST' })
   })
 })

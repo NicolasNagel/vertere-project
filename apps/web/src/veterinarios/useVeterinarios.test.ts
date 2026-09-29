@@ -133,4 +133,72 @@ describe('useVeterinarios', () => {
 
     expect(result.current.erro).toBe('Já existe um veterinário cadastrado com esse CRMV.')
   })
+
+  it('editar atualiza o veterinário correspondente no estado local', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    const editado = { ...veterinarioA, telefone: '999' }
+    vi.mocked(veterinariosApi.editarVeterinario).mockResolvedValueOnce(editado)
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.editar('1', {
+        nome: veterinarioA.nome,
+        telefone: '999',
+        email: veterinarioA.email,
+      })
+    })
+
+    expect(result.current.veterinarios).toEqual([editado])
+  })
+
+  it('inativar atualiza o status do veterinário no estado local', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    const inativado = { ...veterinarioA, ativo: false }
+    vi.mocked(veterinariosApi.inativarVeterinario).mockResolvedValueOnce(inativado)
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.veterinarios).toEqual([inativado])
+  })
+
+  it('reativar atualiza o status do veterinário no estado local', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([
+      { ...veterinarioA, ativo: false },
+    ])
+    vi.mocked(veterinariosApi.reativarVeterinario).mockResolvedValueOnce(veterinarioA)
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.reativar('1')
+    })
+
+    expect(result.current.veterinarios).toEqual([veterinarioA])
+  })
+
+  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    vi.mocked(veterinariosApi.inativarVeterinario).mockRejectedValueOnce(
+      new ErroHttp(404, '{"detail":"Veterinário 1 não encontrado"}'),
+    )
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe(
+      'Veterinário não encontrado — pode ter sido removido por outra sessão.',
+    )
+  })
 })

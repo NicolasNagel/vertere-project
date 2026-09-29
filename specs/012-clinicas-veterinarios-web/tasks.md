@@ -240,20 +240,20 @@ na lista), reativá-lo (status volta).
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T030 [P] [US4] Estender `apps/web/src/veterinarios/veterinariosApi.test.ts` com testes
+- [X] T030 [P] [US4] Estender `apps/web/src/veterinarios/veterinariosApi.test.ts` com testes
       falhos para `editarVeterinario(id, dados)` (`PATCH /veterinarios/{id}`),
       `inativarVeterinario(id)` (`POST /veterinarios/{id}/inativar`), `reativarVeterinario(id)`
       (`POST /veterinarios/{id}/reativar`)
-- [ ] T031 [P] [US4] Estender `apps/web/src/veterinarios/useVeterinarios.test.ts` com testes
+- [X] T031 [P] [US4] Estender `apps/web/src/veterinarios/useVeterinarios.test.ts` com testes
       falhos para `editar`, `inativar`, `reativar`: cada um atualiza o veterinário correspondente
       no estado local; erro HTTP 404 resulta em
       `erro === "Veterinário não encontrado — pode ter sido removido por outra sessão."`
 
 ### Implementation for User Story 4
 
-- [ ] T032 [US4] Estender `apps/web/src/veterinarios/veterinariosApi.ts` implementando
+- [X] T032 [US4] Estender `apps/web/src/veterinarios/veterinariosApi.ts` implementando
       `editarVeterinario`, `inativarVeterinario`, `reativarVeterinario`, até T030 passar
-- [ ] T033 [US4] Estender `apps/web/src/veterinarios/useVeterinarios.ts` implementando `editar`,
+- [X] T033 [US4] Estender `apps/web/src/veterinarios/useVeterinarios.ts` implementando `editar`,
       `inativar`, `reativar`, até T031 passar
 - [ ] T034 [P] [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`: modo
       edição (prop `veterinario` preenchida) exibe os valores já preenchidos e torna CRMV e
