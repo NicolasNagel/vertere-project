@@ -6,6 +6,7 @@ import { RotaProtegida } from './shell/RotaProtegida'
 import { ShellAutenticado } from './shell/ShellAutenticado'
 import { TelaEmConstrucao } from './shell/TelaEmConstrucao'
 import { TelaClinicas } from './clinicas/TelaClinicas'
+import { TelaExames } from './exames/TelaExames'
 import { TelaVeterinarios } from './veterinarios/TelaVeterinarios'
 import type { Papel } from './tipos'
 
@@ -19,6 +20,7 @@ const TODOS_OS_PAPEIS: Papel[] = ['admin', 'atendente', 'tecnico', 'clinica']
 const componentePorRota: Partial<Record<string, ReactNode>> = {
   '/clinicas': <TelaClinicas />,
   '/veterinarios': <TelaVeterinarios />,
+  '/exames': <TelaExames />,
 }
 
 export function criarRotas() {
