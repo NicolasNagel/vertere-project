@@ -3,6 +3,7 @@ import { extrairDetalheErro } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import type { components } from '../api/tipos.gerados'
 import {
+  buscarVeterinariosPorNome,
   criarVeterinario,
   editarVeterinario,
   inativarVeterinario,
@@ -41,12 +42,18 @@ export function useVeterinarios() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [filtroClinicaId, setFiltroClinicaId] = useState<string | undefined>(undefined)
+  const [termoBusca, setTermoBusca] = useState('')
+  const [apenasAtivos, setApenasAtivos] = useState(false)
 
   const recarregar = useCallback(async () => {
     setCarregando(true)
     setErro(null)
     try {
-      setVeterinarios(await listarVeterinarios(filtroClinicaId, false))
+      setVeterinarios(
+        termoBusca
+          ? await buscarVeterinariosPorNome(termoBusca, filtroClinicaId, apenasAtivos)
+          : await listarVeterinarios(filtroClinicaId, apenasAtivos),
+      )
     } catch (erroRequisicao) {
       if (erroRequisicao instanceof ErroHttp) {
         setErro(mensagemDeErro(erroRequisicao))
@@ -54,7 +61,7 @@ export function useVeterinarios() {
     } finally {
       setCarregando(false)
     }
-  }, [filtroClinicaId])
+  }, [filtroClinicaId, termoBusca, apenasAtivos])
 
   useEffect(() => {
     recarregar()
@@ -63,6 +70,9 @@ export function useVeterinarios() {
   const definirFiltroClinicaId = useCallback((clinicaId: string | undefined) => {
     setFiltroClinicaId(clinicaId)
   }, [])
+
+  const definirTermoBusca = useCallback((termo: string) => setTermoBusca(termo), [])
+  const definirApenasAtivos = useCallback((valor: boolean) => setApenasAtivos(valor), [])
 
   const criar = useCallback(async (dados: CriarVeterinarioRequest) => {
     setErro(null)
@@ -113,6 +123,10 @@ export function useVeterinarios() {
     erro,
     filtroClinicaId,
     definirFiltroClinicaId,
+    termoBusca,
+    definirTermoBusca,
+    apenasAtivos,
+    definirApenasAtivos,
     recarregar,
     criar,
     editar,

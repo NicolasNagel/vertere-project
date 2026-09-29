@@ -67,14 +67,41 @@ function LinhaClinica({
 }
 
 export function TelaClinicas() {
-  const { clinicas, carregando, erro, criar, editar, inativar, reativar, definirPrazoPagamento } =
-    useClinicas()
+  const {
+    clinicas,
+    carregando,
+    erro,
+    termoBusca,
+    definirTermoBusca,
+    apenasAtivas,
+    definirApenasAtivas,
+    criar,
+    editar,
+    inativar,
+    reativar,
+    definirPrazoPagamento,
+  } = useClinicas()
   const [formularioAberto, setFormularioAberto] = useState(false)
 
   return (
     <div>
       <h1>Clínicas</h1>
       {erro ? <p role="alert">{erro}</p> : null}
+
+      <CampoTexto
+        rotulo="Buscar por nome"
+        value={termoBusca}
+        onChange={(e) => definirTermoBusca(e.target.value)}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={apenasAtivas}
+          onChange={(e) => definirApenasAtivas(e.target.checked)}
+        />
+        Apenas ativas
+      </label>
+
       <Botao onClick={() => setFormularioAberto(true)}>Nova clínica</Botao>
       {formularioAberto ? (
         <FormularioClinica

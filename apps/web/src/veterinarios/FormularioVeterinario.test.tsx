@@ -80,4 +80,11 @@ describe('FormularioVeterinario', () => {
     expect(screen.getByLabelText('CRMV')).toHaveAttribute('readonly')
     expect(screen.getByLabelText('Clínica')).toBeDisabled()
   })
+
+  it('sem clínicas ativas (cadastro novo), orienta a cadastrar uma clínica em vez de mostrar o formulário', () => {
+    render(<FormularioVeterinario clinicasAtivas={[]} aoSalvar={vi.fn()} />)
+
+    expect(screen.getByText(/nenhuma clínica ativa cadastrada/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText('CRMV')).not.toBeInTheDocument()
+  })
 })

@@ -179,4 +179,55 @@ describe('useClinicas', () => {
       'Clínica não encontrada — pode ter sido removida por outra sessão.',
     )
   })
+
+  it('definirTermoBusca refaz a listagem via buscarClinicasPorNome', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.buscarClinicasPorNome).mockResolvedValueOnce([])
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirTermoBusca('clínica')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    expect(clinicasApi.buscarClinicasPorNome).toHaveBeenLastCalledWith('clínica', false)
+  })
+
+  it('termo de busca vazio volta a usar listarClinicas', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.buscarClinicasPorNome).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirTermoBusca('x')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirTermoBusca('')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    expect(clinicasApi.listarClinicas).toHaveBeenLastCalledWith(false)
+  })
+
+  it('definirApenasAtivas refaz a listagem com o filtro', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirApenasAtivas(true)
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    expect(clinicasApi.listarClinicas).toHaveBeenLastCalledWith(true)
+  })
 })

@@ -3,6 +3,7 @@ import { extrairDetalheErro } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import type { components } from '../api/tipos.gerados'
 import {
+  buscarClinicasPorNome,
   criarClinica,
   definirPrazoPagamento as definirPrazoPagamentoApi,
   editarClinica,
@@ -34,12 +35,18 @@ export function useClinicas() {
   const [clinicas, setClinicas] = useState<ClinicaResponse[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [termoBusca, setTermoBusca] = useState('')
+  const [apenasAtivas, setApenasAtivas] = useState(false)
 
   const recarregar = useCallback(async () => {
     setCarregando(true)
     setErro(null)
     try {
-      setClinicas(await listarClinicas())
+      setClinicas(
+        termoBusca
+          ? await buscarClinicasPorNome(termoBusca, apenasAtivas)
+          : await listarClinicas(apenasAtivas),
+      )
     } catch (erroRequisicao) {
       if (erroRequisicao instanceof ErroHttp) {
         setErro(mensagemDeErro(erroRequisicao))
@@ -47,11 +54,14 @@ export function useClinicas() {
     } finally {
       setCarregando(false)
     }
-  }, [])
+  }, [termoBusca, apenasAtivas])
 
   useEffect(() => {
     recarregar()
   }, [recarregar])
+
+  const definirTermoBusca = useCallback((termo: string) => setTermoBusca(termo), [])
+  const definirApenasAtivas = useCallback((valor: boolean) => setApenasAtivas(valor), [])
 
   const criar = useCallback(async (dados: CriarClinicaRequest) => {
     setErro(null)
@@ -106,6 +116,10 @@ export function useClinicas() {
     clinicas,
     carregando,
     erro,
+    termoBusca,
+    definirTermoBusca,
+    apenasAtivas,
+    definirApenasAtivas,
     recarregar,
     criar,
     editar,

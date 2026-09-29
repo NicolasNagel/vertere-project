@@ -201,4 +201,38 @@ describe('useVeterinarios', () => {
       'Veterinário não encontrado — pode ter sido removido por outra sessão.',
     )
   })
+
+  it('definirTermoBusca refaz a listagem via buscarVeterinariosPorNome', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    vi.mocked(veterinariosApi.buscarVeterinariosPorNome).mockResolvedValueOnce([])
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirTermoBusca('joão')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    expect(veterinariosApi.buscarVeterinariosPorNome).toHaveBeenLastCalledWith(
+      'joão',
+      undefined,
+      false,
+    )
+  })
+
+  it('definirApenasAtivos refaz a listagem com o filtro', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
+
+    const { result } = renderHook(() => useVeterinarios())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      result.current.definirApenasAtivos(true)
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    expect(veterinariosApi.listarVeterinarios).toHaveBeenLastCalledWith(undefined, true)
+  })
 })

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import * as useClinicasModulo from './useClinicas'
@@ -22,6 +22,10 @@ function mockarHook(overrides: Partial<ReturnType<typeof useClinicasModulo.useCl
     clinicas: [],
     carregando: false,
     erro: null,
+    termoBusca: '',
+    definirTermoBusca: vi.fn(),
+    apenasAtivas: false,
+    definirApenasAtivas: vi.fn(),
     recarregar: vi.fn(),
     criar: vi.fn(),
     editar: vi.fn(),
@@ -110,5 +114,25 @@ describe('TelaClinicas', () => {
     await userEvent.click(screen.getByRole('button', { name: /salvar prazo/i }))
 
     expect(definirPrazoPagamento).toHaveBeenCalledWith('1', 45)
+  })
+
+  it('campo de busca chama definirTermoBusca com o texto digitado', async () => {
+    const definirTermoBusca = vi.fn()
+    mockarHook({ definirTermoBusca })
+    render(<TelaClinicas />)
+
+    fireEvent.change(screen.getByLabelText(/buscar por nome/i), { target: { value: 'vet' } })
+
+    expect(definirTermoBusca).toHaveBeenCalledWith('vet')
+  })
+
+  it('checkbox "apenas ativas" chama definirApenasAtivas', async () => {
+    const definirApenasAtivas = vi.fn()
+    mockarHook({ definirApenasAtivas })
+    render(<TelaClinicas />)
+
+    await userEvent.click(screen.getByLabelText(/apenas ativas/i))
+
+    expect(definirApenasAtivas).toHaveBeenCalledWith(true)
   })
 })

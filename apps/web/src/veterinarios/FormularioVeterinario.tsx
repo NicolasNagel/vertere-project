@@ -26,6 +26,10 @@ export function FormularioVeterinario({
   const [email, setEmail] = useState(veterinario?.email ?? '')
   const [clinicaId, setClinicaId] = useState(veterinario?.clinica_id ?? clinicasAtivas[0]?.id ?? '')
 
+  if (!veterinario && clinicasAtivas.length === 0) {
+    return <p>Nenhuma clínica ativa cadastrada — cadastre uma clínica antes de cadastrar um veterinário.</p>
+  }
+
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (!clinicaId) return

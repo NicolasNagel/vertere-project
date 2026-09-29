@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
+import { CampoTexto } from '../ui/CampoTexto'
 import { useClinicas } from '../clinicas/useClinicas'
 import type { components } from '../api/tipos.gerados'
 import { FormularioVeterinario } from './FormularioVeterinario'
@@ -62,8 +63,20 @@ function LinhaVeterinario({
 
 export function TelaVeterinarios() {
   const { clinicas } = useClinicas()
-  const { veterinarios, carregando, erro, definirFiltroClinicaId, criar, editar, inativar, reativar } =
-    useVeterinarios()
+  const {
+    veterinarios,
+    carregando,
+    erro,
+    definirFiltroClinicaId,
+    termoBusca,
+    definirTermoBusca,
+    apenasAtivos,
+    definirApenasAtivos,
+    criar,
+    editar,
+    inativar,
+    reativar,
+  } = useVeterinarios()
   const [formularioAberto, setFormularioAberto] = useState(false)
   const idFiltro = useId()
   const clinicasAtivas = clinicas.filter((clinica) => clinica.ativo)
@@ -72,6 +85,20 @@ export function TelaVeterinarios() {
     <div>
       <h1>Veterinários</h1>
       {erro ? <p role="alert">{erro}</p> : null}
+
+      <CampoTexto
+        rotulo="Buscar por nome"
+        value={termoBusca}
+        onChange={(e) => definirTermoBusca(e.target.value)}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={apenasAtivos}
+          onChange={(e) => definirApenasAtivos(e.target.checked)}
+        />
+        Apenas ativos
+      </label>
 
       <label htmlFor={idFiltro}>Filtrar por clínica</label>
       <select

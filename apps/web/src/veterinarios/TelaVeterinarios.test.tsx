@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import * as useVeterinariosModulo from './useVeterinarios'
@@ -38,6 +38,10 @@ function mockarHookVeterinarios(
     erro: null,
     filtroClinicaId: undefined,
     definirFiltroClinicaId: vi.fn(),
+    termoBusca: '',
+    definirTermoBusca: vi.fn(),
+    apenasAtivos: false,
+    definirApenasAtivos: vi.fn(),
     recarregar: vi.fn(),
     criar: vi.fn(),
     editar: vi.fn(),
@@ -52,6 +56,10 @@ function mockarHookClinicas(overrides: Partial<ReturnType<typeof useClinicasModu
     clinicas: [clinicaA],
     carregando: false,
     erro: null,
+    termoBusca: '',
+    definirTermoBusca: vi.fn(),
+    apenasAtivas: false,
+    definirApenasAtivas: vi.fn(),
     recarregar: vi.fn(),
     criar: vi.fn(),
     editar: vi.fn(),
@@ -142,5 +150,40 @@ describe('TelaVeterinarios', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
     expect(reativar).toHaveBeenCalledWith('1')
+  })
+
+  it('campo de busca chama definirTermoBusca com o texto digitado', () => {
+    const definirTermoBusca = vi.fn()
+    mockarHookClinicas()
+    mockarHookVeterinarios({ definirTermoBusca })
+    render(<TelaVeterinarios />)
+
+    fireEvent.change(screen.getByLabelText(/buscar por nome/i), { target: { value: 'joão' } })
+
+    expect(definirTermoBusca).toHaveBeenCalledWith('joão')
+  })
+
+  it('checkbox "apenas ativos" chama definirApenasAtivos', async () => {
+    const definirApenasAtivos = vi.fn()
+    mockarHookClinicas()
+    mockarHookVeterinarios({ definirApenasAtivos })
+    render(<TelaVeterinarios />)
+
+    await userEvent.click(screen.getByLabelText(/apenas ativos/i))
+
+    expect(definirApenasAtivos).toHaveBeenCalledWith(true)
+  })
+
+  it('sem clínica ativa cadastrada, o formulário orienta em vez de permitir submissão', async () => {
+    mockarHookClinicas({ clinicas: [] })
+    mockarHookVeterinarios()
+    render(<TelaVeterinarios />)
+
+    await userEvent.click(screen.getByRole('button', { name: /novo veterinário/i }))
+
+    expect(
+      screen.getByText(/nenhuma clínica ativa cadastrada/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByLabelText('CRMV')).not.toBeInTheDocument()
   })
 })
