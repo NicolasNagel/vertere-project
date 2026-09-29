@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-28
 
-**Status**: Draft
+**Status**: entregue
 
 **Input**: User description: "Tela de listagem/CRUD de Clínicas e Veterinários no frontend (apps/web), consumindo os endpoints já existentes dos módulos S2 (Clínicas) e S3 (Veterinários) do backend. Primeira tela de conteúdo real do frontend, substituindo o placeholder TelaEmConstrucao para essas duas seções de navegação."
 
