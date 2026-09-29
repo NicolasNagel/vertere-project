@@ -203,24 +203,24 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
       `veterinarios`, `carregando`, `erro`, `filtroClinicaId`, `recarregar`, `criar`), usando
       `veterinariosApi.ts` e `extrairDetalheErro` para distinguir os dois erros 422 por substring
       do detalhe, até T022 passar
-- [ ] T025 [P] [US3] Escrever testes falhos para
+- [X] T025 [P] [US3] Escrever testes falhos para
       `apps/web/src/veterinarios/FormularioVeterinario.tsx` em
       `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`: recebe a lista de clínicas
       ativas via prop e renderiza um `<select>` de clínica; submissão sem clínica selecionada ou
       sem CRMV é bloqueada; submissão válida chama `aoSalvar` com os valores digitados e a
       `clinica_id` escolhida
-- [ ] T026 [US3] Implementar `apps/web/src/veterinarios/FormularioVeterinario.tsx`, até T025
+- [X] T026 [US3] Implementar `apps/web/src/veterinarios/FormularioVeterinario.tsx`, até T025
       passar
-- [ ] T027 [P] [US3] Escrever testes falhos para
+- [X] T027 [P] [US3] Escrever testes falhos para
       `apps/web/src/veterinarios/TelaVeterinarios.tsx` em
       `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, mockando `useVeterinarios` e
       `useClinicas` (para a lista de clínicas do formulário): lista renderizada; filtro por
       clínica reduz a lista exibida; cadastro de veterinário reflete na lista sem reload; erro de
       CRMV vazio exibido na tela
-- [ ] T028 [US3] Implementar `apps/web/src/veterinarios/TelaVeterinarios.tsx` (lista + filtro por
+- [X] T028 [US3] Implementar `apps/web/src/veterinarios/TelaVeterinarios.tsx` (lista + filtro por
       clínica + botão "Novo veterinário" que abre `FormularioVeterinario`, exibindo
       `erro`/`carregando` do hook), até T027 passar
-- [ ] T029 [US3] Ligar a rota `/veterinarios`: em `itensDeNavegacao.ts` marcar a entrada de
+- [X] T029 [US3] Ligar a rota `/veterinarios`: em `itensDeNavegacao.ts` marcar a entrada de
       Veterinários como `implementado: true`; em `rotas.tsx` registrar `<TelaVeterinarios />` em
       `componentePorRota` para a rota `/veterinarios`; atualizar `itensDeNavegacao.test.ts` para
       afirmar que Clínicas e Veterinários são `implementado: true` e os demais continuam `false`

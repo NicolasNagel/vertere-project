@@ -16,7 +16,7 @@ export const itensDeNavegacao: ItemDeNavegacao[] = [
     rotulo: 'Veterinários',
     rota: '/veterinarios',
     papeisPermitidos: ['admin', 'atendente', 'tecnico'],
-    implementado: false,
+    implementado: true,
   },
   {
     rotulo: 'Pacientes',
