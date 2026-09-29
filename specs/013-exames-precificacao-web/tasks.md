@@ -117,16 +117,16 @@ lista aparece sem nenhum botão de cadastro.
 - [X] T009 [US1] Implementar `apps/web/src/exames/FormularioExame.tsx` (campos categoria, nome,
       preço-base, reaproveitando `CampoTexto`/`Botao` de `apps/web/src/ui/`, com validação de
       preço-base positivo antes de chamar `aoSalvar`), até T008 passar
-- [ ] T010 [P] [US1] Escrever testes falhos para `apps/web/src/exames/TelaExames.tsx` em
+- [X] T010 [P] [US1] Escrever testes falhos para `apps/web/src/exames/TelaExames.tsx` em
       `apps/web/src/exames/TelaExames.test.tsx`, mockando `useExames` e `SessaoContext`
       (papel do usuário logado): sub-seção "Catálogo de Exames" renderizada a partir do hook para
       os papéis `admin`/`atendente`/`tecnico`; só `admin` vê o botão "Novo exame"; abrir o
       formulário como admin, cadastrar um exame novo e vê-lo aparecer na lista sem reload
-- [ ] T011 [US1] Implementar `apps/web/src/exames/TelaExames.tsx` com a sub-seção "Catálogo de
+- [X] T011 [US1] Implementar `apps/web/src/exames/TelaExames.tsx` com a sub-seção "Catálogo de
       Exames" (lista + botão "Novo exame" visível só quando `papel === 'admin'`, lido via
       `SessaoContext`, que abre `FormularioExame`, exibindo `erro`/`carregando` do hook), até T010
       passar
-- [ ] T012 [US1] Ligar a rota `/exames`: em `apps/web/src/shell/itensDeNavegacao.ts` marcar a
+- [X] T012 [US1] Ligar a rota `/exames`: em `apps/web/src/shell/itensDeNavegacao.ts` marcar a
       entrada de Exames como `implementado: true`; em `apps/web/src/rotas.tsx` registrar
       `<TelaExames />` em `componentePorRota` para a rota `/exames`; atualizar
       `apps/web/src/shell/itensDeNavegacao.test.ts` para afirmar que Clínicas, Veterinários e
