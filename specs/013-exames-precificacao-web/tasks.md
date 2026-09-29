@@ -50,7 +50,7 @@ entidade repetindo o esqueleto de `useClinicas.ts`/`useVeterinarios.ts`)
 **⚠️ CRITICAL**: T002/T003 bloqueiam toda task de hook (`useExames.ts`, `useRegrasPlantao.ts`) das
 user stories abaixo — não bloqueiam `examesApi.ts`/`regrasPlantaoApi.ts` nem os formulários
 
-- [ ] T002 [P] Escrever testes falhos para `apps/web/src/api/useColecaoCrud.ts` em
+- [X] T002 [P] Escrever testes falhos para `apps/web/src/api/useColecaoCrud.ts` em
       `apps/web/src/api/useColecaoCrud.test.ts`: hook genérico `useColecaoCrud<T extends { id: string }>(carregarLista, mensagemDeErro)`
       — estado inicial (`itens: []`, `carregando: true`); `recarregar()` bem-sucedido popula
       `itens` e zera `carregando`; `recarregar()` com `ErroHttp` seta `erro` via `mensagemDeErro`;
@@ -58,7 +58,7 @@ user stories abaixo — não bloqueiam `examesApi.ts`/`regrasPlantaoApi.ts` nem 
       `criar(acao)` com `ErroHttp` seta `erro` sem alterar `itens`; `executarAcaoSobreItem(acao)`
       bem-sucedido substitui, por `id`, o item correspondente em `itens`; `executarAcaoSobreItem(acao)`
       com `ErroHttp` seta `erro` sem alterar `itens`
-- [ ] T003 Implementar `apps/web/src/api/useColecaoCrud.ts` extraindo o esqueleto hoje duplicado em
+- [X] T003 Implementar `apps/web/src/api/useColecaoCrud.ts` extraindo o esqueleto hoje duplicado em
       `apps/web/src/clinicas/useClinicas.ts`/`apps/web/src/veterinarios/useVeterinarios.ts`
       (`recarregar`/`criar` com try/catch/`ErroHttp`/`setErro`, `substituirNoEstado` por `id`), até
       T002 passar. **Não** alterar `useClinicas.ts`/`useVeterinarios.ts` para usar o hook novo —
