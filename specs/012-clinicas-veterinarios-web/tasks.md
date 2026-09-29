@@ -274,13 +274,13 @@ na lista), reativá-lo (status volta).
 
 **Purpose**: fechar a spec com a suíte verde e o handoff atualizado, prontos para `/fechar-spec`
 
-- [ ] T038 [P] Rodar `pnpm --dir apps/web lint` e corrigir qualquer achado em
+- [X] T038 [P] Rodar `pnpm --dir apps/web lint` e corrigir qualquer achado em
       `apps/web/src/clinicas/` e `apps/web/src/veterinarios/`
-- [ ] T039 [P] Rodar `pnpm --dir apps/web test` com cobertura visível para
+- [X] T039 [P] Rodar `pnpm --dir apps/web test` com cobertura visível para
       `apps/web/src/clinicas/` e `apps/web/src/veterinarios/` (Princípio IV da constituição —
       nenhuma task é considerada concluída só porque os testes existem, a suíte real precisa
       passar)
-- [ ] T040 Executar manualmente os 5 cenários de `specs/012-clinicas-veterinarios-web/quickstart.md`
+- [X] T040 Executar manualmente os 5 cenários de `specs/012-clinicas-veterinarios-web/quickstart.md`
       contra o backend e o frontend rodando localmente, registrando qualquer divergência encontrada
 - [ ] T041 Atualizar `handoff.md` relatando a S12 implementada e pronta para `/fechar-spec`
 

@@ -7,6 +7,7 @@ import { useVeterinarios } from './useVeterinarios'
 
 type ClinicaResponse = components['schemas']['ClinicaResponse']
 type VeterinarioResponse = components['schemas']['VeterinarioResponse']
+type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
 
 function LinhaVeterinario({
   veterinario,
@@ -17,7 +18,7 @@ function LinhaVeterinario({
 }: {
   veterinario: VeterinarioResponse
   clinicasAtivas: ClinicaResponse[]
-  aoEditar: (dados: Parameters<typeof FormularioVeterinario>[0]['aoSalvar']) => void
+  aoEditar: (dados: CriarVeterinarioRequest) => void
   aoInativar: () => void
   aoReativar: () => void
 }) {

@@ -6,6 +6,7 @@ import { FormularioClinica } from './FormularioClinica'
 import { useClinicas } from './useClinicas'
 
 type ClinicaResponse = components['schemas']['ClinicaResponse']
+type CriarClinicaRequest = components['schemas']['CriarClinicaRequest']
 
 function LinhaClinica({
   clinica,
@@ -15,7 +16,7 @@ function LinhaClinica({
   aoDefinirPrazoPagamento,
 }: {
   clinica: ClinicaResponse
-  aoEditar: (dados: Parameters<typeof FormularioClinica>[0]['aoSalvar']) => void
+  aoEditar: (dados: CriarClinicaRequest) => void
   aoInativar: () => void
   aoReativar: () => void
   aoDefinirPrazoPagamento: (dias: number) => void
