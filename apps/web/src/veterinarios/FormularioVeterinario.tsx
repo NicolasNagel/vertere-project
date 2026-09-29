@@ -5,19 +5,26 @@ import type { components } from '../api/tipos.gerados'
 
 type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
 type ClinicaResponse = components['schemas']['ClinicaResponse']
+type VeterinarioResponse = components['schemas']['VeterinarioResponse']
 
 interface FormularioVeterinarioProps {
   clinicasAtivas: ClinicaResponse[]
+  /** Presente em modo edição: pré-preenche os campos e torna CRMV/clínica somente leitura. */
+  veterinario?: VeterinarioResponse
   aoSalvar: (dados: CriarVeterinarioRequest) => void
 }
 
-export function FormularioVeterinario({ clinicasAtivas, aoSalvar }: FormularioVeterinarioProps) {
+export function FormularioVeterinario({
+  clinicasAtivas,
+  veterinario,
+  aoSalvar,
+}: FormularioVeterinarioProps) {
   const idClinica = useId()
-  const [nome, setNome] = useState('')
-  const [crmv, setCrmv] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [email, setEmail] = useState('')
-  const [clinicaId, setClinicaId] = useState(clinicasAtivas[0]?.id ?? '')
+  const [nome, setNome] = useState(veterinario?.nome ?? '')
+  const [crmv, setCrmv] = useState(veterinario?.crmv ?? '')
+  const [telefone, setTelefone] = useState(veterinario?.telefone ?? '')
+  const [email, setEmail] = useState(veterinario?.email ?? '')
+  const [clinicaId, setClinicaId] = useState(veterinario?.clinica_id ?? clinicasAtivas[0]?.id ?? '')
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -28,7 +35,13 @@ export function FormularioVeterinario({ clinicasAtivas, aoSalvar }: FormularioVe
   return (
     <form onSubmit={aoSubmeter}>
       <CampoTexto rotulo="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
-      <CampoTexto rotulo="CRMV" required value={crmv} onChange={(e) => setCrmv(e.target.value)} />
+      <CampoTexto
+        rotulo="CRMV"
+        required
+        readOnly={Boolean(veterinario)}
+        value={crmv}
+        onChange={(e) => setCrmv(e.target.value)}
+      />
       <CampoTexto
         rotulo="Telefone"
         value={telefone}
@@ -44,6 +57,7 @@ export function FormularioVeterinario({ clinicasAtivas, aoSalvar }: FormularioVe
       <select
         id={idClinica}
         required
+        disabled={Boolean(veterinario)}
         value={clinicaId}
         onChange={(e) => setClinicaId(e.target.value)}
       >

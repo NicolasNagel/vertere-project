@@ -40,6 +40,9 @@ function mockarHookVeterinarios(
     definirFiltroClinicaId: vi.fn(),
     recarregar: vi.fn(),
     criar: vi.fn(),
+    editar: vi.fn(),
+    inativar: vi.fn(),
+    reativar: vi.fn(),
     ...overrides,
   })
 }
@@ -100,5 +103,44 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ erro: 'Informe o CRMV do veterinário.' })
     render(<TelaVeterinarios />)
     expect(screen.getByRole('alert')).toHaveTextContent('Informe o CRMV do veterinário.')
+  })
+
+  it('ação "Editar" por linha abre o formulário preenchido e salva com editar', async () => {
+    const editar = vi.fn()
+    mockarHookClinicas()
+    mockarHookVeterinarios({ veterinarios: [veterinarioA], editar })
+    render(<TelaVeterinarios />)
+
+    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    expect(screen.getByLabelText('Nome')).toHaveValue('Dr. João')
+
+    await userEvent.clear(screen.getByLabelText('Telefone'))
+    await userEvent.type(screen.getByLabelText('Telefone'), '999')
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+
+    expect(editar).toHaveBeenCalledWith(
+      '1',
+      expect.objectContaining({ nome: 'Dr. João', telefone: '999' }),
+    )
+  })
+
+  it('ação "Inativar" por linha chama inativar com o id do veterinário', async () => {
+    const inativar = vi.fn()
+    mockarHookClinicas()
+    mockarHookVeterinarios({ veterinarios: [veterinarioA], inativar })
+    render(<TelaVeterinarios />)
+
+    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    expect(inativar).toHaveBeenCalledWith('1')
+  })
+
+  it('ação "Reativar" por linha chama reativar com o id do veterinário', async () => {
+    const reativar = vi.fn()
+    mockarHookClinicas()
+    mockarHookVeterinarios({ veterinarios: [{ ...veterinarioA, ativo: false }], reativar })
+    render(<TelaVeterinarios />)
+
+    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    expect(reativar).toHaveBeenCalledWith('1')
   })
 })

@@ -255,15 +255,15 @@ na lista), reativá-lo (status volta).
       `editarVeterinario`, `inativarVeterinario`, `reativarVeterinario`, até T030 passar
 - [X] T033 [US4] Estender `apps/web/src/veterinarios/useVeterinarios.ts` implementando `editar`,
       `inativar`, `reativar`, até T031 passar
-- [ ] T034 [P] [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`: modo
+- [X] T034 [P] [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`: modo
       edição (prop `veterinario` preenchida) exibe os valores já preenchidos e torna CRMV e
       clínica somente leitura
-- [ ] T035 [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.tsx` para aceitar uma
+- [X] T035 [US4] Estender `apps/web/src/veterinarios/FormularioVeterinario.tsx` para aceitar uma
       prop `veterinario?: VeterinarioResponse` que pré-preenche os campos e bloqueia edição de
       CRMV/clínica quando presente, até T034 passar
-- [ ] T036 [P] [US4] Estender `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`: ações
+- [X] T036 [P] [US4] Estender `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`: ações
       "Editar"/"Inativar"/"Reativar" por linha
-- [ ] T037 [US4] Estender `apps/web/src/veterinarios/TelaVeterinarios.tsx` com as ações por linha,
+- [X] T037 [US4] Estender `apps/web/src/veterinarios/TelaVeterinarios.tsx` com as ações por linha,
       até T036 passar
 
 **Checkpoint**: todas as 4 user stories completas — módulos de Clínicas e Veterinários prontos.

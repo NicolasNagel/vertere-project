@@ -56,4 +56,28 @@ describe('FormularioVeterinario', () => {
 
     expect(aoSalvar).not.toHaveBeenCalled()
   })
+
+  it('modo edição pré-preenche os campos e torna CRMV e clínica somente leitura', () => {
+    const veterinario = {
+      id: '1',
+      nome: 'Dr. João',
+      crmv: '1234',
+      telefone: '4730000000',
+      email: 'joao@vet.com',
+      clinica_id: 'c1',
+      ativo: true,
+    }
+    render(
+      <FormularioVeterinario
+        clinicasAtivas={clinicas}
+        veterinario={veterinario}
+        aoSalvar={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Nome')).toHaveValue('Dr. João')
+    expect(screen.getByLabelText('CRMV')).toHaveValue('1234')
+    expect(screen.getByLabelText('CRMV')).toHaveAttribute('readonly')
+    expect(screen.getByLabelText('Clínica')).toBeDisabled()
+  })
 })
