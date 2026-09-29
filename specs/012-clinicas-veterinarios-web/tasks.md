@@ -54,7 +54,7 @@ considerada completa (rota real funcionando) sem isso
       `erro.message` como fallback. Esta função é a base para os dois módulos de domínio
       distinguirem os erros de `data-model.md` (inclusive os dois erros 422 diferentes de
       veterinários, que só se distinguem pelo texto do detalhe, não pelo status)
-- [ ] T003 Refatorar `apps/web/src/rotas.tsx` para suportar um componente real por rota: introduzir
+- [X] T003 Refatorar `apps/web/src/rotas.tsx` para suportar um componente real por rota: introduzir
       `componentePorRota: Partial<Record<string, ReactNode>>` consultado antes do fallback atual
       `<TelaEmConstrucao titulo={item.rotulo} />` no `.map(itensDeNavegacao)`; nenhuma rota usa o
       mapa ainda (fica vazio), então o comportamento observável não muda nesta task

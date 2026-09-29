@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router'
 import { TelaLogin } from './autenticacao/TelaLogin'
 import { itensDeNavegacao } from './shell/itensDeNavegacao'
@@ -7,6 +8,13 @@ import { TelaEmConstrucao } from './shell/TelaEmConstrucao'
 import type { Papel } from './tipos'
 
 const TODOS_OS_PAPEIS: Papel[] = ['admin', 'atendente', 'tecnico', 'clinica']
+
+/**
+ * Rotas com tela de conteúdo real (S12+) entram aqui. Toda rota de `itensDeNavegacao` que não
+ * aparecer neste mapa continua caindo no fallback `TelaEmConstrucao` — o placeholder não é
+ * removido item a item, é sobrescrito conforme cada seção ganha sua tela real.
+ */
+const componentePorRota: Partial<Record<string, ReactNode>> = {}
 
 export function criarRotas() {
   return createBrowserRouter([
@@ -30,7 +38,7 @@ export function criarRotas() {
           path: item.rota.replace(/^\//, ''),
           element: (
             <RotaProtegida papeisPermitidos={item.papeisPermitidos}>
-              <TelaEmConstrucao titulo={item.rotulo} />
+              {componentePorRota[item.rota] ?? <TelaEmConstrucao titulo={item.rotulo} />}
             </RotaProtegida>
           ),
         })),
