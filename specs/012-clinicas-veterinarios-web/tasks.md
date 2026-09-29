@@ -178,12 +178,12 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T021 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/veterinariosApi.ts` em
+- [X] T021 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/veterinariosApi.ts` em
       `apps/web/src/veterinarios/veterinariosApi.test.ts`, mockando `requisitar`:
       `listarVeterinarios(clinicaId?, apenasAtivos?)` chama `GET /veterinarios?clinica_id=...&apenas_ativos=...`;
       `buscarVeterinariosPorNome(nome, clinicaId?, apenasAtivos?)` chama `GET /veterinarios/busca?...`;
       `criarVeterinario(dados)` chama `POST /veterinarios`
-- [ ] T022 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/useVeterinarios.ts`
+- [X] T022 [P] [US3] Escrever testes falhos para `apps/web/src/veterinarios/useVeterinarios.ts`
       em `apps/web/src/veterinarios/useVeterinarios.test.ts`, mockando `veterinariosApi.ts`:
       carregamento inicial popula `veterinarios`; filtrar por `clinicaId` refaz a listagem
       filtrada; `criar` bem-sucedido adiciona à lista; `criar` com erro 422 cujo detalhe é
@@ -196,10 +196,10 @@ mensagem de erro específica ao tentar cadastrar com CRMV vazio.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implementar `apps/web/src/veterinarios/veterinariosApi.ts` com
+- [X] T023 [US3] Implementar `apps/web/src/veterinarios/veterinariosApi.ts` com
       `listarVeterinarios`, `buscarVeterinariosPorNome`, `criarVeterinario`, usando
       `VeterinarioResponse`/`CriarVeterinarioRequest` de `tipos.gerados.ts`, até T021 passar
-- [ ] T024 [US3] Implementar `apps/web/src/veterinarios/useVeterinarios.ts` (hook com
+- [X] T024 [US3] Implementar `apps/web/src/veterinarios/useVeterinarios.ts` (hook com
       `veterinarios`, `carregando`, `erro`, `filtroClinicaId`, `recarregar`, `criar`), usando
       `veterinariosApi.ts` e `extrairDetalheErro` para distinguir os dois erros 422 por substring
       do detalhe, até T022 passar
