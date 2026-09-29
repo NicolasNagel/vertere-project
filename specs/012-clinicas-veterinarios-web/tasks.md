@@ -75,13 +75,13 @@ específica sem duplicar o registro.
 
 ### Tests for User Story 1 ⚠️ (escrever e ver falhar antes de implementar)
 
-- [ ] T004 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/clinicasApi.ts` em
+- [X] T004 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/clinicasApi.ts` em
       `apps/web/src/clinicas/clinicasApi.test.ts`, mockando `requisitar` (`../api/clienteHttp`):
       `listarClinicas(apenasAtivas?)` chama `GET /clinicas?apenas_ativas=...`;
       `buscarClinicasPorNome(nome, apenasAtivas?)` chama `GET /clinicas/busca?nome=...`;
       `criarClinica(dados)` chama `POST /clinicas` com o body serializado e repassa `ErroHttp` sem
       capturá-lo (tradução de erro não é responsabilidade desta camada)
-- [ ] T005 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/usarClinicas.ts` em
+- [X] T005 [P] [US1] Escrever testes falhos para `apps/web/src/clinicas/usarClinicas.ts` em
       `apps/web/src/clinicas/usarClinicas.test.ts`, mockando `clinicasApi.ts`: carregamento inicial
       popula `clinicas`; `criar(dados)` bem-sucedido adiciona a clínica retornada ao estado local
       sem novo `GET`; `criar` com erro HTTP 422 cujo detalhe é sobre CNPJ resulta em
@@ -90,10 +90,10 @@ específica sem duplicar o registro.
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Implementar `apps/web/src/clinicas/clinicasApi.ts` com `listarClinicas`,
+- [X] T006 [US1] Implementar `apps/web/src/clinicas/clinicasApi.ts` com `listarClinicas`,
       `buscarClinicasPorNome`, `criarClinica`, usando `requisitar<T>` e os tipos `ClinicaResponse`/
       `CriarClinicaRequest` de `apps/web/src/api/tipos.gerados.ts`, até T004 passar
-- [ ] T007 [US1] Implementar `apps/web/src/clinicas/usarClinicas.ts` (hook com
+- [X] T007 [US1] Implementar `apps/web/src/clinicas/usarClinicas.ts` (hook com
       `clinicas`, `carregando`, `erro`, `recarregar`, `criar`), usando `clinicasApi.ts` e
       `extrairDetalheErro` (T002) para montar as mensagens da tabela de `data-model.md`, até T005
       passar
