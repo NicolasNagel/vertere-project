@@ -35,9 +35,9 @@ de preço/valor no backend, registrado mas não corrigido nesta spec).
 
 **Purpose**: Confirmar baseline antes de qualquer mudança
 
-- [ ] T001 Confirmar que `pnpm --dir apps/web test` e `pnpm --dir apps/web lint` passam limpos na
-      branch `013-exames-precificacao-web` antes de qualquer alteração (baseline herdado da S12) —
-      nenhum arquivo alterado nesta task, é um gate de partida
+- [X] T001 Confirmar que `pnpm --dir apps/web test` e `pnpm --dir apps/web lint` passam limpos na
+      branch `spec/s13-exames-precificacao-web` antes de qualquer alteração (baseline herdado da
+      S12) — nenhum arquivo alterado nesta task, é um gate de partida
 
 ---
 
