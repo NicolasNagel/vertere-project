@@ -34,7 +34,7 @@ Frontend puro, dentro de `apps/web/src/` (ver plan.md → Project Structure). Se
 
 **Purpose**: Confirmar baseline antes de qualquer mudança
 
-- [ ] T001 Confirmar que `pnpm --dir apps/web test` e `pnpm --dir apps/web lint` passam limpos na
+- [X] T001 Confirmar que `pnpm --dir apps/web test` e `pnpm --dir apps/web lint` passam limpos na
       branch `spec/s12-clinicas-veterinarios-web` antes de qualquer alteração (baseline herdado da
       S11) — nenhum arquivo alterado nesta task, é um gate de partida
 
