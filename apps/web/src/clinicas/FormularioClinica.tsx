@@ -4,17 +4,20 @@ import { CampoTexto } from '../ui/CampoTexto'
 import type { components } from '../api/tipos.gerados'
 
 type CriarClinicaRequest = components['schemas']['CriarClinicaRequest']
+type ClinicaResponse = components['schemas']['ClinicaResponse']
 
 interface FormularioClinicaProps {
+  /** Presente em modo edição: pré-preenche os campos e torna o CNPJ somente leitura. */
+  clinica?: ClinicaResponse
   aoSalvar: (dados: CriarClinicaRequest) => void
 }
 
-export function FormularioClinica({ aoSalvar }: FormularioClinicaProps) {
-  const [nome, setNome] = useState('')
-  const [cnpj, setCnpj] = useState('')
-  const [endereco, setEndereco] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [email, setEmail] = useState('')
+export function FormularioClinica({ clinica, aoSalvar }: FormularioClinicaProps) {
+  const [nome, setNome] = useState(clinica?.nome ?? '')
+  const [cnpj, setCnpj] = useState(clinica?.cnpj ?? '')
+  const [endereco, setEndereco] = useState(clinica?.endereco ?? '')
+  const [telefone, setTelefone] = useState(clinica?.telefone ?? '')
+  const [email, setEmail] = useState(clinica?.email ?? '')
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -27,6 +30,7 @@ export function FormularioClinica({ aoSalvar }: FormularioClinicaProps) {
       <CampoTexto
         rotulo="CNPJ"
         required
+        readOnly={Boolean(clinica)}
         value={cnpj}
         onChange={(e) => setCnpj(e.target.value)}
       />

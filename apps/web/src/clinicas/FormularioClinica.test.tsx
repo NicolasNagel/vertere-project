@@ -32,4 +32,22 @@ describe('FormularioClinica', () => {
 
     expect(aoSalvar).not.toHaveBeenCalled()
   })
+
+  it('modo edição pré-preenche os campos e torna o CNPJ somente leitura', () => {
+    const clinica = {
+      id: '1',
+      nome: 'Clínica A',
+      cnpj: '12345678000199',
+      endereco: 'Rua X',
+      telefone: '4730000000',
+      email: 'a@clinica.com',
+      ativo: true,
+      prazo_pagamento_dias: 30,
+    }
+    render(<FormularioClinica clinica={clinica} aoSalvar={vi.fn()} />)
+
+    expect(screen.getByLabelText('Nome')).toHaveValue('Clínica A')
+    expect(screen.getByLabelText('CNPJ')).toHaveValue('12345678000199')
+    expect(screen.getByLabelText('CNPJ')).toHaveAttribute('readonly')
+  })
 })

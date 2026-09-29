@@ -151,16 +151,16 @@ lista), reativá-la (status volta), e alterar o prazo de pagamento.
 - [X] T016 [US2] Estender `apps/web/src/clinicas/useClinicas.ts` implementando `editar`,
       `inativar`, `reativar`, `definirPrazoPagamento` (atualização local do item na lista), até
       T014 passar
-- [ ] T017 [P] [US2] Estender `apps/web/src/clinicas/FormularioClinica.test.tsx`: modo edição
+- [X] T017 [P] [US2] Estender `apps/web/src/clinicas/FormularioClinica.test.tsx`: modo edição
       (prop `clinica` preenchida) exibe os valores já preenchidos e o campo CNPJ como somente
       leitura
-- [ ] T018 [US2] Estender `apps/web/src/clinicas/FormularioClinica.tsx` para aceitar uma prop
+- [X] T018 [US2] Estender `apps/web/src/clinicas/FormularioClinica.tsx` para aceitar uma prop
       `clinica?: ClinicaResponse` que pré-preenche os campos e torna o CNPJ não editável quando
       presente, até T017 passar
-- [ ] T019 [P] [US2] Estender `apps/web/src/clinicas/TelaClinicas.test.tsx`: ação "Editar" por
+- [X] T019 [P] [US2] Estender `apps/web/src/clinicas/TelaClinicas.test.tsx`: ação "Editar" por
       linha abre o formulário preenchido; ações "Inativar"/"Reativar" por linha mudam o status
       exibido; campo de prazo de pagamento por linha salva o novo valor
-- [ ] T020 [US2] Estender `apps/web/src/clinicas/TelaClinicas.tsx` com as ações por linha
+- [X] T020 [US2] Estender `apps/web/src/clinicas/TelaClinicas.tsx` com as ações por linha
       (editar, inativar, reativar, definir prazo de pagamento), até T019 passar
 
 **Checkpoint**: US1 + US2 completas — módulo de Clínicas pronto de ponta a ponta.

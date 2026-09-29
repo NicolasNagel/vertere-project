@@ -24,6 +24,10 @@ function mockarHook(overrides: Partial<ReturnType<typeof useClinicasModulo.useCl
     erro: null,
     recarregar: vi.fn(),
     criar: vi.fn(),
+    editar: vi.fn(),
+    inativar: vi.fn(),
+    reativar: vi.fn(),
+    definirPrazoPagamento: vi.fn(),
     ...overrides,
   })
 }
@@ -57,5 +61,54 @@ describe('TelaClinicas', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Já existe uma clínica cadastrada com esse CNPJ.',
     )
+  })
+
+  it('ação "Editar" por linha abre o formulário preenchido e salva com editar', async () => {
+    const editar = vi.fn()
+    mockarHook({ clinicas: [clinicaA], editar })
+    render(<TelaClinicas />)
+
+    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    expect(screen.getByLabelText('Nome')).toHaveValue('Clínica A')
+
+    await userEvent.clear(screen.getByLabelText('Telefone'))
+    await userEvent.type(screen.getByLabelText('Telefone'), '999')
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+
+    expect(editar).toHaveBeenCalledWith(
+      '1',
+      expect.objectContaining({ nome: 'Clínica A', telefone: '999' }),
+    )
+  })
+
+  it('ação "Inativar" por linha chama inativar com o id da clínica', async () => {
+    const inativar = vi.fn()
+    mockarHook({ clinicas: [clinicaA], inativar })
+    render(<TelaClinicas />)
+
+    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    expect(inativar).toHaveBeenCalledWith('1')
+  })
+
+  it('ação "Reativar" por linha chama reativar com o id da clínica', async () => {
+    const reativar = vi.fn()
+    mockarHook({ clinicas: [{ ...clinicaA, ativo: false }], reativar })
+    render(<TelaClinicas />)
+
+    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    expect(reativar).toHaveBeenCalledWith('1')
+  })
+
+  it('campo de prazo de pagamento por linha salva o novo valor', async () => {
+    const definirPrazoPagamento = vi.fn()
+    mockarHook({ clinicas: [clinicaA], definirPrazoPagamento })
+    render(<TelaClinicas />)
+
+    const campoPrazo = screen.getByLabelText(/prazo de pagamento/i)
+    await userEvent.clear(campoPrazo)
+    await userEvent.type(campoPrazo, '45')
+    await userEvent.click(screen.getByRole('button', { name: /salvar prazo/i }))
+
+    expect(definirPrazoPagamento).toHaveBeenCalledWith('1', 45)
   })
 })
