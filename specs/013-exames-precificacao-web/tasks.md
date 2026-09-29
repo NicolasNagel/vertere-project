@@ -81,12 +81,12 @@ lista aparece sem nenhum botão de cadastro.
 
 ### Tests for User Story 1 ⚠️ (escrever e ver falhar antes de implementar)
 
-- [ ] T004 [P] [US1] Escrever testes falhos para `apps/web/src/exames/examesApi.ts` em
+- [X] T004 [P] [US1] Escrever testes falhos para `apps/web/src/exames/examesApi.ts` em
       `apps/web/src/exames/examesApi.test.ts`, mockando `requisitar` (`../api/clienteHttp`):
       `listarExames(categoria?, apenasAtivos?)` chama `GET /exames?categoria=...&apenas_ativos=...`
       (omitindo `categoria` da query quando `undefined`); `criarExame(dados)` chama `POST /exames`
       com o body serializado (`categoria`, `nome`, `preco_base`) e repassa `ErroHttp` sem capturá-lo
-- [ ] T005 [P] [US1] Escrever testes falhos para `apps/web/src/exames/useExames.ts` em
+- [X] T005 [P] [US1] Escrever testes falhos para `apps/web/src/exames/useExames.ts` em
       `apps/web/src/exames/useExames.test.ts`, mockando `examesApi.ts` e usando `useColecaoCrud`
       (T002/T003): carregamento inicial popula `exames`; filtrar por `categoria`/`apenasAtivos`
       refaz a listagem filtrada; `criar(dados)` bem-sucedido adiciona o exame retornado à lista sem
@@ -97,10 +97,10 @@ lista aparece sem nenhum botão de cadastro.
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Implementar `apps/web/src/exames/examesApi.ts` com `listarExames`, `criarExame`,
+- [X] T006 [US1] Implementar `apps/web/src/exames/examesApi.ts` com `listarExames`, `criarExame`,
       usando `requisitar<T>` e os tipos `ExameResponse`/`CriarExameRequest` de
       `apps/web/src/api/tipos.gerados.ts`, até T004 passar
-- [ ] T007 [US1] Implementar `apps/web/src/exames/useExames.ts` (hook com `exames`, `carregando`,
+- [X] T007 [US1] Implementar `apps/web/src/exames/useExames.ts` (hook com `exames`, `carregando`,
       `erro`, `categoria`, `definirCategoria`, `apenasAtivos`, `definirApenasAtivos`, `recarregar`,
       `criar`), construído sobre `useColecaoCrud` (T003) e `examesApi.ts`, com
       `mensagemDeErro(erro)` que mapeia 404 para
