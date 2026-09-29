@@ -106,7 +106,7 @@ lista aparece sem nenhum botão de cadastro.
       `mensagemDeErro(erro)` que mapeia 404 para
       `"Exame não encontrado — pode ter sido removido por outra sessão."` e usa
       `extrairDetalheErro` como fallback para os demais status, até T005 passar
-- [ ] T008 [P] [US1] Escrever testes falhos para `apps/web/src/exames/FormularioExame.tsx` em
+- [X] T008 [P] [US1] Escrever testes falhos para `apps/web/src/exames/FormularioExame.tsx` em
       `apps/web/src/exames/FormularioExame.test.tsx`: submissão com categoria, nome e preço-base
       válidos chama `aoSalvar` com os valores digitados; submissão com `categoria` ou `nome` vazio
       é bloqueada pelo próprio formulário (validação HTML nativa `required`, sem chamada a
@@ -114,7 +114,7 @@ lista aparece sem nenhum botão de cadastro.
       (`min="0.01"` ou validação equivalente), com mensagem de erro visível, sem chamar `aoSalvar`
       — **esta é a única camada que rejeita preço não positivo nesta spec** (o backend S5 não valida
       isso, ver `spec.md` → Descobertas)
-- [ ] T009 [US1] Implementar `apps/web/src/exames/FormularioExame.tsx` (campos categoria, nome,
+- [X] T009 [US1] Implementar `apps/web/src/exames/FormularioExame.tsx` (campos categoria, nome,
       preço-base, reaproveitando `CampoTexto`/`Botao` de `apps/web/src/ui/`, com validação de
       preço-base positivo antes de chamar `aoSalvar`), até T008 passar
 - [ ] T010 [P] [US1] Escrever testes falhos para `apps/web/src/exames/TelaExames.tsx` em
