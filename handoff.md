@@ -9,11 +9,13 @@
 
 **Última atualização**: 2026-09-29, por sessão Claude Code (Sonnet 5).
 
-## S12 (Clínicas + Veterinários no web) — `/fechar-spec` aprovado, `/code-review` corrigido, pronta para PR
+## S12 (Clínicas + Veterinários no web) — mergeada em `main`
 
-Branch `spec/s12-clinicas-veterinarios-web` (ainda não mergeada, não há PR aberto). Issue-ponteiro:
-[#27](https://github.com/NicolasNagel/vertere-project/issues/27). `docs/specs.md` já mostra
-`S12 → entregue`.
+PR [#28](https://github.com/NicolasNagel/vertere-project/pull/28) squash-mergeado em `main`
+(2026-09-29), issue-ponteiro [#27](https://github.com/NicolasNagel/vertere-project/issues/27)
+fechada automaticamente. `docs/specs.md` mostra `S12 → entregue`. Branch remota
+`spec/s12-clinicas-veterinarios-web` não foi deletada (`--delete-branch=false`, mesmo padrão de
+S10/S11) — segura deletar quando quiser.
 
 **Sequência real desta sessão, na ordem**: implementação (41 tasks) → `/fechar-spec` (veredito
 ✅ APROVADA, relatório em `docs/specs/relatorios/S12-verificacao.md`) → `/code-review` (achou 3
@@ -67,17 +69,20 @@ implementadora tinha deixado pendente (sem Postgres/backend disponível na hora 
 
 ## Próximo passo real
 
-`/code-review` já rodou e os achados bloqueantes já foram corrigidos nesta branch. Falta: PR para
-`main` com `Closes #27`, linkando o relatório de `/fechar-spec` e o resultado do `/code-review`.
+A próxima spec (S13) é a próxima seção de conteúdo real do frontend — qual seção vem depois
+(Pacientes? Atendimentos? Exames?) é decisão do usuário, não presumir (mesma regra aplicada antes
+de decidir a S12). Ponto de entrada: `/speckit-specify`, numeração `013` (confirmar contra
+`docs/specs.md` antes). Nenhuma decisão de escopo para S13 foi tomada nesta sessão.
 
-## `main` está com tudo mergeado até S11 (histórico, não muda com a S12 ainda em branch)
+## `main` está com tudo mergeado até S12
 
-PRs #23 (harness), #26 (S11) e #25 (S10) todos squash-mergeados em `main`, nesta ordem. Issues #20,
-#22, #24 fecharam automaticamente. `docs/specs.md` reflete S1–S12 `entregue`.
+PRs #23 (harness), #26 (S11), #25 (S10) e #28 (S12) todos squash-mergeados em `main`, nesta ordem.
+Issues #20, #22, #24, #27 fecharam automaticamente. `docs/specs.md` reflete S1–S12 `entregue`.
 
-Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos` e
-`spec/s11-frontend-web` continuam não deletadas (irrelevante para a S12, mas ainda vale saber que
-existem antes de rodar qualquer limpeza de branches).
+Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos`,
+`spec/s11-frontend-web` e `spec/s12-clinicas-veterinarios-web` continuam não deletadas (mesmo
+padrão de merge, `--delete-branch=false`) — seguro deletar quando quiser, ninguém mais devia
+precisar delas.
 
 ## Spec Kit — em vigor, segunda spec real (S12) confirmou o processo de novo
 
