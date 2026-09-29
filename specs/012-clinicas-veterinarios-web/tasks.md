@@ -134,11 +134,11 @@ lista), reativá-la (status volta), e alterar o prazo de pagamento.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T013 [P] [US2] Estender `apps/web/src/clinicas/clinicasApi.test.ts` com testes falhos para
+- [X] T013 [P] [US2] Estender `apps/web/src/clinicas/clinicasApi.test.ts` com testes falhos para
       `editarClinica(id, dados)` (`PATCH /clinicas/{id}`), `inativarClinica(id)`
       (`POST /clinicas/{id}/inativar`), `reativarClinica(id)` (`POST /clinicas/{id}/reativar`),
       `definirPrazoPagamento(id, dias)` (`POST /clinicas/{id}/prazo-pagamento`)
-- [ ] T014 [P] [US2] Estender `apps/web/src/clinicas/useClinicas.test.ts` com testes falhos para
+- [X] T014 [P] [US2] Estender `apps/web/src/clinicas/useClinicas.test.ts` com testes falhos para
       `editar`, `inativar`, `reativar`, `definirPrazoPagamento`: cada um atualiza a clínica
       correspondente no estado local em vez de refazer o `GET` completo; erro HTTP 404 em
       qualquer uma dessas ações resulta em
@@ -146,9 +146,9 @@ lista), reativá-la (status volta), e alterar o prazo de pagamento.
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Estender `apps/web/src/clinicas/clinicasApi.ts` implementando `editarClinica`,
+- [X] T015 [US2] Estender `apps/web/src/clinicas/clinicasApi.ts` implementando `editarClinica`,
       `inativarClinica`, `reativarClinica`, `definirPrazoPagamento`, até T013 passar
-- [ ] T016 [US2] Estender `apps/web/src/clinicas/useClinicas.ts` implementando `editar`,
+- [X] T016 [US2] Estender `apps/web/src/clinicas/useClinicas.ts` implementando `editar`,
       `inativar`, `reativar`, `definirPrazoPagamento` (atualização local do item na lista), até
       T014 passar
 - [ ] T017 [P] [US2] Estender `apps/web/src/clinicas/FormularioClinica.test.tsx`: modo edição

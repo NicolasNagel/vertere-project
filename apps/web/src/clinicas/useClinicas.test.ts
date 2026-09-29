@@ -96,4 +96,87 @@ describe('useClinicas', () => {
 
     expect(result.current.erro).toBe('Já existe uma clínica cadastrada com esse CNPJ.')
   })
+
+  it('editar atualiza a clínica correspondente no estado local', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    const editada = { ...clinicaA, telefone: '999' }
+    vi.mocked(clinicasApi.editarClinica).mockResolvedValueOnce(editada)
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.editar('1', {
+        nome: clinicaA.nome,
+        endereco: clinicaA.endereco,
+        telefone: '999',
+        email: clinicaA.email,
+      })
+    })
+
+    expect(result.current.clinicas).toEqual([editada])
+    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(1)
+  })
+
+  it('inativar atualiza o status da clínica no estado local', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    const inativada = { ...clinicaA, ativo: false }
+    vi.mocked(clinicasApi.inativarClinica).mockResolvedValueOnce(inativada)
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.clinicas).toEqual([inativada])
+  })
+
+  it('reativar atualiza o status da clínica no estado local', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([{ ...clinicaA, ativo: false }])
+    vi.mocked(clinicasApi.reativarClinica).mockResolvedValueOnce(clinicaA)
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.reativar('1')
+    })
+
+    expect(result.current.clinicas).toEqual([clinicaA])
+  })
+
+  it('definirPrazoPagamento atualiza o prazo da clínica no estado local', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    const comNovoPrazo = { ...clinicaA, prazo_pagamento_dias: 45 }
+    vi.mocked(clinicasApi.definirPrazoPagamento).mockResolvedValueOnce(comNovoPrazo)
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.definirPrazoPagamento('1', 45)
+    })
+
+    expect(result.current.clinicas).toEqual([comNovoPrazo])
+  })
+
+  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.inativarClinica).mockRejectedValueOnce(
+      new ErroHttp(404, '{"detail":"Clínica 1 não encontrada"}'),
+    )
+
+    const { result } = renderHook(() => useClinicas())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe(
+      'Clínica não encontrada — pode ter sido removida por outra sessão.',
+    )
+  })
 })
