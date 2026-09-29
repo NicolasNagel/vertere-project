@@ -282,7 +282,7 @@ na lista), reativá-lo (status volta).
       passar)
 - [X] T040 Executar manualmente os 5 cenários de `specs/012-clinicas-veterinarios-web/quickstart.md`
       contra o backend e o frontend rodando localmente, registrando qualquer divergência encontrada
-- [ ] T041 Atualizar `handoff.md` relatando a S12 implementada e pronta para `/fechar-spec`
+- [X] T041 Atualizar `handoff.md` relatando a S12 implementada e pronta para `/fechar-spec`
 
 ---
 

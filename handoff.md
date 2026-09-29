@@ -7,58 +7,65 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-09-28, por sessão Claude Code (Sonnet 5).
+**Última atualização**: 2026-09-29, por sessão Claude Code (Sonnet 5).
 
-## `main` está com tudo mergeado — S1 a S11 entregues
+## S12 (Clínicas + Veterinários no web) implementada, pronta para `/fechar-spec`
 
-PRs #23 (harness), #26 (S11) e #25 (S10) todos squash-mergeados em `main`, nesta ordem. Issues #20,
-#22, #24 fecharam automaticamente. `docs/specs.md` reflete o estado final: S1–S11 `entregue`.
+Branch `spec/s12-clinicas-veterinarios-web` (ainda não mergeada, não há PR aberto). Todas as 41
+tasks de `specs/012-clinicas-veterinarios-web/tasks.md` estão `[X]`, cada uma em commit próprio,
+teste-primeiro (Princípio IV da constituição). Issue-ponteiro: [#27](https://github.com/NicolasNagel/vertere-project/issues/27).
+`docs/specs.md` ainda mostra `S12 → em-desenvolvimento` — só `/fechar-spec` muda isso para
+`entregue` (ou mantém bloqueado com pendência).
 
-**Nota técnica para quem for mexer com branches empilhadas de novo**: #26 (S11) tinha sido aberto
-contra `chore/spec-kit-harness` (não `main`), porque a branch da S11 partiu dali. Depois do squash-
-merge de #23, retargetar #26 para `main` deu conflito (`git rebase origin/main` direto também deu
-conflito "add/add", porque replaying commits já squashados em `main` confunde o git) — resolvido com
-`git rebase --onto origin/main chore/spec-kit-harness spec/s11-frontend-web` (só replay dos commits
-exclusivos da S11, não os do harness) + `push --force-with-lease`. Para #25 (S10, que não tinha essa
-relação de stack), um `git merge origin/main` simples resolveu o único conflito real
-(`docs/specs.md`, ambas as branches editando a mesma tabela) antes do squash-merge funcionar.
+**O que existe agora**: `apps/web/src/clinicas/` e `apps/web/src/veterinarios/` — cada um com
+`*Api.ts` (wrapper HTTP tipado), `use*.ts` (hook de estado, a seam de teste principal), `Tela*.tsx`
+(lista + ações por linha) e `Formulario*.tsx` (criar/editar), todos com teste próprio. Rotas
+`/clinicas` e `/veterinarios` ligadas de verdade (`itensDeNavegacao.ts` com `implementado: true`
+para essas duas seções, `rotas.tsx` com o novo mapa `componentePorRota`). Suíte: 83 testes verdes,
+`pnpm build` (type-check + bundle) limpo.
 
-Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos` e
-`spec/s11-frontend-web` **não foram deletadas** (merge feito com `--delete-branch=false`) — seguro
-deletar quando quiser, ninguém mais devia precisar delas.
+**Duas decisões de nomenclatura/design que a próxima sessão precisa saber antes de tocar nesses
+módulos ou replicar o padrão em S13+**:
+1. Hooks de domínio usam prefixo `use` (`useClinicas`, `useVeterinarios`), não `usar` — a spec
+   original (`tasks.md`/`plan.md`) tinha sido escrita com `usarClinicas` antes da implementação;
+   `oxlint` (`react-hooks/rules-of-hooks`) rejeita hook sem prefixo `use` em inglês, e o próprio
+   S11 já usava `useSessao`. Todos os documentos da spec foram corrigidos para `use*` durante a
+   implementação — ao seguir esse padrão em specs futuras, já nomear como `use*` desde o plan.md.
+2. `rotas.tsx` ganhou `componentePorRota: Partial<Record<string, ReactNode>>` (Foundational da
+   S12, tasks T002/T003) — toda seção nova (S13+: Pacientes, Exames, Atendimentos, ...) só precisa
+   adicionar sua entrada nesse mapa + marcar `implementado: true` no item de
+   `itensDeNavegacao.ts` correspondente. Não recriar esse mecanismo.
 
-## Backend (S1–S10) e frontend (S11) completos, prontos para a próxima spec
-
-- Backend: todos os módulos do MVP (auth, clínicas, veterinários, pacientes, exames, atendimentos,
-  laudos, financeiro, portal, importação histórica).
-- Frontend (`apps/web`): login + shell autenticado com navegação por papel. **Todas as seções de
-  conteúdo são `TelaEmConstrucao`** — nenhuma tela real ainda (Pacientes, Atendimentos, etc.).
-
-**Duas correções de design da S11 encontradas durante a implementação** (ler antes de tocar em
-`itensDeNavegacao.ts` ou `SessaoContext.tsx`):
-1. `clinica` não espelha `auth/service.py::_PERMISSOES` literalmente — navega `/portal/*` (S9), com
-   `ItemDeNavegacao` distintos dos itens de staff mesmo com rótulo igual.
-2. Sessão é `SessaoContext` (Context compartilhado), não hook com `useState` local — necessário para
-   o handler global de sessão expirada notificar toda a árvore.
-
-**Limitação real, não bloqueante**: nenhuma tela ainda faz fetch próprio, então "sessão expirada
-durante navegação" só é testável forçando a chamada manualmente. Resolve quando a primeira tela de
-conteúdo real (S12+) existir.
-
-**Bug de infra corrigido durante verificação manual**: `apps/api` não tinha CORS — corrigido em
-`fix(s11)`, já em `main`.
-
-## Spec Kit — em vigor, primeira spec real (S11) já validou o processo
-
-A partir de S11, `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` é o
-fluxo padrão (`specs/0NN-slug/`), `/fechar-spec`/`/code-review` continuam iguais. Numeração manual
-(011, não 001) funcionou na prática. Detalhes: `CLAUDE.md` → "Fluxo de trabalho (SDD)".
+**Pendência real antes do PR — T040 do tasks.md não foi executada de ponta a ponta**: os 5
+cenários de `specs/012-clinicas-veterinarios-web/quickstart.md` exigem Postgres + backend rodando
+com um usuário `admin` já cadastrado; esta sessão não tinha esse ambiente disponível. O que foi
+validado automaticamente (suíte completa + `pnpm build`) cobre a lógica, mas não a experiência
+visual real no navegador. **Antes do PR**, alguém com o ambiente completo de pé precisa rodar o
+quickstart manualmente (ou isso vira achado do `/fechar-spec`/`/code-review`).
 
 ## Próximo passo real
 
-A próxima spec (S12) é a primeira tela de conteúdo real do frontend — qual seção vem primeiro
-(Pacientes? Atendimentos?) é decisão do usuário, não presumir. Ponto de entrada: `/speckit-specify`,
-numeração `012` (confirmar contra `docs/specs.md` antes, o Spec Kit sozinho não sabe da sequência).
+1. `/fechar-spec S12` (dispara `verificador-de-spec` numa sessão independente).
+2. Corrigir o que for apontado na mesma branch.
+3. `/code-review` (Standards + Spec) antes do PR.
+4. PR para `main` com `Closes #27`.
+
+## `main` está com tudo mergeado até S11 (histórico, não muda com a S12 ainda em branch)
+
+PRs #23 (harness), #26 (S11) e #25 (S10) todos squash-mergeados em `main`, nesta ordem. Issues #20,
+#22, #24 fecharam automaticamente. `docs/specs.md` reflete S1–S11 `entregue`, S12
+`em-desenvolvimento`.
+
+Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos` e
+`spec/s11-frontend-web` continuam não deletadas (irrelevante para a S12, mas ainda vale saber que
+existem antes de rodar qualquer limpeza de branches).
+
+## Spec Kit — em vigor, segunda spec real (S12) confirmou o processo de novo
+
+`/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` seguiu sem
+surpresas de harness nesta spec (diferente da S11, que teve o problema de branch empilhada). Cada
+task = 1 commit, convenção `feat(s12): T0NN ...` / `fix(s12): T0NN ...`. Detalhes do fluxo:
+`CLAUDE.md` → "Fluxo de trabalho (SDD)".
 
 ## Convenções que uma sessão nova precisa saber antes de mexer em qualquer spec
 
