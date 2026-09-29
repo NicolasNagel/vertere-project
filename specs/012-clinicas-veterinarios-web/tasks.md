@@ -47,7 +47,7 @@ considerada completa (rota real funcionando) sem isso
 
 **⚠️ CRITICAL**: T002 e T003 bloqueiam a etapa final ("wire route") de toda user story
 
-- [ ] T002 [P] Criar `apps/web/src/api/erroApi.ts` exportando `extrairDetalheErro(erro: ErroHttp): string`
+- [X] T002 [P] Criar `apps/web/src/api/erroApi.ts` exportando `extrairDetalheErro(erro: ErroHttp): string`
       — faz `JSON.parse` do corpo de erro que `requisitar` (`clienteHttp.ts`) captura via
       `resposta.text()` (FastAPI retorna `{"detail": "<mensagem>"}` em toda `HTTPException`),
       devolvendo o campo `detail`; se o corpo não for JSON válido ou não tiver `detail`, devolve
