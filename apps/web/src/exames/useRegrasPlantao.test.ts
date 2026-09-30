@@ -21,6 +21,76 @@ describe('useRegrasPlantao', () => {
     vi.mocked(regrasPlantaoApi.criarRegraPlantao).mockReset()
   })
 
+  it('editar atualiza a regra correspondente no estado local', async () => {
+    vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockResolvedValueOnce([regraA])
+    const editada = { ...regraA, valor_adicional: '80.00' }
+    vi.mocked(regrasPlantaoApi.editarRegraPlantao).mockResolvedValueOnce(editada)
+
+    const { result } = renderHook(() => useRegrasPlantao())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.editar('1', {
+        dia_semana: regraA.dia_semana,
+        hora_inicio: regraA.hora_inicio,
+        hora_fim: regraA.hora_fim,
+        valor_adicional: '80.00',
+      })
+    })
+
+    expect(result.current.regras).toEqual([editada])
+    expect(regrasPlantaoApi.listarRegrasPlantao).toHaveBeenCalledTimes(1)
+  })
+
+  it('inativar atualiza o status da regra no estado local', async () => {
+    vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockResolvedValueOnce([regraA])
+    const inativada = { ...regraA, ativo: false }
+    vi.mocked(regrasPlantaoApi.inativarRegraPlantao).mockResolvedValueOnce(inativada)
+
+    const { result } = renderHook(() => useRegrasPlantao())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.regras).toEqual([inativada])
+  })
+
+  it('reativar atualiza o status da regra no estado local', async () => {
+    vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockResolvedValueOnce([
+      { ...regraA, ativo: false },
+    ])
+    vi.mocked(regrasPlantaoApi.reativarRegraPlantao).mockResolvedValueOnce(regraA)
+
+    const { result } = renderHook(() => useRegrasPlantao())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.reativar('1')
+    })
+
+    expect(result.current.regras).toEqual([regraA])
+  })
+
+  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+    vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockResolvedValueOnce([regraA])
+    vi.mocked(regrasPlantaoApi.inativarRegraPlantao).mockRejectedValueOnce(
+      new ErroHttp(404, '{"detail":"Regra de plantão 1 não encontrada"}'),
+    )
+
+    const { result } = renderHook(() => useRegrasPlantao())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe(
+      'Regra de plantão não encontrada — pode ter sido removida por outra sessão.',
+    )
+  })
+
   it('carrega a lista de regras de plantão ao montar', async () => {
     vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockResolvedValueOnce([regraA])
 
