@@ -147,10 +147,10 @@ muda na lista), e reativá-lo (status volta).
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T013 [P] [US2] Estender `apps/web/src/exames/examesApi.test.ts` com testes falhos para
+- [X] T013 [P] [US2] Estender `apps/web/src/exames/examesApi.test.ts` com testes falhos para
       `editarExame(id, dados)` (`PATCH /exames/{id}`), `inativarExame(id)`
       (`POST /exames/{id}/inativar`), `reativarExame(id)` (`POST /exames/{id}/reativar`)
-- [ ] T014 [P] [US2] Estender `apps/web/src/exames/useExames.test.ts` com testes falhos para
+- [X] T014 [P] [US2] Estender `apps/web/src/exames/useExames.test.ts` com testes falhos para
       `editar`, `inativar`, `reativar`: cada um atualiza o exame correspondente no estado local
       (via `useColecaoCrud.executarAcaoSobreItem`) em vez de refazer o `GET` completo; erro HTTP
       404 em qualquer uma dessas ações resulta em
@@ -158,9 +158,9 @@ muda na lista), e reativá-lo (status volta).
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Estender `apps/web/src/exames/examesApi.ts` implementando `editarExame`,
+- [X] T015 [US2] Estender `apps/web/src/exames/examesApi.ts` implementando `editarExame`,
       `inativarExame`, `reativarExame`, até T013 passar
-- [ ] T016 [US2] Estender `apps/web/src/exames/useExames.ts` implementando `editar`, `inativar`,
+- [X] T016 [US2] Estender `apps/web/src/exames/useExames.ts` implementando `editar`, `inativar`,
       `reativar` sobre `useColecaoCrud.executarAcaoSobreItem`, até T014 passar
 - [ ] T017 [P] [US2] Estender `apps/web/src/exames/FormularioExame.test.tsx`: modo edição (prop
       `exame` preenchida) exibe os valores já preenchidos, mantendo a mesma validação de

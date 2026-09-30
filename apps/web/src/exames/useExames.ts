@@ -3,10 +3,11 @@ import { extrairDetalheErro } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
-import { criarExame, listarExames } from './examesApi'
+import { criarExame, editarExame, inativarExame, listarExames, reativarExame } from './examesApi'
 
 type ExameResponse = components['schemas']['ExameResponse']
 type CriarExameRequest = components['schemas']['CriarExameRequest']
+type EditarExameRequest = components['schemas']['EditarExameRequest']
 
 /** Mensagens de erro da UI para Exames — ver data-model.md → "Achado de verificação do backend". */
 function mensagemDeErro(erro: ErroHttp): string {
@@ -22,7 +23,10 @@ export function useExames() {
 
   const carregarLista = useCallback(() => listarExames(categoria, apenasAtivos), [categoria, apenasAtivos])
 
-  const { itens, carregando, erro, recarregar, criar } = useColecaoCrud(carregarLista, mensagemDeErro)
+  const { itens, carregando, erro, recarregar, criar, executarAcaoSobreItem } = useColecaoCrud(
+    carregarLista,
+    mensagemDeErro,
+  )
 
   const definirCategoria = useCallback((valor: string | undefined) => setCategoria(valor), [])
   const definirApenasAtivos = useCallback((valor: boolean) => setApenasAtivos(valor), [])
@@ -30,6 +34,22 @@ export function useExames() {
   const criarComDados = useCallback(
     (dados: CriarExameRequest) => criar(() => criarExame(dados)),
     [criar],
+  )
+
+  const editar = useCallback(
+    (id: string, dados: EditarExameRequest) =>
+      executarAcaoSobreItem(() => editarExame(id, dados)),
+    [executarAcaoSobreItem],
+  )
+
+  const inativar = useCallback(
+    (id: string) => executarAcaoSobreItem(() => inativarExame(id)),
+    [executarAcaoSobreItem],
+  )
+
+  const reativar = useCallback(
+    (id: string) => executarAcaoSobreItem(() => reativarExame(id)),
+    [executarAcaoSobreItem],
   )
 
   return {
@@ -42,5 +62,8 @@ export function useExames() {
     definirApenasAtivos,
     recarregar,
     criar: criarComDados,
+    editar,
+    inativar,
+    reativar,
   }
 }
