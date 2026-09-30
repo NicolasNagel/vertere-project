@@ -1,11 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as SessaoContextModulo from '../autenticacao/SessaoContext'
 import * as useExamesModulo from './useExames'
+import * as useRegrasPlantaoModulo from './useRegrasPlantao'
 import { TelaExames } from './TelaExames'
 
 vi.mock('./useExames')
+vi.mock('./useRegrasPlantao')
 vi.mock('../autenticacao/SessaoContext')
 
 const exameA = {
@@ -34,6 +36,33 @@ function mockarUseExames(overrides: Partial<ReturnType<typeof useExamesModulo.us
   })
 }
 
+const regraA = {
+  id: '1',
+  dia_semana: 4,
+  hora_inicio: '18:00:00',
+  hora_fim: '06:00:00',
+  valor_adicional: '50.00',
+  ativo: true,
+}
+
+function mockarUseRegrasPlantao(
+  overrides: Partial<ReturnType<typeof useRegrasPlantaoModulo.useRegrasPlantao>> = {},
+) {
+  vi.mocked(useRegrasPlantaoModulo.useRegrasPlantao).mockReturnValue({
+    regras: [],
+    carregando: false,
+    erro: null,
+    apenasAtivos: false,
+    definirApenasAtivos: vi.fn(),
+    recarregar: vi.fn(),
+    criar: vi.fn(),
+    editar: vi.fn(),
+    inativar: vi.fn(),
+    reativar: vi.fn(),
+    ...overrides,
+  })
+}
+
 function mockarPapel(papel: 'admin' | 'atendente' | 'tecnico') {
   vi.mocked(SessaoContextModulo.useSessao).mockReturnValue({
     autenticado: true,
@@ -47,6 +76,10 @@ function mockarPapel(papel: 'admin' | 'atendente' | 'tecnico') {
 }
 
 describe('TelaExames', () => {
+  beforeEach(() => {
+    mockarUseRegrasPlantao()
+  })
+
   it('renderiza a lista de exames vinda do hook para os 3 papéis de staff', () => {
     mockarUseExames({ exames: [exameA] })
     mockarPapel('atendente')
@@ -135,5 +168,59 @@ describe('TelaExames', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
     expect(reativar).toHaveBeenCalledWith('1')
+  })
+
+  it('aba "Regras de Plantão" visível para admin e atendente, ausente para técnico', () => {
+    mockarUseExames()
+    mockarPapel('admin')
+    const { rerender } = render(<TelaExames />)
+    expect(screen.getByRole('button', { name: /regras de plantão/i })).toBeInTheDocument()
+
+    mockarPapel('atendente')
+    rerender(<TelaExames />)
+    expect(screen.getByRole('button', { name: /regras de plantão/i })).toBeInTheDocument()
+
+    mockarPapel('tecnico')
+    rerender(<TelaExames />)
+    expect(screen.queryByRole('button', { name: /regras de plantão/i })).not.toBeInTheDocument()
+  })
+
+  it('aba "Regras de Plantão" lista as regras e só admin vê "Nova regra"', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA] })
+    mockarPapel('admin')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.getByRole('button', { name: /nova regra/i })).toBeInTheDocument()
+  })
+
+  it('atendente vê a lista de regras de plantão sem o botão "Nova regra"', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA] })
+    mockarPapel('atendente')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.queryByRole('button', { name: /nova regra/i })).not.toBeInTheDocument()
+  })
+
+  it('admin cadastra uma regra de plantão nova abrindo o formulário', async () => {
+    const criar = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ criar })
+    mockarPapel('admin')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('button', { name: /nova regra/i }))
+    await userEvent.type(screen.getByLabelText('Horário de início'), '18:00')
+    await userEvent.type(screen.getByLabelText('Horário de fim'), '06:00')
+    await userEvent.type(screen.getByLabelText('Valor adicional'), '50')
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+
+    expect(criar).toHaveBeenCalledWith(
+      expect.objectContaining({ hora_inicio: '18:00', hora_fim: '06:00' }),
+    )
   })
 })
