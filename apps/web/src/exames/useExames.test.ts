@@ -20,6 +20,73 @@ describe('useExames', () => {
     vi.mocked(examesApi.criarExame).mockReset()
   })
 
+  it('editar atualiza o exame correspondente no estado local', async () => {
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
+    const editado = { ...exameA, preco_base: '70.00' }
+    vi.mocked(examesApi.editarExame).mockResolvedValueOnce(editado)
+
+    const { result } = renderHook(() => useExames())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.editar('1', {
+        categoria: exameA.categoria,
+        nome: exameA.nome,
+        preco_base: '70.00',
+      })
+    })
+
+    expect(result.current.exames).toEqual([editado])
+    expect(examesApi.listarExames).toHaveBeenCalledTimes(1)
+  })
+
+  it('inativar atualiza o status do exame no estado local', async () => {
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
+    const inativado = { ...exameA, ativo: false }
+    vi.mocked(examesApi.inativarExame).mockResolvedValueOnce(inativado)
+
+    const { result } = renderHook(() => useExames())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.exames).toEqual([inativado])
+  })
+
+  it('reativar atualiza o status do exame no estado local', async () => {
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([{ ...exameA, ativo: false }])
+    vi.mocked(examesApi.reativarExame).mockResolvedValueOnce(exameA)
+
+    const { result } = renderHook(() => useExames())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.reativar('1')
+    })
+
+    expect(result.current.exames).toEqual([exameA])
+  })
+
+  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
+    vi.mocked(examesApi.inativarExame).mockRejectedValueOnce(
+      new ErroHttp(404, '{"detail":"Exame 1 não encontrado"}'),
+    )
+
+    const { result } = renderHook(() => useExames())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe(
+      'Exame não encontrado — pode ter sido removido por outra sessão.',
+    )
+  })
+
   it('carrega a lista de exames ao montar', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
 

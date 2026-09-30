@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { requisitar } from '../api/clienteHttp'
-import { criarExame, listarExames } from './examesApi'
+import { criarExame, editarExame, inativarExame, listarExames, reativarExame } from './examesApi'
 
 vi.mock('../api/clienteHttp', () => ({
   requisitar: vi.fn(),
@@ -31,5 +31,27 @@ describe('examesApi', () => {
       method: 'POST',
       body: JSON.stringify(dados),
     })
+  })
+
+  it('editarExame chama PATCH /exames/{id} com o body serializado', async () => {
+    const dados = { categoria: 'Hematologia', nome: 'Hemograma', preco_base: '60.00' }
+    vi.mocked(requisitar).mockResolvedValueOnce({ id: '1', ativo: true, ...dados })
+    await editarExame('1', dados)
+    expect(requisitar).toHaveBeenCalledWith('/exames/1', {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    })
+  })
+
+  it('inativarExame chama POST /exames/{id}/inativar', async () => {
+    vi.mocked(requisitar).mockResolvedValueOnce({})
+    await inativarExame('1')
+    expect(requisitar).toHaveBeenCalledWith('/exames/1/inativar', { method: 'POST' })
+  })
+
+  it('reativarExame chama POST /exames/{id}/reativar', async () => {
+    vi.mocked(requisitar).mockResolvedValueOnce({})
+    await reativarExame('1')
+    expect(requisitar).toHaveBeenCalledWith('/exames/1/reativar', { method: 'POST' })
   })
 })
