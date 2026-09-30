@@ -212,13 +212,13 @@ erro de validação; como técnico, confirmar que a sub-seção não aparece.
       mapeia 404 para
       `"Regra de plantão não encontrada — pode ter sido removida por outra sessão."` e usa
       `extrairDetalheErro` como fallback, até T022 passar
-- [ ] T025 [P] [US3] Escrever testes falhos para `apps/web/src/exames/FormularioRegraPlantao.tsx`
+- [X] T025 [P] [US3] Escrever testes falhos para `apps/web/src/exames/FormularioRegraPlantao.tsx`
       em `apps/web/src/exames/FormularioRegraPlantao.test.tsx`: `<select>` de dia da semana (0–6,
       rotulado em português); campos de horário de início/fim; submissão com `valor_adicional`
       igual a `0` ou negativo bloqueada pelo formulário (única camada de defesa, mesmo achado da
       T008 para regra de plantão); submissão com `hora_inicio` maior que `hora_fim` **não** é
       bloqueada — chama `aoSalvar` normalmente (representa plantão cruzando a meia-noite)
-- [ ] T026 [US3] Implementar `apps/web/src/exames/FormularioRegraPlantao.tsx` (campos dia da
+- [X] T026 [US3] Implementar `apps/web/src/exames/FormularioRegraPlantao.tsx` (campos dia da
       semana, hora de início, hora de fim, valor adicional, com validação só de valor adicional
       positivo — sem validar ordem entre os horários), até T025 passar
 - [ ] T027 [P] [US3] Estender `apps/web/src/exames/TelaExames.test.tsx`: adiciona abas "Catálogo de
