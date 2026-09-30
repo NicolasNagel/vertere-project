@@ -281,18 +281,28 @@ uma regra de plantão, sempre restrito a `admin`.
 
 **Purpose**: fechar a spec com a suíte verde e o handoff atualizado, prontos para `/fechar-spec`
 
-- [ ] T037 [P] Rodar `pnpm --dir apps/web lint` e corrigir qualquer achado em
+- [X] T037 [P] Rodar `pnpm --dir apps/web lint` e corrigir qualquer achado em
       `apps/web/src/exames/` e `apps/web/src/api/useColecaoCrud.ts`
-- [ ] T038 [P] Rodar `pnpm --dir apps/web test` com cobertura visível para
+- [X] T038 [P] Rodar `pnpm --dir apps/web test` com cobertura visível para
       `apps/web/src/exames/` e `apps/web/src/api/useColecaoCrud.ts` (Princípio IV da constituição
       — nenhuma task é considerada concluída só porque os testes existem, a suíte real precisa
       passar)
-- [ ] T039 Executar manualmente os 6 cenários de
+- [X] T039 Executar manualmente os 6 cenários de
       `specs/013-exames-precificacao-web/quickstart.md` contra o backend e o frontend rodando
       localmente, confirmando em particular que a validação de preço/valor não positivo só ocorre
       no frontend (achado de "Descobertas" em `spec.md`) e registrando qualquer outra divergência
-      encontrada
-- [ ] T040 Atualizar `handoff.md` relatando a S13 implementada, o achado de "Descobertas" (schema
+      encontrada — **parcial**: backend real (Postgres de dev, `uvicorn` local) validado via `curl`
+      com 3 usuários de teste (admin/atendente/tecnico criados nesta task) confirmando: `POST
+      /exames` aceita `preco_base` negativo sem erro (achado confirmado, HTTP 201); `POST
+      /regras-plantao` com `hora_inicio > hora_fim` aceito normalmente (HTTP 201); `atendente` lê
+      `/regras-plantao` (200) mas `tecnico` não (403); `atendente` não pode `POST /exames` (403);
+      `tecnico` lê `/exames` (200). `pnpm build` (tsc -b + vite build) limpo, suíte 154/154 verde,
+      lint sem achado novo. **Não executado**: percurso clique-a-clique pela UI real no navegador —
+      a extensão Claude in Chrome não estava conectada nesta sessão, então os Cenários 1-6 do
+      `quickstart.md` não foram confirmados visualmente na tela, só via API direta equivalente aos
+      mesmos fluxos. Registrar esse gap para quem fizer `/fechar-spec` decidir se basta a
+      verificação por API ou se uma sessão com navegador disponível precisa repetir via UI
+- [X] T040 Atualizar `handoff.md` relatando a S13 implementada, o achado de "Descobertas" (schema
       do backend S5 sem `gt=0`), e pronta para `/fechar-spec`
 
 ---
