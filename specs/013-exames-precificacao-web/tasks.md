@@ -189,12 +189,12 @@ erro de validação; como técnico, confirmar que a sub-seção não aparece.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T021 [P] [US3] Escrever testes falhos para `apps/web/src/exames/regrasPlantaoApi.ts` em
+- [X] T021 [P] [US3] Escrever testes falhos para `apps/web/src/exames/regrasPlantaoApi.ts` em
       `apps/web/src/exames/regrasPlantaoApi.test.ts`, mockando `requisitar`:
       `listarRegrasPlantao(apenasAtivos?)` chama `GET /regras-plantao?apenas_ativos=...`;
       `criarRegraPlantao(dados)` chama `POST /regras-plantao` com o body serializado (`dia_semana`,
       `hora_inicio`, `hora_fim`, `valor_adicional`) e repassa `ErroHttp` sem capturá-lo
-- [ ] T022 [P] [US3] Escrever testes falhos para `apps/web/src/exames/useRegrasPlantao.ts` em
+- [X] T022 [P] [US3] Escrever testes falhos para `apps/web/src/exames/useRegrasPlantao.ts` em
       `apps/web/src/exames/useRegrasPlantao.test.ts`, mockando `regrasPlantaoApi.ts` e usando
       `useColecaoCrud` (T002/T003): carregamento inicial popula `regras`; filtrar por
       `apenasAtivos` refaz a listagem; `criar(dados)` com `hora_inicio > hora_fim` bem-sucedido
@@ -203,10 +203,10 @@ erro de validação; como técnico, confirmar que a sub-seção não aparece.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implementar `apps/web/src/exames/regrasPlantaoApi.ts` com `listarRegrasPlantao`,
+- [X] T023 [US3] Implementar `apps/web/src/exames/regrasPlantaoApi.ts` com `listarRegrasPlantao`,
       `criarRegraPlantao`, usando `RegraPlantaoResponse`/`CriarRegraPlantaoRequest` de
       `tipos.gerados.ts`, até T021 passar
-- [ ] T024 [US3] Implementar `apps/web/src/exames/useRegrasPlantao.ts` (hook com `regras`,
+- [X] T024 [US3] Implementar `apps/web/src/exames/useRegrasPlantao.ts` (hook com `regras`,
       `carregando`, `erro`, `apenasAtivos`, `definirApenasAtivos`, `recarregar`, `criar`),
       construído sobre `useColecaoCrud` e `regrasPlantaoApi.ts`, com `mensagemDeErro(erro)` que
       mapeia 404 para
