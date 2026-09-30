@@ -258,15 +258,20 @@ uma regra de plantão, sempre restrito a `admin`.
       `editarRegraPlantao`, `inativarRegraPlantao`, `reativarRegraPlantao`, até T029 passar
 - [X] T032 [US4] Estender `apps/web/src/exames/useRegrasPlantao.ts` implementando `editar`,
       `inativar`, `reativar` sobre `useColecaoCrud.executarAcaoSobreItem`, até T030 passar
-- [ ] T033 [P] [US4] Estender `apps/web/src/exames/FormularioRegraPlantao.test.tsx`: modo edição
+- [X] T033 [P] [US4] Estender `apps/web/src/exames/FormularioRegraPlantao.test.tsx`: modo edição
       (prop `regra` preenchida) exibe os valores já preenchidos, mantendo a validação de valor
-      adicional positivo e a ausência de validação de ordem entre horários
-- [ ] T034 [US4] Estender `apps/web/src/exames/FormularioRegraPlantao.tsx` para aceitar uma prop
-      `regra?: RegraPlantaoResponse` que pré-preenche os campos, até T033 passar
-- [ ] T035 [P] [US4] Estender `apps/web/src/exames/TelaExames.test.tsx`: ações "Editar"/"Inativar"/
+      adicional positivo e a ausência de validação de ordem entre horários — **já cobertos em
+      T025/T026** (`FormularioRegraPlantao` já nasceu com a prop `regra?` opcional), nenhum código
+      novo nesta task
+- [X] T034 [US4] Estender `apps/web/src/exames/FormularioRegraPlantao.tsx` para aceitar uma prop
+      `regra?: RegraPlantaoResponse` que pré-preenche os campos, até T033 passar — **já
+      implementado em T026**, nenhum código novo nesta task
+- [X] T035 [P] [US4] Estender `apps/web/src/exames/TelaExames.test.tsx`: ações "Editar"/"Inativar"/
       "Reativar" por linha na sub-seção de regras de plantão, visíveis só para `admin`
-- [ ] T036 [US4] Estender `apps/web/src/exames/TelaExames.tsx` com as ações por linha na sub-seção
-      de regras de plantão, gated a `papel === 'admin'`, até T035 passar
+- [X] T036 [US4] Estender `apps/web/src/exames/TelaExames.tsx` com as ações por linha na sub-seção
+      de regras de plantão, gated a `papel === 'admin'`, até T035 passar — **já implementado em
+      T028** (`LinhaRegraPlantao` já nasceu com editar/inativar/reativar); T035 confirmou em verde
+      sem exigir código novo
 
 **Checkpoint**: todas as 4 user stories completas — módulo de Exames & Precificação pronto.
 

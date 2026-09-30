@@ -223,4 +223,66 @@ describe('TelaExames', () => {
       expect.objectContaining({ hora_inicio: '18:00', hora_fim: '06:00' }),
     )
   })
+
+  it('admin vê ações "Editar"/"Inativar" por linha de regra de plantão; atendente não vê', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA] })
+    mockarPapel('admin')
+    const { rerender } = render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.getByRole('button', { name: /editar/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /inativar/i })).toBeInTheDocument()
+
+    mockarPapel('atendente')
+    rerender(<TelaExames />)
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /inativar/i })).not.toBeInTheDocument()
+  })
+
+  it('ação "Editar" por linha de regra de plantão abre o formulário preenchido e salva com editar', async () => {
+    const editar = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA], editar })
+    mockarPapel('admin')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    expect(screen.getByLabelText('Horário de início')).toHaveValue('18:00')
+
+    await userEvent.clear(screen.getByLabelText('Valor adicional'))
+    await userEvent.type(screen.getByLabelText('Valor adicional'), '80')
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+
+    expect(editar).toHaveBeenCalledWith(
+      '1',
+      expect.objectContaining({ hora_inicio: '18:00', valor_adicional: '80' }),
+    )
+  })
+
+  it('ação "Inativar" por linha de regra de plantão chama inativar com o id da regra', async () => {
+    const inativar = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA], inativar })
+    mockarPapel('admin')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    expect(inativar).toHaveBeenCalledWith('1')
+  })
+
+  it('ação "Reativar" por linha de regra de plantão chama reativar com o id da regra', async () => {
+    const reativar = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [{ ...regraA, ativo: false }], reativar })
+    mockarPapel('admin')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    expect(reativar).toHaveBeenCalledWith('1')
+  })
 })
