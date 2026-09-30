@@ -162,14 +162,16 @@ muda na lista), e reativá-lo (status volta).
       `inativarExame`, `reativarExame`, até T013 passar
 - [X] T016 [US2] Estender `apps/web/src/exames/useExames.ts` implementando `editar`, `inativar`,
       `reativar` sobre `useColecaoCrud.executarAcaoSobreItem`, até T014 passar
-- [ ] T017 [P] [US2] Estender `apps/web/src/exames/FormularioExame.test.tsx`: modo edição (prop
+- [X] T017 [P] [US2] Estender `apps/web/src/exames/FormularioExame.test.tsx`: modo edição (prop
       `exame` preenchida) exibe os valores já preenchidos, mantendo a mesma validação de
-      preço-base positivo
-- [ ] T018 [US2] Estender `apps/web/src/exames/FormularioExame.tsx` para aceitar uma prop
-      `exame?: ExameResponse` que pré-preenche os campos, até T017 passar
-- [ ] T019 [P] [US2] Estender `apps/web/src/exames/TelaExames.test.tsx`: ações "Editar"/"Inativar"/
+      preço-base positivo — **já cobertos em T008/T009** (`FormularioExame` já nasceu com a prop
+      `exame?` opcional e o teste de prefill), nenhum código novo nesta task
+- [X] T018 [US2] Estender `apps/web/src/exames/FormularioExame.tsx` para aceitar uma prop
+      `exame?: ExameResponse` que pré-preenche os campos, até T017 passar — **já implementado em
+      T009**, nenhum código novo nesta task
+- [X] T019 [P] [US2] Estender `apps/web/src/exames/TelaExames.test.tsx`: ações "Editar"/"Inativar"/
       "Reativar" por linha visíveis só para `admin`, ausentes para `atendente`/`tecnico`
-- [ ] T020 [US2] Estender `apps/web/src/exames/TelaExames.tsx` com as ações por linha
+- [X] T020 [US2] Estender `apps/web/src/exames/TelaExames.tsx` com as ações por linha
       (editar, inativar, reativar) gated a `papel === 'admin'`, até T019 passar
 
 **Checkpoint**: US1 + US2 completas — catálogo de Exame pronto de ponta a ponta.
