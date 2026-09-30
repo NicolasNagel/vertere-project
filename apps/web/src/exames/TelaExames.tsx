@@ -3,10 +3,14 @@ import { Botao } from '../ui/Botao'
 import { useSessao } from '../autenticacao/SessaoContext'
 import type { components } from '../api/tipos.gerados'
 import { FormularioExame } from './FormularioExame'
+import { FormularioRegraPlantao } from './FormularioRegraPlantao'
 import { useExames } from './useExames'
+import { useRegrasPlantao } from './useRegrasPlantao'
 
 type ExameResponse = components['schemas']['ExameResponse']
 type CriarExameRequest = components['schemas']['CriarExameRequest']
+type RegraPlantaoResponse = components['schemas']['RegraPlantaoResponse']
+type CriarRegraPlantaoRequest = components['schemas']['CriarRegraPlantaoRequest']
 
 function LinhaExame({
   exame,
@@ -112,11 +116,141 @@ function CatalogoDeExames() {
   )
 }
 
+function LinhaRegraPlantao({
+  regra,
+  podeGerenciar,
+  aoEditar,
+  aoInativar,
+  aoReativar,
+}: {
+  regra: RegraPlantaoResponse
+  podeGerenciar: boolean
+  aoEditar: (dados: CriarRegraPlantaoRequest) => void
+  aoInativar: () => void
+  aoReativar: () => void
+}) {
+  const [editando, setEditando] = useState(false)
+
+  if (editando) {
+    return (
+      <tr>
+        <td colSpan={4}>
+          <FormularioRegraPlantao
+            regra={regra}
+            aoSalvar={(dados) => {
+              aoEditar(dados)
+              setEditando(false)
+            }}
+          />
+        </td>
+      </tr>
+    )
+  }
+
+  return (
+    <tr>
+      <td>{DIAS_DA_SEMANA[regra.dia_semana]}</td>
+      <td>
+        {regra.hora_inicio.slice(0, 5)}–{regra.hora_fim.slice(0, 5)}
+      </td>
+      <td>{regra.valor_adicional}</td>
+      <td>{regra.ativo ? 'Ativa' : 'Inativa'}</td>
+      {podeGerenciar ? (
+        <td>
+          <Botao onClick={() => setEditando(true)}>Editar</Botao>
+          {regra.ativo ? (
+            <Botao onClick={aoInativar}>Inativar</Botao>
+          ) : (
+            <Botao onClick={aoReativar}>Reativar</Botao>
+          )}
+        </td>
+      ) : null}
+    </tr>
+  )
+}
+
+const DIAS_DA_SEMANA = [
+  'Segunda-feira',
+  'Terça-feira',
+  'Quarta-feira',
+  'Quinta-feira',
+  'Sexta-feira',
+  'Sábado',
+  'Domingo',
+]
+
+function RegrasDePlantao() {
+  const { regras, carregando, erro, criar, editar, inativar, reativar } = useRegrasPlantao()
+  const { papel } = useSessao()
+  const [formularioAberto, setFormularioAberto] = useState(false)
+  const podeGerenciar = papel === 'admin'
+
+  return (
+    <div>
+      {erro ? <p role="alert">{erro}</p> : null}
+
+      {podeGerenciar ? (
+        <Botao onClick={() => setFormularioAberto(true)}>Nova regra</Botao>
+      ) : null}
+      {formularioAberto ? (
+        <FormularioRegraPlantao
+          aoSalvar={(dados: CriarRegraPlantaoRequest) => {
+            criar(dados)
+            setFormularioAberto(false)
+          }}
+        />
+      ) : null}
+
+      {carregando ? (
+        <p>Carregando…</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Dia da semana</th>
+              <th>Horário</th>
+              <th>Valor adicional</th>
+              <th>Status</th>
+              {podeGerenciar ? <th>Ações</th> : null}
+            </tr>
+          </thead>
+          <tbody>
+            {regras.map((regra) => (
+              <LinhaRegraPlantao
+                key={regra.id}
+                regra={regra}
+                podeGerenciar={podeGerenciar}
+                aoEditar={(dados) => editar(regra.id, dados)}
+                aoInativar={() => inativar(regra.id)}
+                aoReativar={() => reativar(regra.id)}
+              />
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
 export function TelaExames() {
+  const { papel } = useSessao()
+  const [abaAtiva, setAbaAtiva] = useState<'exames' | 'regras-plantao'>('exames')
+  const podeVerRegrasPlantao = papel === 'admin' || papel === 'atendente'
+
   return (
     <div>
       <h1>Exames</h1>
-      <CatalogoDeExames />
+      <div role="tablist">
+        <Botao onClick={() => setAbaAtiva('exames')}>Catálogo de Exames</Botao>
+        {podeVerRegrasPlantao ? (
+          <Botao onClick={() => setAbaAtiva('regras-plantao')}>Regras de Plantão</Botao>
+        ) : null}
+      </div>
+      {abaAtiva === 'exames' || !podeVerRegrasPlantao ? (
+        <CatalogoDeExames />
+      ) : (
+        <RegrasDePlantao />
+      )}
     </div>
   )
 }

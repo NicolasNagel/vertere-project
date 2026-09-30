@@ -221,10 +221,10 @@ erro de validação; como técnico, confirmar que a sub-seção não aparece.
 - [X] T026 [US3] Implementar `apps/web/src/exames/FormularioRegraPlantao.tsx` (campos dia da
       semana, hora de início, hora de fim, valor adicional, com validação só de valor adicional
       positivo — sem validar ordem entre os horários), até T025 passar
-- [ ] T027 [P] [US3] Estender `apps/web/src/exames/TelaExames.test.tsx`: adiciona abas "Catálogo de
+- [X] T027 [P] [US3] Estender `apps/web/src/exames/TelaExames.test.tsx`: adiciona abas "Catálogo de
       Exames"/"Regras de Plantão"; aba "Regras de Plantão" visível para `admin`/`atendente`,
       ausente para `tecnico`; dentro dela, só `admin` vê o botão "Nova regra"
-- [ ] T028 [US3] Estender `apps/web/src/exames/TelaExames.tsx` introduzindo as abas e a sub-seção
+- [X] T028 [US3] Estender `apps/web/src/exames/TelaExames.tsx` introduzindo as abas e a sub-seção
       "Regras de Plantão" (lista + botão "Nova regra" visível só para `admin`, sub-seção inteira
       visível só para `papel === 'admin' || papel === 'atendente'`), até T027 passar
 
