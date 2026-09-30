@@ -243,20 +243,20 @@ uma regra de plantão, sempre restrito a `admin`.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T029 [P] [US4] Estender `apps/web/src/exames/regrasPlantaoApi.test.ts` com testes falhos para
+- [X] T029 [P] [US4] Estender `apps/web/src/exames/regrasPlantaoApi.test.ts` com testes falhos para
       `editarRegraPlantao(id, dados)` (`PATCH /regras-plantao/{id}`), `inativarRegraPlantao(id)`
       (`POST /regras-plantao/{id}/inativar`), `reativarRegraPlantao(id)`
       (`POST /regras-plantao/{id}/reativar`)
-- [ ] T030 [P] [US4] Estender `apps/web/src/exames/useRegrasPlantao.test.ts` com testes falhos para
+- [X] T030 [P] [US4] Estender `apps/web/src/exames/useRegrasPlantao.test.ts` com testes falhos para
       `editar`, `inativar`, `reativar`: cada um atualiza a regra correspondente no estado local
       (via `useColecaoCrud.executarAcaoSobreItem`); erro HTTP 404 resulta em
       `erro === "Regra de plantão não encontrada — pode ter sido removida por outra sessão."`
 
 ### Implementation for User Story 4
 
-- [ ] T031 [US4] Estender `apps/web/src/exames/regrasPlantaoApi.ts` implementando
+- [X] T031 [US4] Estender `apps/web/src/exames/regrasPlantaoApi.ts` implementando
       `editarRegraPlantao`, `inativarRegraPlantao`, `reativarRegraPlantao`, até T029 passar
-- [ ] T032 [US4] Estender `apps/web/src/exames/useRegrasPlantao.ts` implementando `editar`,
+- [X] T032 [US4] Estender `apps/web/src/exames/useRegrasPlantao.ts` implementando `editar`,
       `inativar`, `reativar` sobre `useColecaoCrud.executarAcaoSobreItem`, até T030 passar
 - [ ] T033 [P] [US4] Estender `apps/web/src/exames/FormularioRegraPlantao.test.tsx`: modo edição
       (prop `regra` preenchida) exibe os valores já preenchidos, mantendo a validação de valor
