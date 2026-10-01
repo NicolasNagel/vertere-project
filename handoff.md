@@ -9,13 +9,21 @@
 
 **Última atualização**: 2026-10-01, por sessão Claude Code (Opus 5.5).
 
-## S14 (Polimento das telas S12/S13 + validação de valores no backend de S5) — spec escrita, próximo: `/speckit-plan`
+## S14 (Polimento das telas S12/S13 + validação de valores no backend de S5) — spec + plano prontos, próximo: `/speckit-tasks`
 
 Branch `spec/s14-polimento-telas-web`, já rebaseada em `main` depois do merge do PR #30 (S13).
 Tem a spec (`specs/014-polimento-telas-web/spec.md` + `checklists/requirements.md`), a issue
 [#31](https://github.com/NicolasNagel/vertere-project/issues/31) e a linha em `docs/specs.md`
-(`rascunho`). Nenhum `[NEEDS CLARIFICATION]`; os defaults escolhidos estão em Assumptions e valem
-uma olhada do usuário antes do plano.
+(`rascunho`). Plano em `plan.md`, com `research.md` (7 decisões), `data-model.md`, `contracts/` e
+`quickstart.md`.
+
+Duas mudanças de escopo foram decididas pelo usuário durante o plano e registradas em "Descobertas"
+da spec:
+- esconder a escrita de Clínicas/Veterinários para quem não é admin (o backend já recusa com 403);
+- corrigir o `colSpan` da S12.
+
+A instabilidade da suíte foi medida: 2 de 5 execuções padrão falharam, e 1 de 5 com 50% dos
+workers. Por isso a Decisão 7 combina `maxWorkers` com `userEvent.setup({ delay: null })`.
 
 ## S13 — ✅ entregue e mergeada em `main` (PR #30, squash, 2026-10-01)
 
@@ -165,8 +173,8 @@ o mapa `componentePorRota`).
 
 ## Próximo passo real
 
-`/speckit-plan` da S14 na branch `spec/s14-polimento-telas-web`, depois `/speckit-tasks` e
-`/speckit-implement` (consultar `dev-router` antes). Depois da S14, a próxima spec (Pacientes?
+`/speckit-tasks` da S14 na branch `spec/s14-polimento-telas-web`, depois `/speckit-implement`
+(consultar `dev-router` antes). Depois da S14, a próxima spec (Pacientes?
 Atendimentos? Laudos?) é decisão do usuário, não presumir. Numeração `015` (confirmar contra
 `docs/specs.md`).
 
