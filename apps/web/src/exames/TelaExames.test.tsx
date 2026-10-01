@@ -383,3 +383,30 @@ describe('TelaExames — estado vazio (Edge Case)', () => {
     expect(screen.queryByText('Nenhuma regra de plantão encontrada.')).not.toBeInTheDocument()
   })
 })
+
+describe('TelaExames — linha em edição ocupa a largura da tabela', () => {
+  beforeEach(() => {
+    mockarPapel('admin')
+  })
+
+  it('exame em edição usa colSpan igual ao número de colunas (5 para admin)', async () => {
+    mockarUseExames({ exames: [exameA] })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    const celula = screen.getByLabelText('Categoria').closest('td')
+    expect(celula).toHaveAttribute('colspan', '5')
+  })
+
+  it('regra em edição usa colSpan igual ao número de colunas (5 para admin)', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA] })
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    const celula = screen.getByLabelText('Valor adicional').closest('td')
+    expect(celula).toHaveAttribute('colspan', '5')
+  })
+})
