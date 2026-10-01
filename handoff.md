@@ -7,9 +7,32 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-09-30, por sessão Claude Code (Sonnet 5).
+**Última atualização**: 2026-09-30, por sessão Claude Code (Opus 5.5).
 
-## S13 (Exames & Precificação no web) — implementada nesta sessão, branch `spec/s13-exames-precificacao-web`, pronta para `/fechar-spec`
+## S13 — `/fechar-spec` rodou: ❌ BLOQUEADA; pendências 1-4 já corrigidas, falta só a 5 (T039)
+
+Relatório: `docs/specs/relatorios/S13-verificacao.md`. Pendências copiadas para `spec.md` →
+"Verificação" e viraram a Phase 8 de `tasks.md` (T041-T048, todas `[X]`, um commit cada):
+filtros de categoria/"apenas ativos" ligados à tela (FR-002), "apenas ativas" nas regras (FR-006),
+estado vazio distinto de erro, e validação explícita de valor > 0 com mensagem `role="alert"` nos
+dois formulários (troca do `min="0.01"` nativo, que barrava o submit antes do handler). O filtro de
+categoria é `<select>` porque o backend compara categoria por igualdade exata. Suíte: 164/164
+verdes, lint sem achado novo, build limpo.
+
+**Bloqueio restante — T039 desmarcada**: os 6 cenários de `quickstart.md` nunca foram percorridos
+na UI real. A extensão Claude in Chrome seguia desconectada nesta sessão. Caminhos: (a) sessão com
+navegador conectado executa o quickstart e marca T039; (b) o usuário decide explicitamente aceitar
+a validação só por API e a redação de T039 é ajustada para isso. Depois, rodar `/fechar-spec S13`
+de novo → `/code-review` → PR. **Não abrir PR antes.** Observações não bloqueantes do relatório
+(colSpan 4/5 na linha de edição, sem "Cancelar" nos formulários, formulário fecha antes da
+resposta da API, valores sem formatação BRL, 422 do FastAPI exibido cru) ficam para o
+`/code-review` decidir.
+
+Efeitos colaterais no banco de dev (`vertere_postgres_dev`, porta 5434, deixado rodando pelo
+verificador): exame "VerifS13" e uma regra de sexta 18:00-06:00, ambos inativos.
+
+### Contexto da implementação original da S13 (sessão anterior)
+
 
 Issue-ponteiro [#29](https://github.com/NicolasNagel/vertere-project/issues/29) criada,
 `docs/specs.md` mostra `S13 → em-desenvolvimento`. As 40 tasks de
@@ -113,10 +136,8 @@ o mapa `componentePorRota`).
 
 ## Próximo passo real
 
-S13 está implementada e pronta para `/fechar-spec S13`, seguido de `/code-review` antes do PR —
-mesma sequência de S12 (verificação independente → correção de achados bloqueantes na mesma branch
-→ code-review → PR). Lembrar do gap de verificação por UI real (seção S13 acima) ao rodar
-`/fechar-spec`.
+Resolver a T039 da S13 (ver seção S13 acima), rodar `/fechar-spec S13` de novo, depois
+`/code-review`, depois o PR.
 
 A próxima spec depois de S13 (Pacientes? Atendimentos? Laudos?) é decisão do usuário, não presumir
 (mesma regra aplicada antes de S12/S13). Ponto de entrada: `/speckit-specify`, numeração `014`
