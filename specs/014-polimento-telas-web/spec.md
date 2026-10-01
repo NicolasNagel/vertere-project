@@ -182,25 +182,33 @@ aparece como "R$ x,yy", inclusive logo depois de editar um preço.
 
 ---
 
-### User Story 6 - Regras de visibilidade por papel num só lugar (Priority: P3)
+### User Story 6 - Cada papel vê só o que pode fazer, com a regra num só lugar (Priority: P3)
 
-A decisão de quais controles de escrita (cadastrar, editar, inativar, reativar) e quais seções cada
-papel vê nas telas de cadastro fica definida num único ponto do frontend, e todas as telas a
-consultam. Para quem usa, nada muda: cada papel vê exatamente os mesmos controles que vê hoje. O
-ganho é de manutenção e consistência: mudar quem vê um controle passa a ser uma alteração num só
-lugar.
+A decisão de quais controles de escrita (cadastrar, editar, inativar, reativar, definir prazo de
+pagamento) e quais seções cada papel vê nas telas de cadastro fica definida num único ponto do
+frontend, espelhando as permissões do servidor, e todas as telas a consultam. Para quem usa, muda
+uma coisa: atendente e técnico deixam de ver, nas telas de Clínicas e Veterinários, botões de
+escrita que o servidor sempre recusa (lá, gerenciar é só de admin). Nas telas de Exames e Regras de
+Plantão nada muda, porque elas já mostravam só o permitido.
 
-**Why this priority**: sem efeito visível para o usuário. O valor é evitar divergência entre telas,
-que hoje repetem comparações de papel por conta própria.
+**Why this priority**: o ganho principal é de manutenção e consistência, mas corrige também um
+defeito visível da S12: atendente e técnico clicam em "Nova clínica" ou "Editar" e recebem "Não
+autorizado".
 
 **Independent Test**: para cada papel (admin, atendente, técnico), abrir as quatro telas e confirmar
-que os controles visíveis são os mesmos de antes desta spec.
+que cada controle de escrita visível corresponde a uma ação que o servidor permite àquele papel, e
+que nenhum controle permitido sumiu.
 
 **Acceptance Scenarios**:
 
-1. **Given** cada combinação de papel e tela de cadastro, **When** a tela é aberta, **Then** os
-   controles e seções visíveis são idênticos aos de antes desta spec.
-2. **Given** a regra de visibilidade de um controle precisa mudar, **When** a equipe a altera,
+1. **Given** o papel atendente ou técnico, **When** abre Clínicas ou Veterinários, **Then** vê a
+   lista, a busca e os filtros, mas nenhum controle de cadastrar, editar, inativar, reativar ou
+   definir prazo de pagamento.
+2. **Given** o papel admin, **When** abre qualquer das quatro telas, **Then** vê todos os controles
+   de escrita que já via antes desta spec.
+3. **Given** qualquer papel, **When** abre Exames ou Regras de Plantão, **Then** os controles e
+   seções visíveis são os mesmos de antes desta spec.
+4. **Given** a regra de visibilidade de um controle precisa mudar, **When** a equipe a altera,
    **Then** a alteração acontece num único ponto, e todas as telas afetadas a refletem.
 
 ---
@@ -295,10 +303,18 @@ desenvolvimento e confirmar zero falhas.
 **Visibilidade por papel (User Story 6)**
 
 - **FR-016**: As regras de quais controles de escrita e quais seções cada papel vê nas telas de
-  cadastro DEVEM estar definidas num único ponto do frontend, consultado por todas as telas.
-- **FR-017**: A centralização do FR-016 NÃO DEVE mudar o que cada papel vê hoje, e continua sendo só
-  ocultação de interface: a permissão continua imposta pelo servidor (`authorize()`), sem nenhuma
-  checagem nova ou alterada no backend.
+  cadastro DEVEM estar definidas num único ponto do frontend, consultado por todas as telas, e
+  DEVEM espelhar as permissões do servidor para cada papel.
+- **FR-017**: Cada controle de escrita visível DEVE corresponder a uma ação que o servidor permite
+  ao papel logado. Em Clínicas e Veterinários, cadastrar, editar, inativar, reativar e definir prazo
+  de pagamento passam a aparecer só para admin. Isso continua sendo só ocultação de interface: a
+  permissão continua imposta pelo servidor (`authorize()`), sem nenhuma checagem nova ou alterada no
+  backend.
+
+**Linha em edição (User Story 1)**
+
+- **FR-019**: Nas telas de Clínicas e Veterinários, a linha em edição DEVE ocupar todas as colunas da
+  tabela, como já acontece em Exames e Regras de Plantão desde a S13.
 
 **Estabilidade (User Story 7)**
 
@@ -331,8 +347,9 @@ desenvolvimento e confirmar zero falhas.
   formato "R$ x.xxx,yy".
 - **SC-006**: A suíte padrão de testes do frontend passa em 10 execuções seguidas, sem nenhum teste
   removido, pulado ou com asserção afrouxada.
-- **SC-007**: Para cada um dos papéis admin, atendente e técnico, os controles visíveis nas quatro
-  telas são idênticos aos de antes desta spec.
+- **SC-007**: Para cada um dos papéis admin, atendente e técnico, zero controles de escrita visíveis
+  nas quatro telas levam a uma recusa "Não autorizado" do servidor, e nenhum controle que o servidor
+  permite fica oculto.
 
 ## Assumptions
 
@@ -353,8 +370,9 @@ desenvolvimento e confirmar zero falhas.
   preço -10,00 do banco de dev é dado de teste, não de produção.
 - Um item recém-criado que não satisfaz o filtro ativo não aparece na lista; a confirmação do
   FR-014 basta. A tela não troca o filtro sozinha.
-- A centralização do FR-016 é só no frontend e não cria nova regra de permissão. A fonte de verdade
-  continua sendo `authorize()` no backend (Princípio II da constituição).
+- A centralização do FR-016 é só no frontend e não cria nova regra de permissão: ela espelha as
+  permissões que o servidor já tem. A fonte de verdade continua sendo `authorize()` no backend
+  (Princípio II da constituição).
 - A estabilidade do FR-018 pode ser obtida ajustando a forma como a suíte é executada (ex.: grau de
   paralelismo) ou tornando os testes mais rápidos, nunca removendo cobertura.
 - Depende do merge da S13 (PR #30): o código de Exames e Regras de Plantão polido aqui só existe
@@ -363,3 +381,23 @@ desenvolvimento e confirmar zero falhas.
 ## Descobertas
 
 <!-- Necessidades novas descobertas durante o desenvolvimento entram aqui, para decisão do usuário. -->
+
+Durante o `/speckit-plan` (2026-10-01):
+
+- **Telas da S12 mostram escrita a quem o servidor recusa.** No backend, `CLINICA_GERENCIAR` e
+  `VETERINARIO_GERENCIAR` são só de admin (`auth/service.py`, `_PERMISSOES`), mas `TelaClinicas`
+  e `TelaVeterinarios` mostram os controles de escrita a todo papel com acesso à rota. Atendente e
+  técnico clicam e recebem 403 "Não autorizado". A primeira versão desta spec dizia que a US6 não
+  mudaria o que cada papel vê, o que congelaria esse defeito. **Decisão do usuário: corrigir na
+  S14.** US6, FR-016, FR-017 e SC-007 foram reescritos para "cada papel vê o que o servidor
+  permite".
+- **`colSpan` da linha em edição na S12.** `TelaClinicas` e `TelaVeterinarios` têm 6 colunas e a
+  linha em edição usa `colSpan={5}`, o mesmo defeito corrigido na S13 (T052). **Decisão do usuário:
+  incluir na S14** (FR-019).
+- **Mensagens de 422 da S12 genéricas demais** (vira parte do FR-006, sem decisão nova): em
+  `useClinicas`, todo 422 vira "CNPJ inválido", e em `useVeterinarios` todo 422 que não cita CRMV
+  vira "A clínica selecionada não existe mais". Um 422 de validação de outro campo mostraria a
+  mensagem errada.
+- **`dia_semana` sem validação de faixa no backend** (fora de escopo, só registro): o backend aceita
+  regra de plantão com `dia_semana` fora de 0-6. A tela web só oferece 0-6, então não há impacto
+  hoje. Fica para decisão do usuário se vira item de uma spec futura.

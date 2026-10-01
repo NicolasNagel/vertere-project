@@ -36,8 +36,10 @@
   constituição (Princípio II): o requisito é justamente que a centralização da User Story 6 não
   mexa na fonte de verdade de permissão. Nenhuma biblioteca, arquivo ou estrutura de código é
   prescrita; isso fica para o `/speckit-plan`.
-- User Stories 6 e 7 têm valor de manutenção, não de usuário final, e por isso são P3. Os dois
-  itens foram pedidos explicitamente na descrição (itens 6 e 9).
+- User Stories 6 e 7 são P3: o valor principal é de manutenção. A US6 também corrige um defeito
+  visível da S12 (escrita mostrada a quem o servidor recusa), incluído por decisão do usuário
+  durante o `/speckit-plan` (ver "Descobertas" da spec). Revalidado depois dessa mudança: os itens
+  acima continuam atendidos.
 - Nenhum `[NEEDS CLARIFICATION]`: os pontos com mais de uma leitura possível foram resolvidos por
   default razoável em Assumptions (FR-015 só em Exames/Regras; FR-011 só em exame; sem migração de
   dados; item criado fora do filtro não troca o filtro sozinho).
