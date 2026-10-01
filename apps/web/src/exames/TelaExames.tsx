@@ -238,7 +238,17 @@ const DIAS_DA_SEMANA = [
 ]
 
 function RegrasDePlantao() {
-  const { regras, carregando, erro, criar, editar, inativar, reativar } = useRegrasPlantao()
+  const {
+    regras,
+    carregando,
+    erro,
+    apenasAtivos,
+    definirApenasAtivos,
+    criar,
+    editar,
+    inativar,
+    reativar,
+  } = useRegrasPlantao()
   const { papel } = useSessao()
   const [formularioAberto, setFormularioAberto] = useState(false)
   const podeGerenciar = papel === 'admin'
@@ -246,6 +256,15 @@ function RegrasDePlantao() {
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+
+      <label>
+        <input
+          type="checkbox"
+          checked={apenasAtivos}
+          onChange={(e) => definirApenasAtivos(e.target.checked)}
+        />
+        Apenas ativas
+      </label>
 
       {podeGerenciar ? (
         <Botao onClick={() => setFormularioAberto(true)}>Nova regra</Botao>
