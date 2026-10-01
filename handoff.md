@@ -9,7 +9,15 @@
 
 **Última atualização**: 2026-10-01, por sessão Claude Code (Opus 5.5).
 
-## S13 — ✅ entregue (`/fechar-spec` aprovou na 4ª rodada), `/code-review` feito, PR aberto
+## S14 (Polimento das telas S12/S13 + validação de valores no backend de S5) — spec escrita, próximo: `/speckit-plan`
+
+Branch `spec/s14-polimento-telas-web`, já rebaseada em `main` depois do merge do PR #30 (S13).
+Tem a spec (`specs/014-polimento-telas-web/spec.md` + `checklists/requirements.md`), a issue
+[#31](https://github.com/NicolasNagel/vertere-project/issues/31) e a linha em `docs/specs.md`
+(`rascunho`). Nenhum `[NEEDS CLARIFICATION]`; os defaults escolhidos estão em Assumptions e valem
+uma olhada do usuário antes do plano.
+
+## S13 — ✅ entregue e mergeada em `main` (PR #30, squash, 2026-10-01)
 
 Relatório final: `docs/specs/relatorios/S13-verificacao.md`. Histórico das rodadas:
 - **1ª rodada (❌)**: filtros e estado vazio fora da tela, mensagem de valor ≤ 0 ausente, T039 sem UI
@@ -103,6 +111,8 @@ das abas e formulários.
 `5434`) já estava rodando; `uvicorn`/`vite` foram iniciados e finalizados dentro desta sessão —
 nenhum processo de servidor ficou pendurado ao final.
 
+
+
 ## S12 (Clínicas + Veterinários no web) — mergeada em `main`
 
 PR [#28](https://github.com/NicolasNagel/vertere-project/pull/28) squash-mergeado em `main`
@@ -155,21 +165,20 @@ o mapa `componentePorRota`).
 
 ## Próximo passo real
 
-Revisar e mergear o PR da S13 (squash, fecha a #29). Próxima spec é decisão do usuário (Pacientes?
-Atendimentos? polimento das telas S12/S13?). Ponto de entrada: `/speckit-specify`, numeração `014`.
+`/speckit-plan` da S14 na branch `spec/s14-polimento-telas-web`, depois `/speckit-tasks` e
+`/speckit-implement` (consultar `dev-router` antes). Depois da S14, a próxima spec (Pacientes?
+Atendimentos? Laudos?) é decisão do usuário, não presumir. Numeração `015` (confirmar contra
+`docs/specs.md`).
 
-A próxima spec depois de S13 (Pacientes? Atendimentos? Laudos?) é decisão do usuário, não presumir
-(mesma regra aplicada antes de S12/S13). Ponto de entrada: `/speckit-specify`, numeração `014`
-(confirmar contra `docs/specs.md` antes).
+## `main` está com tudo mergeado até S13
 
-## `main` está com tudo mergeado até S12; S13 com PR aberto
-
-PRs #23 (harness), #26 (S11), #25 (S10) e #28 (S12) todos squash-mergeados em `main`, nesta ordem.
-Issues #20, #22, #24, #27 fecharam automaticamente. `docs/specs.md` reflete S1–S12 `entregue`, S13
-`em-desenvolvimento` na branch `spec/s13-exames-precificacao-web` (não mergeada ainda).
+PRs #23 (harness), #26 (S11), #25 (S10), #28 (S12) e #30 (S13) todos squash-mergeados em `main`,
+nesta ordem. Issues #20, #22, #24, #27 e #29 fecharam automaticamente. `docs/specs.md` reflete
+S1–S13 `entregue` e S14 `rascunho`.
 
 Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos`,
-`spec/s11-frontend-web` e `spec/s12-clinicas-veterinarios-web` continuam não deletadas (mesmo
+`spec/s11-frontend-web`, `spec/s12-clinicas-veterinarios-web` e
+`spec/s13-exames-precificacao-web` continuam não deletadas (mesmo
 padrão de merge, `--delete-branch=false`) — seguro deletar quando quiser, ninguém mais devia
 precisar delas.
 
