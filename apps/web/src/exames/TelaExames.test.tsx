@@ -286,3 +286,47 @@ describe('TelaExames', () => {
     expect(reativar).toHaveBeenCalledWith('1')
   })
 })
+
+describe('TelaExames — filtros do catálogo (FR-002)', () => {
+  beforeEach(() => {
+    mockarUseRegrasPlantao()
+    mockarPapel('tecnico')
+  })
+
+  it('filtro de categoria lista as categorias dos exames e chama definirCategoria', async () => {
+    const definirCategoria = vi.fn()
+    mockarUseExames({
+      exames: [exameA, { ...exameA, id: '2', categoria: 'Bioquímica', nome: 'Glicose' }],
+      definirCategoria,
+    })
+    render(<TelaExames />)
+
+    const filtro = screen.getByLabelText('Filtrar por categoria')
+    expect(screen.getByRole('option', { name: 'Bioquímica' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Hematologia' })).toBeInTheDocument()
+
+    await userEvent.selectOptions(filtro, 'Hematologia')
+    expect(definirCategoria).toHaveBeenLastCalledWith('Hematologia')
+  })
+
+  it('opção "Todas as categorias" limpa o filtro', async () => {
+    const definirCategoria = vi.fn()
+    mockarUseExames({ exames: [exameA], categoria: 'Hematologia', definirCategoria })
+    render(<TelaExames />)
+
+    await userEvent.selectOptions(
+      screen.getByLabelText('Filtrar por categoria'),
+      'Todas as categorias',
+    )
+    expect(definirCategoria).toHaveBeenLastCalledWith(undefined)
+  })
+
+  it('checkbox "Apenas ativos" chama definirApenasAtivos', async () => {
+    const definirApenasAtivos = vi.fn()
+    mockarUseExames({ definirApenasAtivos })
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('checkbox', { name: /apenas ativos/i }))
+    expect(definirApenasAtivos).toHaveBeenCalledWith(true)
+  })
+})

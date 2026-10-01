@@ -315,7 +315,7 @@ uma regra de plantão, sempre restrito a `admin`.
 T039, acima). Mesma seam das phases anteriores: `TelaExames.test.tsx` com os hooks mockados e os
 testes de formulário com Testing Library.
 
-- [ ] T041 [US1] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx` para os
+- [X] T041 [US1] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx` para os
       filtros do catálogo (FR-002): select "Filtrar por categoria" (opções = categorias dos exames
       carregados, mais "Todas as categorias") chama `definirCategoria` com a categoria escolhida ou
       com `undefined`; checkbox "Apenas ativos" chama `definirApenasAtivos`
