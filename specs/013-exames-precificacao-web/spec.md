@@ -248,3 +248,13 @@ inativando-a, e vendo o status mudar na lista.
 4. **T008/T025**: faltava a "mensagem de erro visível" para valor zero ou negativo. Os testes não
    cobriam valor negativo e só checavam o bloqueio do `aoSalvar`.
 5. **T039**: estava marcada `[X]` sem o percurso pela UI real. Foi desmarcada.
+
+`/fechar-spec S13` (3ª rodada; a 2ª travou sem veredito) em 2026-10-01: **❌ BLOQUEADA**. As
+pendências 1-5 acima foram confirmadas como resolvidas, e a T039 foi refeita na UI real. Pendência
+nova, a única:
+
+6. **T038**: estava marcada `[X]` sem "cobertura visível" (Princípio IV da constituição). Em
+   `apps/web` não há provider de cobertura: `vitest run --coverage` falha com
+   `MISSING DEPENDENCY @vitest/coverage-v8`. A S12 tem a mesma lacuna. Aguardando decisão do
+   usuário entre (a) adicionar `@vitest/coverage-v8` e registrar os números, ou (b) reescrever a
+   T038 e registrar a divergência com a constituição.
