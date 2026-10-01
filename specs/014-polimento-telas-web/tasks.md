@@ -132,7 +132,7 @@ não depende delas.
     só `admin`;
   - `REGRA_PLANTAO_VER` → `admin` e `atendente`;
   - `clinica` → `false` em todas.
-- [ ] T011 Implementar `apps/web/src/autenticacao/permissoesDeTela.ts` (`AcaoDeTela`,
+- [X] T011 Implementar `apps/web/src/autenticacao/permissoesDeTela.ts` (`AcaoDeTela`,
       `podeExecutar`) até T010 passar, com a nota de sincronização apontando para
       `apps/api/src/vertere_api/auth/service.py::_PERMISSOES` (mesmo formato do comentário de
       `apps/web/src/shell/itensDeNavegacao.ts`).
