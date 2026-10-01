@@ -7,29 +7,48 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-09-30, por sessão Claude Code (Opus 5.5).
+**Última atualização**: 2026-10-01, por sessão Claude Code (Opus 5.5).
 
-## S13 — `/fechar-spec` rodou: ❌ BLOQUEADA; pendências 1-4 já corrigidas, falta só a 5 (T039)
+## S13 — ✅ entregue (`/fechar-spec` aprovou na 4ª rodada), `/code-review` feito, PR aberto
 
-Relatório: `docs/specs/relatorios/S13-verificacao.md`. Pendências copiadas para `spec.md` →
-"Verificação" e viraram a Phase 8 de `tasks.md` (T041-T048, todas `[X]`, um commit cada):
-filtros de categoria/"apenas ativos" ligados à tela (FR-002), "apenas ativas" nas regras (FR-006),
-estado vazio distinto de erro, e validação explícita de valor > 0 com mensagem `role="alert"` nos
-dois formulários (troca do `min="0.01"` nativo, que barrava o submit antes do handler). O filtro de
-categoria é `<select>` porque o backend compara categoria por igualdade exata. Suíte: 164/164
-verdes, lint sem achado novo, build limpo.
+Relatório final: `docs/specs/relatorios/S13-verificacao.md`. Histórico das rodadas:
+- **1ª rodada (❌)**: filtros e estado vazio fora da tela, mensagem de valor ≤ 0 ausente, T039 sem UI
+  real. Corrigido na Phase 8 de `tasks.md`.
+- **2ª rodada**: travou sem veredito, ficou 10 min parada no navegador.
+- **3ª rodada (❌)**: sem provider de cobertura no web. O usuário optou por instalar
+  `@vitest/coverage-v8`, e entrou o script `pnpm test:cobertura`.
+- **4ª rodada (✅)**: aprovada.
 
-**Bloqueio restante — T039 desmarcada**: os 6 cenários de `quickstart.md` nunca foram percorridos
-na UI real. A extensão Claude in Chrome seguia desconectada nesta sessão. Caminhos: (a) sessão com
-navegador conectado executa o quickstart e marca T039; (b) o usuário decide explicitamente aceitar
-a validação só por API e a redação de T039 é ajustada para isso. Depois, rodar `/fechar-spec S13`
-de novo → `/code-review` → PR. **Não abrir PR antes.** Observações não bloqueantes do relatório
-(colSpan 4/5 na linha de edição, sem "Cancelar" nos formulários, formulário fecha antes da
-resposta da API, valores sem formatação BRL, 422 do FastAPI exibido cru) ficam para o
-`/code-review` decidir.
+Depois disso, o `/code-review` não teve achado bloqueante. Por decisão do usuário, a Phase 9
+(T049-T053) corrigiu antes do PR: o erro de rede, que antes era engolido e aparecia como "lista
+vazia", agora vira mensagem; o `colSpan` da linha em edição foi ajustado; `DIAS_DA_SEMANA` e o
+corte HH:MM foram para `exames/regraPlantao.ts`; os casts dos hooks foram removidos. Suíte 169/169,
+lint igual, build limpo.
 
-Efeitos colaterais no banco de dev (`vertere_postgres_dev`, porta 5434, deixado rodando pelo
-verificador): exame "VerifS13" e uma regra de sexta 18:00-06:00, ambos inativos.
+**Adiado para uma spec de polimento** (achados não bloqueantes do `/code-review`, vários também
+valem para a S12):
+- o formulário fecha antes da resposta da API (em erro, o que foi digitado se perde);
+- falta "Cancelar" nos formulários;
+- o estado local não reaplica o filtro ativo depois de criar ou inativar;
+- não há formatação BRL, e o valor editado aparece sem casas decimais até recarregar;
+- 422/500 expõem o corpo cru (`extrairDetalheErro`);
+- a checagem de papel fica espalhada em `TelaExames.tsx`;
+- categoria ou nome só com espaços passam;
+- os botões ocupam a largura inteira da tela;
+- `useClinicas`/`useVeterinarios` (S12) engolem erro de rede igual ao bug corrigido aqui e ainda
+  não usam `useColecaoCrud`.
+
+O backend da S5 ainda aceita preço e valor negativos (ver "Descobertas" no `spec.md`), aguardando
+decisão do usuário.
+
+**Instabilidade de teste**: `pnpm test` com o paralelismo padrão às vezes estoura o timeout de 5 s
+em testes de formulário quando a máquina está carregada. Isolados ou com `--maxWorkers=2`, passam.
+Se isso se repetir, vale fixar `maxWorkers` na config do vitest.
+
+**Banco de dev** (`vertere_postgres_dev`, porta 5434): estão lá os usuários de teste `teste.admin`,
+`teste.atendente`, `teste.tecnico` e `teste.clinica@vertere.com.br` (senha `Senha123!`; o de
+`clinica` está ligado à "Clinica Teste S12 Editada"), além de exames e regras criados nas
+verificações. "Exame Negativo" (-10.00) é a prova do achado de backend.
 
 ### Contexto da implementação original da S13 (sessão anterior)
 
@@ -136,14 +155,14 @@ o mapa `componentePorRota`).
 
 ## Próximo passo real
 
-Resolver a T039 da S13 (ver seção S13 acima), rodar `/fechar-spec S13` de novo, depois
-`/code-review`, depois o PR.
+Revisar e mergear o PR da S13 (squash, fecha a #29). Próxima spec é decisão do usuário (Pacientes?
+Atendimentos? polimento das telas S12/S13?). Ponto de entrada: `/speckit-specify`, numeração `014`.
 
 A próxima spec depois de S13 (Pacientes? Atendimentos? Laudos?) é decisão do usuário, não presumir
 (mesma regra aplicada antes de S12/S13). Ponto de entrada: `/speckit-specify`, numeração `014`
 (confirmar contra `docs/specs.md` antes).
 
-## `main` está com tudo mergeado até S12; S13 ainda não tem PR
+## `main` está com tudo mergeado até S12; S13 com PR aberto
 
 PRs #23 (harness), #26 (S11), #25 (S10) e #28 (S12) todos squash-mergeados em `main`, nesta ordem.
 Issues #20, #22, #24, #27 fecharam automaticamente. `docs/specs.md` reflete S1–S12 `entregue`, S13
