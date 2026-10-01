@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-01
 
-**Status**: rascunho
+**Status**: em-desenvolvimento
 
 **Input**: User description: "Spec S14: polimento das telas web de cadastro já entregues em S12
 (Clínicas, Veterinários) e S13 (Exames, Regras de Plantão), mais a validação de valores positivos

@@ -39,7 +39,8 @@ cobertura (`pnpm --dir apps/web test:cobertura` ou `uv run pytest --cov` em `app
 
 **Purpose**: baseline e transição de status
 
-- [ ] T001 Gate de partida, sem alterar código.
+- [X] T001 Gate de partida, sem alterar código. **Resultado (2026-10-01)**: web 169/169, lint com
+  os 4 warnings pré-existentes, build limpo, API 40/40 nos três arquivos de exames.
   - Confirmar, na branch `spec/s14-polimento-telas-web`, que `pnpm --dir apps/web test`,
     `pnpm --dir apps/web lint`, `pnpm --dir apps/web build` e
     `uv run pytest tests/test_exames_exame_service.py tests/test_exames_regra_plantao_service.py tests/test_exames_router.py`
