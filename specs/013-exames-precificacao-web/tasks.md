@@ -362,7 +362,7 @@ antes do PR. Os demais ficam para uma spec de polimento (ver `handoff.md`).
       `executarAcaoSobreItem` vira mensagem de erro genérica em `erro`. Hoje ela é engolida e a
       tela mostra "Nenhum exame encontrado.", contrariando o Edge Case "estado vazio claro,
       distinto de erro de carregamento"
-- [ ] T050 [US1][US3] Tratar falha não-HTTP em `useColecaoCrud.ts` até T049 passar, centralizando o
+- [X] T050 [US1][US3] Tratar falha não-HTTP em `useColecaoCrud.ts` até T049 passar, centralizando o
       try/catch repetido 3x num helper interno
 - [ ] T051 [US2][US4] Escrever teste falho em `TelaExames.test.tsx`: a linha em edição ocupa todas
       as colunas da tabela (5 para admin), não 4
