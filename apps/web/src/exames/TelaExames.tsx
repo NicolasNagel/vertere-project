@@ -145,6 +145,10 @@ function CatalogoDeExames() {
 
       {carregando ? (
         <p>Carregando…</p>
+      ) : exames.length === 0 ? (
+        erro ? null : (
+          <p>Nenhum exame encontrado.</p>
+        )
       ) : (
         <table>
           <thead>
@@ -280,6 +284,10 @@ function RegrasDePlantao() {
 
       {carregando ? (
         <p>Carregando…</p>
+      ) : regras.length === 0 ? (
+        erro ? null : (
+          <p>Nenhuma regra de plantão encontrada.</p>
+        )
       ) : (
         <table>
           <thead>

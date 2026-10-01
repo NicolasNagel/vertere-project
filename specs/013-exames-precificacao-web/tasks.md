@@ -328,7 +328,7 @@ testes de formulário com Testing Library.
 - [X] T045 [US1][US3] Escrever testes falhos em `TelaExames.test.tsx` para o estado vazio (Edge
       Case): "Nenhum exame encontrado." / "Nenhuma regra de plantão encontrada." quando a lista vem
       vazia sem erro nem carregamento, e ausência da mensagem quando há erro
-- [ ] T046 [US1][US3] Implementar o estado vazio em `CatalogoDeExames`/`RegrasDePlantao` até T045
+- [X] T046 [US1][US3] Implementar o estado vazio em `CatalogoDeExames`/`RegrasDePlantao` até T045
       passar
 - [ ] T047 [US1][US3] Escrever testes falhos em `FormularioExame.test.tsx`/
       `FormularioRegraPlantao.test.tsx`: valor `0` e valor negativo bloqueiam `aoSalvar` **e**
