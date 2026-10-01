@@ -367,7 +367,7 @@ antes do PR. Os demais ficam para uma spec de polimento (ver `handoff.md`).
 - [X] T051 [US2][US4] Escrever teste falho em `TelaExames.test.tsx`: a linha em edição ocupa todas
       as colunas da tabela (5 para admin), não 4
 - [X] T052 [US2][US4] Corrigir o `colSpan` das linhas em edição até T051 passar
-- [ ] T053 Refatoração sem mudança de comportamento: `DIAS_DA_SEMANA` e o corte `HH:MM` dos horários
+- [X] T053 Refatoração sem mudança de comportamento: `DIAS_DA_SEMANA` e o corte `HH:MM` dos horários
       num módulo compartilhado de `apps/web/src/exames/` (hoje duplicados entre `TelaExames.tsx` e
       `FormularioRegraPlantao.tsx`), e remoção dos casts `itens as ...[]` em
       `useExames.ts`/`useRegrasPlantao.ts`. A suíte existente cobre o comportamento

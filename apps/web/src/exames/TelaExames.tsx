@@ -4,6 +4,7 @@ import { useSessao } from '../autenticacao/SessaoContext'
 import type { components } from '../api/tipos.gerados'
 import { FormularioExame } from './FormularioExame'
 import { FormularioRegraPlantao } from './FormularioRegraPlantao'
+import { DIAS_DA_SEMANA, paraHoraSemSegundos } from './regraPlantao'
 import { useExames } from './useExames'
 import { useRegrasPlantao } from './useRegrasPlantao'
 
@@ -213,7 +214,7 @@ function LinhaRegraPlantao({
     <tr>
       <td>{DIAS_DA_SEMANA[regra.dia_semana]}</td>
       <td>
-        {regra.hora_inicio.slice(0, 5)}–{regra.hora_fim.slice(0, 5)}
+        {paraHoraSemSegundos(regra.hora_inicio)}–{paraHoraSemSegundos(regra.hora_fim)}
       </td>
       <td>{regra.valor_adicional}</td>
       <td>{regra.ativo ? 'Ativa' : 'Inativa'}</td>
@@ -230,16 +231,6 @@ function LinhaRegraPlantao({
     </tr>
   )
 }
-
-const DIAS_DA_SEMANA = [
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-  'Domingo',
-]
 
 function RegrasDePlantao() {
   const {

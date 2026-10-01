@@ -11,7 +11,6 @@ import {
   reativarRegraPlantao,
 } from './regrasPlantaoApi'
 
-type RegraPlantaoResponse = components['schemas']['RegraPlantaoResponse']
 type CriarRegraPlantaoRequest = components['schemas']['CriarRegraPlantaoRequest']
 type EditarRegraPlantaoRequest = components['schemas']['EditarRegraPlantaoRequest']
 
@@ -57,7 +56,7 @@ export function useRegrasPlantao() {
   )
 
   return {
-    regras: itens as RegraPlantaoResponse[],
+    regras: itens,
     carregando,
     erro,
     apenasAtivos,

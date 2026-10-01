@@ -2,6 +2,7 @@ import { useId, type FormEvent, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
 import type { components } from '../api/tipos.gerados'
+import { DIAS_DA_SEMANA, paraHoraSemSegundos } from './regraPlantao'
 
 type CriarRegraPlantaoRequest = components['schemas']['CriarRegraPlantaoRequest']
 type RegraPlantaoResponse = components['schemas']['RegraPlantaoResponse']
@@ -10,22 +11,6 @@ interface FormularioRegraPlantaoProps {
   /** Presente em modo edição: pré-preenche os campos. */
   regra?: RegraPlantaoResponse
   aoSalvar: (dados: CriarRegraPlantaoRequest) => void
-}
-
-const DIAS_DA_SEMANA = [
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-  'Domingo',
-]
-
-/** `RegraPlantaoResponse.hora_inicio`/`hora_fim` vêm como `"HH:MM:SS"`; `<input type="time">` só
- * aceita `"HH:MM"` sem segundos (mesmo passo padrão desta tela). */
-function paraHoraSemSegundos(hora: string): string {
-  return hora.slice(0, 5)
 }
 
 export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlantaoProps) {

@@ -5,7 +5,6 @@ import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { criarExame, editarExame, inativarExame, listarExames, reativarExame } from './examesApi'
 
-type ExameResponse = components['schemas']['ExameResponse']
 type CriarExameRequest = components['schemas']['CriarExameRequest']
 type EditarExameRequest = components['schemas']['EditarExameRequest']
 
@@ -53,7 +52,7 @@ export function useExames() {
   )
 
   return {
-    exames: itens as ExameResponse[],
+    exames: itens,
     carregando,
     erro,
     categoria,
