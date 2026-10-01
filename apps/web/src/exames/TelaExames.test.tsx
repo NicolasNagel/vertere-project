@@ -344,3 +344,42 @@ describe('TelaExames — filtro das regras de plantão (FR-006)', () => {
     expect(definirApenasAtivos).toHaveBeenCalledWith(true)
   })
 })
+
+describe('TelaExames — estado vazio (Edge Case)', () => {
+  beforeEach(() => {
+    mockarPapel('admin')
+  })
+
+  it('catálogo vazio mostra "Nenhum exame encontrado."', () => {
+    mockarUseExames({ exames: [] })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    expect(screen.getByText('Nenhum exame encontrado.')).toBeInTheDocument()
+  })
+
+  it('erro de carregamento não é confundido com catálogo vazio', () => {
+    mockarUseExames({ exames: [], erro: 'Falha ao carregar exames.' })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    expect(screen.getByRole('alert')).toHaveTextContent('Falha ao carregar exames.')
+    expect(screen.queryByText('Nenhum exame encontrado.')).not.toBeInTheDocument()
+  })
+
+  it('lista de regras vazia mostra "Nenhuma regra de plantão encontrada."', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [] })
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.getByText('Nenhuma regra de plantão encontrada.')).toBeInTheDocument()
+  })
+
+  it('erro de carregamento das regras não é confundido com lista vazia', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [], erro: 'Falha ao carregar regras.' })
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    expect(screen.queryByText('Nenhuma regra de plantão encontrada.')).not.toBeInTheDocument()
+  })
+})

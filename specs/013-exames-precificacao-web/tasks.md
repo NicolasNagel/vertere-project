@@ -325,7 +325,7 @@ testes de formulário com Testing Library.
 - [X] T043 [US3] Escrever teste falho em `TelaExames.test.tsx` para o checkbox "Apenas ativas" da
       aba de regras de plantão (FR-006), chamando `definirApenasAtivos`
 - [X] T044 [US3] Ligar o checkbox em `RegrasDePlantao` (`TelaExames.tsx`) até T043 passar
-- [ ] T045 [US1][US3] Escrever testes falhos em `TelaExames.test.tsx` para o estado vazio (Edge
+- [X] T045 [US1][US3] Escrever testes falhos em `TelaExames.test.tsx` para o estado vazio (Edge
       Case): "Nenhum exame encontrado." / "Nenhuma regra de plantão encontrada." quando a lista vem
       vazia sem erro nem carregamento, e ausência da mensagem quando há erro
 - [ ] T046 [US1][US3] Implementar o estado vazio em `CatalogoDeExames`/`RegrasDePlantao` até T045
