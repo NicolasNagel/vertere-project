@@ -83,7 +83,7 @@ não depende delas.
   - campo sem rótulo → `Verifique o campo informado: …`;
   - duas entradas na lista → duas frases unidas por espaço;
   - JSON sem `detail` utilizável → `Não foi possível concluir a operação. Tente novamente.`
-- [ ] T005 Implementar `mensagemDeErroPadrao` em `apps/web/src/api/erroApi.ts` até T004 passar,
+- [X] T005 Implementar `mensagemDeErroPadrao` em `apps/web/src/api/erroApi.ts` até T004 passar,
       mantendo `extrairDetalheErro` com o comportamento atual (os hooks continuam a usá-lo para
       reconhecer mensagens de domínio).
 - [ ] T006 [P] Escrever testes falhos para o contrato novo de `useColecaoCrud` em
