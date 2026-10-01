@@ -68,7 +68,7 @@ não depende delas.
 - [X] T003 Criar `apps/web/tests/usuario.ts` exportando `usuario()`, que devolve
       `userEvent.setup({ delay: null })`. Comentário no arquivo explica o porquê: research.md,
       Decisão 7 (custo por tecla sob carga).
-- [ ] T004 [P] Escrever testes falhos para `mensagemDeErroPadrao(erro, rotulosDeCampo?)` em
+- [X] T004 [P] Escrever testes falhos para `mensagemDeErroPadrao(erro, rotulosDeCampo?)` em
       `apps/web/src/api/erroApi.test.ts`, cobrindo a tabela "Mensagens de erro padrão" de
       data-model.md e research.md, Decisão 4:
   - status 500 com corpo `Internal Server Error` → `Problema no servidor. Tente novamente em
