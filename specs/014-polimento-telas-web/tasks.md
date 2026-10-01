@@ -117,7 +117,7 @@ não depende delas.
   passam a esperar a recarga; os de "erro inesperado" passam a checar o `ResultadoAcao`), e
   `aviso: null` nos mocks de `TelaExames.test.tsx`. `src/api` + `src/exames`: 103/103, 97% das
   linhas.
-- [ ] T008 [P] Escrever testes falhos para `useEnvioFormulario(aoSalvar, aoFechar)` em
+- [X] T008 [P] Escrever testes falhos para `useEnvioFormulario(aoSalvar, aoFechar)` em
       `apps/web/src/ui/useEnvioFormulario.test.ts`:
   - `enviar()` com `aoSalvar` → `{ok:true}` chama `aoFechar` uma vez;
   - com `{ok:false, mensagem:'x'}`, não chama `aoFechar` e `erroEnvio === 'x'`;
