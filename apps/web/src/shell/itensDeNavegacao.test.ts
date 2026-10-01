@@ -45,8 +45,8 @@ describe('itensDeNavegacao', () => {
     expect(itemPacientesAdmin?.rota).toBe('/pacientes')
   })
 
-  it('Clínicas e Veterinários são as seções implementadas até aqui (S12) — as demais continuam placeholder', () => {
+  it('Clínicas, Veterinários e Exames são as seções implementadas até aqui (S13) — as demais continuam placeholder', () => {
     const implementados = itensDeNavegacao.filter((item) => item.implementado).map((item) => item.rotulo)
-    expect(new Set(implementados)).toEqual(new Set(['Clínicas', 'Veterinários']))
+    expect(new Set(implementados)).toEqual(new Set(['Clínicas', 'Veterinários', 'Exames']))
   })
 })

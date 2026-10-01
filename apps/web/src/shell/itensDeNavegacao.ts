@@ -24,7 +24,7 @@ export const itensDeNavegacao: ItemDeNavegacao[] = [
     papeisPermitidos: ['admin', 'atendente', 'tecnico'],
     implementado: false,
   },
-  { rotulo: 'Exames', rota: '/exames', papeisPermitidos: ['admin', 'atendente', 'tecnico'], implementado: false },
+  { rotulo: 'Exames', rota: '/exames', papeisPermitidos: ['admin', 'atendente', 'tecnico'], implementado: true },
   {
     rotulo: 'Atendimentos',
     rota: '/atendimentos',

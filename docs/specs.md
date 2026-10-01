@@ -33,5 +33,6 @@ arquivo único, para legado; ou anotadas em `tasks.md`/relatório, para Spec Kit
 | S10 | Importação de Dados Históricos | [docs/specs/S10-importacao-dados-historicos.md](specs/S10-importacao-dados-historicos.md) | [#22](https://github.com/NicolasNagel/vertere-project/issues/22) | entregue |
 | S11 | Autenticação e Shell Autenticado do Frontend | [specs/011-autenticacao-web/spec.md](../specs/011-autenticacao-web/spec.md) | [#24](https://github.com/NicolasNagel/vertere-project/issues/24) | entregue |
 | S12 | Telas de Clínicas e Veterinários (Web) | [specs/012-clinicas-veterinarios-web/spec.md](../specs/012-clinicas-veterinarios-web/spec.md) | [#27](https://github.com/NicolasNagel/vertere-project/issues/27) | entregue |
+| S13 | Tela de Exames & Precificação (Web) | [specs/013-exames-precificacao-web/spec.md](../specs/013-exames-precificacao-web/spec.md) | [#29](https://github.com/NicolasNagel/vertere-project/issues/29) | entregue |
 
 <!-- Adicionar uma linha por spec nova, na ordem em que forem publicadas (S2, S3, ...). -->
