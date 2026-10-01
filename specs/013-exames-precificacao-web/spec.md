@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-29
 
-**Status**: em-desenvolvimento
+**Status**: entregue
 
 **Input**: User description: "Tela de listagem/CRUD de Exames (catálogo de preços) e Regras de Plantão no frontend (apps/web), consumindo os endpoints já existentes do módulo S5 (Exames & Precificação) do backend. Substitui o placeholder TelaEmConstrucao da seção 'Exames' do menu, seguindo o mesmo padrão de tela estabelecido em S12 (Clínicas/Veterinários)."
 
@@ -258,3 +258,6 @@ nova, a única:
    `MISSING DEPENDENCY @vitest/coverage-v8`. A S12 tem a mesma lacuna. Aguardando decisão do
    usuário entre (a) adicionar `@vitest/coverage-v8` e registrar os números, ou (b) reescrever a
    T038 e registrar a divergência com a constituição.
+
+`/fechar-spec S13` (4ª rodada) em 2026-10-01: **✅ APROVADA**. As pendências 1-6 foram confirmadas
+como resolvidas.
