@@ -125,7 +125,7 @@ não depende delas.
   - um segundo `enviar()` enquanto `salvando` não chama `aoSalvar` de novo;
   - um envio bem-sucedido depois de um que falhou limpa `erroEnvio`.
 - [X] T009 Implementar `apps/web/src/ui/useEnvioFormulario.ts` até T008 passar.
-- [ ] T010 [P] Escrever testes falhos para `podeExecutar(papel, acao)` em
+- [X] T010 [P] Escrever testes falhos para `podeExecutar(papel, acao)` em
       `apps/web/src/autenticacao/permissoesDeTela.test.ts`, tabela-dirigido, exatamente a tabela
       "Permissões de tela" de data-model.md:
   - `CLINICA_GERENCIAR`, `VETERINARIO_GERENCIAR`, `EXAME_GERENCIAR` e `REGRA_PLANTAO_GERENCIAR` →
