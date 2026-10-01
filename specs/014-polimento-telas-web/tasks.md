@@ -65,7 +65,7 @@ não depende delas.
       verdes. **Resultado**: `test` 169/169 (77 s). `test:cobertura` teve 1 falha por timeout na 1ª
       execução e 169/169 na 2ª: a instabilidade conhecida, que só o `maxWorkers` não resolve
       (research.md, Decisão 7). T003 e T053 atacam o resto.
-- [ ] T003 Criar `apps/web/tests/usuario.ts` exportando `usuario()`, que devolve
+- [X] T003 Criar `apps/web/tests/usuario.ts` exportando `usuario()`, que devolve
       `userEvent.setup({ delay: null })`. Comentário no arquivo explica o porquê: research.md,
       Decisão 7 (custo por tecla sob carga).
 - [ ] T004 [P] Escrever testes falhos para `mensagemDeErroPadrao(erro, rotulosDeCampo?)` em
