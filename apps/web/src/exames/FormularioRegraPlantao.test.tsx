@@ -34,17 +34,23 @@ describe('FormularioRegraPlantao', () => {
     expect(aoSalvar).toHaveBeenCalled()
   })
 
-  it('bloqueia submissão com valor adicional zero ou negativo', async () => {
-    const aoSalvar = vi.fn()
-    render(<FormularioRegraPlantao aoSalvar={aoSalvar} />)
+  it.each(['0', '-5'])(
+    'bloqueia submissão com valor adicional %s e mostra mensagem específica',
+    async (valor) => {
+      const aoSalvar = vi.fn()
+      render(<FormularioRegraPlantao aoSalvar={aoSalvar} />)
 
-    await userEvent.type(screen.getByLabelText('Horário de início'), '18:00')
-    await userEvent.type(screen.getByLabelText('Horário de fim'), '06:00')
-    await userEvent.type(screen.getByLabelText('Valor adicional'), '0')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+      await userEvent.type(screen.getByLabelText('Horário de início'), '18:00')
+      await userEvent.type(screen.getByLabelText('Horário de fim'), '06:00')
+      await userEvent.type(screen.getByLabelText('Valor adicional'), valor)
+      await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
 
-    expect(aoSalvar).not.toHaveBeenCalled()
-  })
+      expect(aoSalvar).not.toHaveBeenCalled()
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Valor adicional deve ser maior que zero.',
+      )
+    },
+  )
 
   it('modo edição pré-preenche os campos', () => {
     const regra = {

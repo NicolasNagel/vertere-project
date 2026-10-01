@@ -30,17 +30,21 @@ describe('FormularioExame', () => {
     expect(aoSalvar).not.toHaveBeenCalled()
   })
 
-  it('bloqueia submissão com preço-base zero ou negativo', async () => {
-    const aoSalvar = vi.fn()
-    render(<FormularioExame aoSalvar={aoSalvar} />)
+  it.each(['0', '-5'])(
+    'bloqueia submissão com preço-base %s e mostra mensagem específica',
+    async (valor) => {
+      const aoSalvar = vi.fn()
+      render(<FormularioExame aoSalvar={aoSalvar} />)
 
-    await userEvent.type(screen.getByLabelText('Categoria'), 'Hematologia')
-    await userEvent.type(screen.getByLabelText('Nome'), 'Hemograma completo')
-    await userEvent.type(screen.getByLabelText('Preço-base'), '0')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+      await userEvent.type(screen.getByLabelText('Categoria'), 'Hematologia')
+      await userEvent.type(screen.getByLabelText('Nome'), 'Hemograma completo')
+      await userEvent.type(screen.getByLabelText('Preço-base'), valor)
+      await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
 
-    expect(aoSalvar).not.toHaveBeenCalled()
-  })
+      expect(aoSalvar).not.toHaveBeenCalled()
+      expect(screen.getByRole('alert')).toHaveTextContent('Preço-base deve ser maior que zero.')
+    },
+  )
 
   it('modo edição pré-preenche os campos', () => {
     const exame = {

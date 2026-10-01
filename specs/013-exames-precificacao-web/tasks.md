@@ -330,7 +330,7 @@ testes de formulário com Testing Library.
       vazia sem erro nem carregamento, e ausência da mensagem quando há erro
 - [X] T046 [US1][US3] Implementar o estado vazio em `CatalogoDeExames`/`RegrasDePlantao` até T045
       passar
-- [ ] T047 [US1][US3] Escrever testes falhos em `FormularioExame.test.tsx`/
+- [X] T047 [US1][US3] Escrever testes falhos em `FormularioExame.test.tsx`/
       `FormularioRegraPlantao.test.tsx`: valor `0` e valor negativo bloqueiam `aoSalvar` **e**
       mostram mensagem específica em `role="alert"` (Edge Case + SC-005; completa T008/T025)
 - [ ] T048 [US1][US3] Validação explícita de valor positivo no `aoSubmeter` de
