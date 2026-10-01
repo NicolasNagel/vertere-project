@@ -59,10 +59,12 @@ e a estabilidade da suíte, primeiro, para os ciclos seguintes rodarem numa suí
 **⚠️ CRITICAL**: T002–T013 bloqueiam as phases 3, 4, 6, 7 e 8 (frontend). A Phase 5 (US3, backend)
 não depende delas.
 
-- [ ] T002 Fixar `test.maxWorkers: '50%'` em `apps/web/vite.config.ts` e tirar `--maxWorkers=2` do
+- [X] T002 Fixar `test.maxWorkers: '50%'` em `apps/web/vite.config.ts` e tirar `--maxWorkers=2` do
       script `test:cobertura` em `apps/web/package.json`, que passa a herdar da config. Rodar
       `pnpm --dir apps/web test` e `test:cobertura` uma vez cada para confirmar que continuam
-      verdes.
+      verdes. **Resultado**: `test` 169/169 (77 s). `test:cobertura` teve 1 falha por timeout na 1ª
+      execução e 169/169 na 2ª: a instabilidade conhecida, que só o `maxWorkers` não resolve
+      (research.md, Decisão 7). T003 e T053 atacam o resto.
 - [ ] T003 Criar `apps/web/tests/usuario.ts` exportando `usuario()`, que devolve
       `userEvent.setup({ delay: null })`. Comentário no arquivo explica o porquê: research.md,
       Decisão 7 (custo por tecla sob carga).
