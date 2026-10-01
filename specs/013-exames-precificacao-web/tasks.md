@@ -287,7 +287,7 @@ uma regra de plantão, sempre restrito a `admin`.
       `apps/web/src/exames/` e `apps/web/src/api/useColecaoCrud.ts` (Princípio IV da constituição
       — nenhuma task é considerada concluída só porque os testes existem, a suíte real precisa
       passar)
-- [X] T039 Executar manualmente os 6 cenários de
+- [ ] T039 Executar manualmente os 6 cenários de
       `specs/013-exames-precificacao-web/quickstart.md` contra o backend e o frontend rodando
       localmente, confirmando em particular que a validação de preço/valor não positivo só ocorre
       no frontend (achado de "Descobertas" em `spec.md`) e registrando qualquer outra divergência
@@ -301,9 +301,41 @@ uma regra de plantão, sempre restrito a `admin`.
       a extensão Claude in Chrome não estava conectada nesta sessão, então os Cenários 1-6 do
       `quickstart.md` não foram confirmados visualmente na tela, só via API direta equivalente aos
       mesmos fluxos. Registrar esse gap para quem fizer `/fechar-spec` decidir se basta a
-      verificação por API ou se uma sessão com navegador disponível precisa repetir via UI
+      verificação por API ou se uma sessão com navegador disponível precisa repetir via UI —
+      **desmarcada após `/fechar-spec` (pendência 5 de `docs/specs/relatorios/S13-verificacao.md`)**:
+      a task só volta a `[X]` quando os Cenários 1-6 forem percorridos na UI real
 - [X] T040 Atualizar `handoff.md` relatando a S13 implementada, o achado de "Descobertas" (schema
       do backend S5 sem `gt=0`), e pronta para `/fechar-spec`
+
+---
+
+## Phase 8: Correções da verificação independente (`/fechar-spec` ❌)
+
+**Purpose**: Fechar as pendências 1-4 de `docs/specs/relatorios/S13-verificacao.md` (pendência 5 =
+T039, acima). Mesma seam das phases anteriores: `TelaExames.test.tsx` com os hooks mockados e os
+testes de formulário com Testing Library.
+
+- [ ] T041 [US1] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx` para os
+      filtros do catálogo (FR-002): select "Filtrar por categoria" (opções = categorias dos exames
+      carregados, mais "Todas as categorias") chama `definirCategoria` com a categoria escolhida ou
+      com `undefined`; checkbox "Apenas ativos" chama `definirApenasAtivos`
+- [ ] T042 [US1] Ligar os dois filtros em `CatalogoDeExames` (`TelaExames.tsx`) até T041 passar. O
+      backend filtra categoria por igualdade exata (`exames/service.py`), por isso select em vez de
+      texto livre
+- [ ] T043 [US3] Escrever teste falho em `TelaExames.test.tsx` para o checkbox "Apenas ativas" da
+      aba de regras de plantão (FR-006), chamando `definirApenasAtivos`
+- [ ] T044 [US3] Ligar o checkbox em `RegrasDePlantao` (`TelaExames.tsx`) até T043 passar
+- [ ] T045 [US1][US3] Escrever testes falhos em `TelaExames.test.tsx` para o estado vazio (Edge
+      Case): "Nenhum exame encontrado." / "Nenhuma regra de plantão encontrada." quando a lista vem
+      vazia sem erro nem carregamento, e ausência da mensagem quando há erro
+- [ ] T046 [US1][US3] Implementar o estado vazio em `CatalogoDeExames`/`RegrasDePlantao` até T045
+      passar
+- [ ] T047 [US1][US3] Escrever testes falhos em `FormularioExame.test.tsx`/
+      `FormularioRegraPlantao.test.tsx`: valor `0` e valor negativo bloqueiam `aoSalvar` **e**
+      mostram mensagem específica em `role="alert"` (Edge Case + SC-005; completa T008/T025)
+- [ ] T048 [US1][US3] Validação explícita de valor positivo no `aoSubmeter` de
+      `FormularioExame`/`FormularioRegraPlantao`, trocando o `min="0.01"` nativo (que barrava o
+      submit antes do handler e impedia a mensagem própria), até T047 passar
 
 ---
 

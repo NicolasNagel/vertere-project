@@ -234,3 +234,17 @@ inativando-a, e vendo o status mudar na lista.
   (impedir a submissão antes de chamar a API), mas não há uma segunda camada de defesa no backend
   hoje. Corrigir o schema do backend está fora do escopo desta spec (frontend puro) — fica
   registrado aqui para decisão do usuário sobre abrir ou não uma spec/task de correção do backend.
+
+## Verificação
+
+`/fechar-spec S13` em 2026-09-30: **❌ BLOQUEADA**. Relatório:
+`docs/specs/relatorios/S13-verificacao.md`. Pendências, corrigidas pela Phase 8 de `tasks.md`
+(T041-T048), exceto a 5, que é T039:
+
+1. **FR-002**: filtros do catálogo de exames (categoria, apenas ativos) ausentes na tela. O hook
+   `useExames` já tinha os setters, mas `CatalogoDeExames` não os usava.
+2. **FR-006**: filtro "apenas ativas" das regras de plantão ausente na tela.
+3. **Edge Case "estado vazio"**: a lista vazia renderizava só o cabeçalho da tabela.
+4. **T008/T025**: faltava a "mensagem de erro visível" para valor zero ou negativo. Os testes não
+   cobriam valor negativo e só checavam o bloqueio do `aoSalvar`.
+5. **T039**: estava marcada `[X]` sem o percurso pela UI real. Foi desmarcada.
