@@ -16,14 +16,23 @@ export function FormularioExame({ exame, aoSalvar }: FormularioExameProps) {
   const [categoria, setCategoria] = useState(exame?.categoria ?? '')
   const [nome, setNome] = useState(exame?.nome ?? '')
   const [precoBase, setPrecoBase] = useState(exame?.preco_base ?? '')
+  const [erroValidacao, setErroValidacao] = useState<string | null>(null)
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    // Única camada que rejeita preço não positivo: o backend (S5) aceita qualquer decimal (ver
+    // spec.md → "Descobertas").
+    if (!(Number(precoBase) > 0)) {
+      setErroValidacao('Preço-base deve ser maior que zero.')
+      return
+    }
+    setErroValidacao(null)
     aoSalvar({ categoria, nome, preco_base: precoBase })
   }
 
   return (
     <form onSubmit={aoSubmeter}>
+      {erroValidacao ? <p role="alert">{erroValidacao}</p> : null}
       <CampoTexto
         rotulo="Categoria"
         required
@@ -35,7 +44,6 @@ export function FormularioExame({ exame, aoSalvar }: FormularioExameProps) {
         rotulo="Preço-base"
         type="number"
         step="0.01"
-        min="0.01"
         required
         value={precoBase}
         onChange={(e) => setPrecoBase(e.target.value)}

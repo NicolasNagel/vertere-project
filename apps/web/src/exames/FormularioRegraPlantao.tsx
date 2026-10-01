@@ -35,10 +35,17 @@ export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlant
   )
   const [horaFim, setHoraFim] = useState(regra ? paraHoraSemSegundos(regra.hora_fim) : '')
   const [valorAdicional, setValorAdicional] = useState(regra?.valor_adicional ?? '')
+  const [erroValidacao, setErroValidacao] = useState<string | null>(null)
   const idDiaSemana = useId()
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    // Mesmo motivo de FormularioExame: o backend (S5) não rejeita valor não positivo.
+    if (!(Number(valorAdicional) > 0)) {
+      setErroValidacao('Valor adicional deve ser maior que zero.')
+      return
+    }
+    setErroValidacao(null)
     aoSalvar({
       dia_semana: diaSemana,
       hora_inicio: horaInicio,
@@ -49,6 +56,7 @@ export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlant
 
   return (
     <form onSubmit={aoSubmeter}>
+      {erroValidacao ? <p role="alert">{erroValidacao}</p> : null}
       <label htmlFor={idDiaSemana}>Dia da semana</label>
       <select
         id={idDiaSemana}
@@ -79,7 +87,6 @@ export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlant
         rotulo="Valor adicional"
         type="number"
         step="0.01"
-        min="0.01"
         required
         value={valorAdicional}
         onChange={(e) => setValorAdicional(e.target.value)}
