@@ -286,7 +286,15 @@ uma regra de plantão, sempre restrito a `admin`.
 - [X] T038 [P] Rodar `pnpm --dir apps/web test` com cobertura visível para
       `apps/web/src/exames/` e `apps/web/src/api/useColecaoCrud.ts` (Princípio IV da constituição
       — nenhuma task é considerada concluída só porque os testes existem, a suíte real precisa
-      passar)
+      passar). **Refeita em 2026-10-01** (pendência 6 da verificação): na 1ª marcação não havia
+      provider de cobertura em `apps/web`. Com decisão do usuário, entrou `@vitest/coverage-v8`
+      (devDependency, mesma versão do vitest) e o script `pnpm test:cobertura`
+      (`--maxWorkers=2`: com mais workers e a instrumentação ligada, alguns forks não iniciavam).
+      Resultado: 164/164 testes; recorte da S13 (`src/exames/**` + `useColecaoCrud.ts`) com 99,44%
+      statements, 95,14% branches, 98,85% functions e 99,39% lines. Abaixo de 100% só
+      `TelaExames.tsx` (linha 329, o clique de volta para a aba "Catálogo de Exames") e os ramos
+      não-`ErroHttp` de `useColecaoCrud.ts` (erro de rede é engolido sem mensagem, observação para
+      o `/code-review`)
 - [X] T039 Executar manualmente os 6 cenários de
       `specs/013-exames-precificacao-web/quickstart.md` contra o backend e o frontend rodando
       localmente, confirmando em particular que a validação de preço/valor não positivo só ocorre
