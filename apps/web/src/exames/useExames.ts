@@ -22,7 +22,8 @@ export function useExames() {
 
   const carregarLista = useCallback(() => listarExames(categoria, apenasAtivos), [categoria, apenasAtivos])
 
-  const { itens, carregando, erro, recarregar, criar, executarAcaoSobreItem } = useColecaoCrud(
+  const { itens, carregando, erro, aviso, recarregar, criar, salvarItem, executarAcaoSobreItem } =
+    useColecaoCrud(
     carregarLista,
     mensagemDeErro,
   )
@@ -37,8 +38,8 @@ export function useExames() {
 
   const editar = useCallback(
     (id: string, dados: EditarExameRequest) =>
-      executarAcaoSobreItem(() => editarExame(id, dados)),
-    [executarAcaoSobreItem],
+      salvarItem(() => editarExame(id, dados)),
+    [salvarItem],
   )
 
   const inativar = useCallback(
@@ -55,6 +56,7 @@ export function useExames() {
     exames: itens,
     carregando,
     erro,
+    aviso,
     categoria,
     definirCategoria,
     apenasAtivos,

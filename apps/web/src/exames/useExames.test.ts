@@ -20,9 +20,10 @@ describe('useExames', () => {
     vi.mocked(examesApi.criarExame).mockReset()
   })
 
-  it('editar atualiza o exame correspondente no estado local', async () => {
+  it('editar atualiza o exame correspondente e recarrega a lista', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
     const editado = { ...exameA, preco_base: '70.00' }
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([editado])
     vi.mocked(examesApi.editarExame).mockResolvedValueOnce(editado)
 
     const { result } = renderHook(() => useExames())
@@ -37,12 +38,13 @@ describe('useExames', () => {
     })
 
     expect(result.current.exames).toEqual([editado])
-    expect(examesApi.listarExames).toHaveBeenCalledTimes(1)
+    expect(examesApi.listarExames).toHaveBeenCalledTimes(2)
   })
 
-  it('inativar atualiza o status do exame no estado local', async () => {
+  it('inativar atualiza o status do exame e recarrega a lista', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
     const inativado = { ...exameA, ativo: false }
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([inativado])
     vi.mocked(examesApi.inativarExame).mockResolvedValueOnce(inativado)
 
     const { result } = renderHook(() => useExames())
@@ -55,8 +57,9 @@ describe('useExames', () => {
     expect(result.current.exames).toEqual([inativado])
   })
 
-  it('reativar atualiza o status do exame no estado local', async () => {
+  it('reativar atualiza o status do exame e recarrega a lista', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([{ ...exameA, ativo: false }])
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
     vi.mocked(examesApi.reativarExame).mockResolvedValueOnce(exameA)
 
     const { result } = renderHook(() => useExames())
@@ -96,26 +99,29 @@ describe('useExames', () => {
     expect(result.current.exames).toEqual([exameA])
   })
 
-  it('criar bem-sucedido adiciona o exame ao estado local sem novo GET', async () => {
+  it('criar bem-sucedido devolve ok e recarrega a lista', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([])
+    vi.mocked(examesApi.listarExames).mockResolvedValueOnce([exameA])
     vi.mocked(examesApi.criarExame).mockResolvedValueOnce(exameA)
 
     const { result } = renderHook(() => useExames())
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
+    let resultado: unknown
     await act(async () => {
-      await result.current.criar({
+      resultado = await result.current.criar({
         categoria: exameA.categoria,
         nome: exameA.nome,
         preco_base: exameA.preco_base,
       })
     })
 
+    expect(resultado).toEqual({ ok: true })
     expect(result.current.exames).toEqual([exameA])
-    expect(examesApi.listarExames).toHaveBeenCalledTimes(1)
+    expect(examesApi.listarExames).toHaveBeenCalledTimes(2)
   })
 
-  it('criar com erro HTTP inesperado usa a mensagem do corpo como fallback', async () => {
+  it('criar com erro HTTP inesperado devolve a mensagem sem preencher o erro de tela', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([])
     vi.mocked(examesApi.criarExame).mockRejectedValueOnce(
       new ErroHttp(500, '{"detail":"falha interna"}'),
@@ -124,15 +130,17 @@ describe('useExames', () => {
     const { result } = renderHook(() => useExames())
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
+    let resultado: unknown
     await act(async () => {
-      await result.current.criar({
+      resultado = await result.current.criar({
         categoria: exameA.categoria,
         nome: exameA.nome,
         preco_base: exameA.preco_base,
       })
     })
 
-    expect(result.current.erro).toBe('falha interna')
+    expect(resultado).toEqual({ ok: false, mensagem: 'falha interna' })
+    expect(result.current.erro).toBeNull()
   })
 
   it('definirCategoria refaz a listagem com o filtro', async () => {

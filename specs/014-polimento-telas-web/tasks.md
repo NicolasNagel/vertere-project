@@ -105,7 +105,7 @@ não depende delas.
 
   Atualizar ou remover os testes da S13 que assumiam `criar` adicionando sem recarga e
   preenchendo `erro`.
-- [ ] T007 Implementar o contrato novo em `apps/web/src/api/useColecaoCrud.ts` até T006 passar, e
+- [X] T007 Implementar o contrato novo em `apps/web/src/api/useColecaoCrud.ts` até T006 passar, e
       adaptar `apps/web/src/exames/useExames.ts` e `apps/web/src/exames/useRegrasPlantao.ts`:
   - `criar` e `editar` passam a devolver `Promise<ResultadoAcao>`;
   - `editar` passa a usar `salvarItem`;
@@ -113,7 +113,10 @@ não depende delas.
 
   Atualizar `useExames.test.ts`, `useRegrasPlantao.test.ts` e `TelaExames.test.tsx` só no que o
   contrato novo quebrar (o tipo de retorno de `criar`/`editar`). As telas ainda ignoram o retorno
-  até a Phase 3.
+  até a Phase 3. **Feito**: 7 testes de hook da S13 ajustados (os de "estado local sem novo GET"
+  passam a esperar a recarga; os de "erro inesperado" passam a checar o `ResultadoAcao`), e
+  `aviso: null` nos mocks de `TelaExames.test.tsx`. `src/api` + `src/exames`: 103/103, 97% das
+  linhas.
 - [ ] T008 [P] Escrever testes falhos para `useEnvioFormulario(aoSalvar, aoFechar)` em
       `apps/web/src/ui/useEnvioFormulario.test.ts`:
   - `enviar()` com `aoSalvar` → `{ok:true}` chama `aoFechar` uma vez;

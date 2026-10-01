@@ -27,7 +27,8 @@ export function useRegrasPlantao() {
 
   const carregarLista = useCallback(() => listarRegrasPlantao(apenasAtivos), [apenasAtivos])
 
-  const { itens, carregando, erro, recarregar, criar, executarAcaoSobreItem } = useColecaoCrud(
+  const { itens, carregando, erro, aviso, recarregar, criar, salvarItem, executarAcaoSobreItem } =
+    useColecaoCrud(
     carregarLista,
     mensagemDeErro,
   )
@@ -41,8 +42,8 @@ export function useRegrasPlantao() {
 
   const editar = useCallback(
     (id: string, dados: EditarRegraPlantaoRequest) =>
-      executarAcaoSobreItem(() => editarRegraPlantao(id, dados)),
-    [executarAcaoSobreItem],
+      salvarItem(() => editarRegraPlantao(id, dados)),
+    [salvarItem],
   )
 
   const inativar = useCallback(
@@ -59,6 +60,7 @@ export function useRegrasPlantao() {
     regras: itens,
     carregando,
     erro,
+    aviso,
     apenasAtivos,
     definirApenasAtivos,
     recarregar,
