@@ -330,3 +330,17 @@ describe('TelaExames — filtros do catálogo (FR-002)', () => {
     expect(definirApenasAtivos).toHaveBeenCalledWith(true)
   })
 })
+
+describe('TelaExames — filtro das regras de plantão (FR-006)', () => {
+  it('checkbox "Apenas ativas" chama definirApenasAtivos', async () => {
+    const definirApenasAtivos = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA], definirApenasAtivos })
+    mockarPapel('atendente')
+    render(<TelaExames />)
+
+    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await userEvent.click(screen.getByRole('checkbox', { name: /apenas ativas/i }))
+    expect(definirApenasAtivos).toHaveBeenCalledWith(true)
+  })
+})

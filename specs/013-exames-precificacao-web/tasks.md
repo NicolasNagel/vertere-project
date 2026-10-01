@@ -322,7 +322,7 @@ testes de formulário com Testing Library.
 - [X] T042 [US1] Ligar os dois filtros em `CatalogoDeExames` (`TelaExames.tsx`) até T041 passar. O
       backend filtra categoria por igualdade exata (`exames/service.py`), por isso select em vez de
       texto livre
-- [ ] T043 [US3] Escrever teste falho em `TelaExames.test.tsx` para o checkbox "Apenas ativas" da
+- [X] T043 [US3] Escrever teste falho em `TelaExames.test.tsx` para o checkbox "Apenas ativas" da
       aba de regras de plantão (FR-006), chamando `definirApenasAtivos`
 - [ ] T044 [US3] Ligar o checkbox em `RegrasDePlantao` (`TelaExames.tsx`) até T043 passar
 - [ ] T045 [US1][US3] Escrever testes falhos em `TelaExames.test.tsx` para o estado vazio (Edge
