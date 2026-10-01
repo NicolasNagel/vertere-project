@@ -142,7 +142,7 @@ não depende delas.
   - `40` → `'R$ 40,00'`;
   - `'10.005'` → arredonda para 2 casas;
   - comparar com U+00A0, conforme a nota de research.md, Decisão 5.
-- [ ] T013 Implementar `apps/web/src/ui/formatacao.ts` (`formatarMoeda`, com um
+- [X] T013 Implementar `apps/web/src/ui/formatacao.ts` (`formatarMoeda`, com um
       `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })` criado uma vez no
       módulo) até T012 passar.
 
