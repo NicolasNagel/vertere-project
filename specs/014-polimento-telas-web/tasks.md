@@ -86,7 +86,7 @@ não depende delas.
 - [X] T005 Implementar `mensagemDeErroPadrao` em `apps/web/src/api/erroApi.ts` até T004 passar,
       mantendo `extrairDetalheErro` com o comportamento atual (os hooks continuam a usá-lo para
       reconhecer mensagens de domínio).
-- [ ] T006 [P] Escrever testes falhos para o contrato novo de `useColecaoCrud` em
+- [X] T006 [P] Escrever testes falhos para o contrato novo de `useColecaoCrud` em
       `apps/web/src/api/useColecaoCrud.test.ts` (contracts/frontend-interfaces.md):
   - `criar(acao)` bem-sucedido devolve `{ok:true}` e **recarrega** a lista: `carregarLista` é
     chamado de novo e `itens` vem da recarga, sem `carregando` voltar a `true`;
