@@ -100,3 +100,42 @@ describe('useColecaoCrud', () => {
     expect(result.current.erro).toBe('Item não encontrado.')
   })
 })
+
+describe('useColecaoCrud — falha que não é ErroHttp (ex.: rede)', () => {
+  const MENSAGEM_SEM_CONEXAO = 'Não foi possível falar com o servidor. Tente novamente.'
+
+  it('recarregar com falha de rede seta erro genérico em vez de lista vazia silenciosa', async () => {
+    const carregarLista = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+    const { result } = renderHook(() => useColecaoCrud(carregarLista, mensagemDeErroFake))
+
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+    expect(result.current.erro).toBe(MENSAGEM_SEM_CONEXAO)
+  })
+
+  it('criar com falha de rede seta erro genérico', async () => {
+    const carregarLista = vi.fn().mockResolvedValue([itemA])
+    const { result } = renderHook(() => useColecaoCrud(carregarLista, mensagemDeErroFake))
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.criar(vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+    })
+
+    expect(result.current.erro).toBe(MENSAGEM_SEM_CONEXAO)
+    expect(result.current.itens).toEqual([itemA])
+  })
+
+  it('executarAcaoSobreItem com falha de rede seta erro genérico', async () => {
+    const carregarLista = vi.fn().mockResolvedValue([itemA])
+    const { result } = renderHook(() => useColecaoCrud(carregarLista, mensagemDeErroFake))
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.executarAcaoSobreItem(
+        vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+      )
+    })
+
+    expect(result.current.erro).toBe(MENSAGEM_SEM_CONEXAO)
+  })
+})

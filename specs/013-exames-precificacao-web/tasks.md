@@ -352,6 +352,28 @@ testes de formulário com Testing Library.
 
 ---
 
+## Phase 9: Correções do `/code-review` (antes do PR)
+
+**Purpose**: Achados não bloqueantes do `/code-review` (2026-10-01) que o usuário decidiu corrigir
+antes do PR. Os demais ficam para uma spec de polimento (ver `handoff.md`).
+
+- [X] T049 [US1][US3] Escrever testes falhos em `apps/web/src/api/useColecaoCrud.test.ts`: falha
+      que não é `ErroHttp` (ex.: `TypeError` de rede do `fetch`) em `recarregar`, `criar` e
+      `executarAcaoSobreItem` vira mensagem de erro genérica em `erro`. Hoje ela é engolida e a
+      tela mostra "Nenhum exame encontrado.", contrariando o Edge Case "estado vazio claro,
+      distinto de erro de carregamento"
+- [ ] T050 [US1][US3] Tratar falha não-HTTP em `useColecaoCrud.ts` até T049 passar, centralizando o
+      try/catch repetido 3x num helper interno
+- [ ] T051 [US2][US4] Escrever teste falho em `TelaExames.test.tsx`: a linha em edição ocupa todas
+      as colunas da tabela (5 para admin), não 4
+- [ ] T052 [US2][US4] Corrigir o `colSpan` das linhas em edição até T051 passar
+- [ ] T053 Refatoração sem mudança de comportamento: `DIAS_DA_SEMANA` e o corte `HH:MM` dos horários
+      num módulo compartilhado de `apps/web/src/exames/` (hoje duplicados entre `TelaExames.tsx` e
+      `FormularioRegraPlantao.tsx`), e remoção dos casts `itens as ...[]` em
+      `useExames.ts`/`useRegrasPlantao.ts`. A suíte existente cobre o comportamento
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
