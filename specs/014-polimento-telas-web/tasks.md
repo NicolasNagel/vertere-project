@@ -136,7 +136,7 @@ não depende delas.
       `podeExecutar`) até T010 passar, com a nota de sincronização apontando para
       `apps/api/src/vertere_api/auth/service.py::_PERMISSOES` (mesmo formato do comentário de
       `apps/web/src/shell/itensDeNavegacao.ts`).
-- [ ] T012 [P] Escrever testes falhos para `formatarMoeda` em `apps/web/src/ui/formatacao.test.ts`:
+- [X] T012 [P] Escrever testes falhos para `formatarMoeda` em `apps/web/src/ui/formatacao.test.ts`:
   - `'50.00'` → `'R$ 50,00'`;
   - `'1234.5'` → `'R$ 1.234,50'`;
   - `40` → `'R$ 40,00'`;
