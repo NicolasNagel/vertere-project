@@ -30,7 +30,7 @@ function LinhaExame({
   if (editando) {
     return (
       <tr>
-        <td colSpan={4}>
+        <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioExame
             exame={exame}
             aoSalvar={(dados) => {
@@ -196,7 +196,7 @@ function LinhaRegraPlantao({
   if (editando) {
     return (
       <tr>
-        <td colSpan={4}>
+        <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioRegraPlantao
             regra={regra}
             aoSalvar={(dados) => {

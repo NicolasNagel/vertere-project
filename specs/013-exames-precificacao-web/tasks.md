@@ -366,7 +366,7 @@ antes do PR. Os demais ficam para uma spec de polimento (ver `handoff.md`).
       try/catch repetido 3x num helper interno
 - [X] T051 [US2][US4] Escrever teste falho em `TelaExames.test.tsx`: a linha em edição ocupa todas
       as colunas da tabela (5 para admin), não 4
-- [ ] T052 [US2][US4] Corrigir o `colSpan` das linhas em edição até T051 passar
+- [X] T052 [US2][US4] Corrigir o `colSpan` das linhas em edição até T051 passar
 - [ ] T053 Refatoração sem mudança de comportamento: `DIAS_DA_SEMANA` e o corte `HH:MM` dos horários
       num módulo compartilhado de `apps/web/src/exames/` (hoje duplicados entre `TelaExames.tsx` e
       `FormularioRegraPlantao.tsx`), e remoção dos casts `itens as ...[]` em
