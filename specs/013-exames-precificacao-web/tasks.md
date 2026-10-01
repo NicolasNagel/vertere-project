@@ -319,7 +319,7 @@ testes de formulário com Testing Library.
       filtros do catálogo (FR-002): select "Filtrar por categoria" (opções = categorias dos exames
       carregados, mais "Todas as categorias") chama `definirCategoria` com a categoria escolhida ou
       com `undefined`; checkbox "Apenas ativos" chama `definirApenasAtivos`
-- [ ] T042 [US1] Ligar os dois filtros em `CatalogoDeExames` (`TelaExames.tsx`) até T041 passar. O
+- [X] T042 [US1] Ligar os dois filtros em `CatalogoDeExames` (`TelaExames.tsx`) até T041 passar. O
       backend filtra categoria por igualdade exata (`exames/service.py`), por isso select em vez de
       texto livre
 - [ ] T043 [US3] Escrever teste falho em `TelaExames.test.tsx` para o checkbox "Apenas ativas" da

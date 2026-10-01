@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { useSessao } from '../autenticacao/SessaoContext'
 import type { components } from '../api/tipos.gerados'
@@ -63,15 +63,73 @@ function LinhaExame({
   )
 }
 
+function categoriasDistintas(exames: ExameResponse[]): string[] {
+  return [...new Set(exames.map((exame) => exame.categoria))].sort((a, b) =>
+    a.localeCompare(b, 'pt-BR'),
+  )
+}
+
 function CatalogoDeExames() {
-  const { exames, carregando, erro, criar, editar, inativar, reativar } = useExames()
+  const {
+    exames,
+    carregando,
+    erro,
+    categoria,
+    definirCategoria,
+    apenasAtivos,
+    definirApenasAtivos,
+    criar,
+    editar,
+    inativar,
+    reativar,
+  } = useExames()
   const { papel } = useSessao()
   const [formularioAberto, setFormularioAberto] = useState(false)
+  const [categoriasConhecidas, setCategoriasConhecidas] = useState<string[]>([])
+  const idFiltroCategoria = useId()
   const podeGerenciar = papel === 'admin'
+
+  // Com o filtro de categoria ativo a lista só traz aquela categoria (o backend filtra por igualdade
+  // exata), então as opções do select vêm da última listagem sem filtro — senão não daria para
+  // trocar de uma categoria para outra direto.
+  const categoriasDaLista = categoriasDistintas(exames)
+  if (
+    categoria === undefined &&
+    !carregando &&
+    categoriasDaLista.join('\n') !== categoriasConhecidas.join('\n')
+  ) {
+    setCategoriasConhecidas(categoriasDaLista)
+  }
+  const opcoesDeCategoria =
+    categoria !== undefined && !categoriasConhecidas.includes(categoria)
+      ? [...categoriasConhecidas, categoria]
+      : categoriasConhecidas
 
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+
+      <label htmlFor={idFiltroCategoria}>Filtrar por categoria</label>
+      <select
+        id={idFiltroCategoria}
+        value={categoria ?? ''}
+        onChange={(e) => definirCategoria(e.target.value || undefined)}
+      >
+        <option value="">Todas as categorias</option>
+        {opcoesDeCategoria.map((opcao) => (
+          <option key={opcao} value={opcao}>
+            {opcao}
+          </option>
+        ))}
+      </select>
+      <label>
+        <input
+          type="checkbox"
+          checked={apenasAtivos}
+          onChange={(e) => definirApenasAtivos(e.target.checked)}
+        />
+        Apenas ativos
+      </label>
 
       {podeGerenciar ? (
         <Botao onClick={() => setFormularioAberto(true)}>Novo exame</Botao>
