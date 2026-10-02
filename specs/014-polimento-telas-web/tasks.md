@@ -248,7 +248,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
       plantão, novo e edição. O `colspan` da S13 (5 para admin) continua igual. **Nota**: os 6
       testes novos nasceram verdes, porque a ligação veio na T015/T017. Inclui o "reabrir depois de
       cancelar" (C2) para exame e regra.
-- [ ] T031 [US1] Ligar `apps/web/src/exames/TelaExames.tsx` até T030 passar. **Já entregue na
+- [X] T031 [US1] Ligar `apps/web/src/exames/TelaExames.tsx` até T030 passar. **Já entregue na
       T015/T017** (`aoSalvar={criar|aoEditar}` e `aoFechar` nos dois formulários). Nenhum código
       novo nesta task.
 
