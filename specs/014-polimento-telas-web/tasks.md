@@ -433,7 +433,7 @@ de FR-014 nas quatro telas.
       visíveis).
 - [X] T051 [US6] Esconder a escrita em `apps/web/src/veterinarios/TelaVeterinarios.tsx` com
       `podeExecutar` até T050 passar.
-- [ ] T052 [US6] Trocar, em `apps/web/src/exames/TelaExames.tsx`:
+- [X] T052 [US6] Trocar, em `apps/web/src/exames/TelaExames.tsx`:
   - `papel === 'admin'` por `podeExecutar(papel, 'EXAME_GERENCIAR')` no catálogo e por
     `podeExecutar(papel, 'REGRA_PLANTAO_GERENCIAR')` nas regras;
   - `papel === 'admin' || papel === 'atendente'` por `podeExecutar(papel, 'REGRA_PLANTAO_VER')`.
@@ -441,7 +441,7 @@ de FR-014 nas quatro telas.
   É uma refatoração sem mudança de comportamento: os testes existentes de papel em
   `TelaExames.test.tsx` são a rede. Confirmar no fim com
   `grep -rn "papel ===" apps/web/src --include=*.tsx` que não sobra comparação de papel em tela
-  (FR-016).
+  (FR-016). **Resultado**: `grep` vazio; `src/exames` 87/87, código de saída 0.
 
 **Checkpoint**: US6 completa.
 

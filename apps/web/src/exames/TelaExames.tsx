@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { formatarMoeda } from '../ui/formatacao'
 import { useSessao } from '../autenticacao/SessaoContext'
+import { podeExecutar } from '../autenticacao/permissoesDeTela'
 import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioExame } from './FormularioExame'
@@ -89,7 +90,7 @@ function CatalogoDeExames() {
   const [formularioAberto, setFormularioAberto] = useState(false)
   const [categoriasConhecidas, setCategoriasConhecidas] = useState<string[]>([])
   const idFiltroCategoria = useId()
-  const podeGerenciar = papel === 'admin'
+  const podeGerenciar = podeExecutar(papel, 'EXAME_GERENCIAR')
 
   // Com o filtro de categoria ativo a lista só traz aquela categoria (o backend filtra por igualdade
   // exata), então as opções do select vêm da última listagem sem filtro — senão não daria para
@@ -242,7 +243,7 @@ function RegrasDePlantao() {
   } = useRegrasPlantao()
   const { papel } = useSessao()
   const [formularioAberto, setFormularioAberto] = useState(false)
-  const podeGerenciar = papel === 'admin'
+  const podeGerenciar = podeExecutar(papel, 'REGRA_PLANTAO_GERENCIAR')
 
   return (
     <div>
@@ -303,7 +304,7 @@ function RegrasDePlantao() {
 export function TelaExames() {
   const { papel } = useSessao()
   const [abaAtiva, setAbaAtiva] = useState<'exames' | 'regras-plantao'>('exames')
-  const podeVerRegrasPlantao = papel === 'admin' || papel === 'atendente'
+  const podeVerRegrasPlantao = podeExecutar(papel, 'REGRA_PLANTAO_VER')
 
   return (
     <div>
