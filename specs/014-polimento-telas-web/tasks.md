@@ -393,7 +393,7 @@ de FR-014 nas quatro telas.
 
 **Independent Test**: quickstart.md, Cenário 5.
 
-- [ ] T046 [US5] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx`:
+- [X] T046 [US5] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx`:
   - exame com `preco_base: '1234.50'` aparece como `R$ 1.234,50`;
   - regra com `valor_adicional: '50.00'` aparece como `R$ 50,00`.
 - [ ] T047 [US5] Usar `formatarMoeda` nas células de preço-base e valor adicional de

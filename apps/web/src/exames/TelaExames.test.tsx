@@ -554,3 +554,27 @@ describe('TelaExames — aviso de item fora do filtro (US4)', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
   })
 })
+
+describe('TelaExames — valores em reais (US5)', () => {
+  beforeEach(() => {
+    mockarPapel('atendente')
+  })
+
+  it('preço-base aparece no formato brasileiro de moeda', () => {
+    mockarUseExames({ exames: [{ ...exameA, preco_base: '1234.50' }] })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+
+    expect(screen.getByText('R$ 1.234,50')).toBeInTheDocument()
+  })
+
+  it('valor adicional aparece no formato brasileiro de moeda', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA] })
+    render(<TelaExames />)
+
+    await usuario().click(screen.getByRole('button', { name: 'Regras de Plantão' }))
+
+    expect(screen.getByText('R$ 50,00')).toBeInTheDocument()
+  })
+})
