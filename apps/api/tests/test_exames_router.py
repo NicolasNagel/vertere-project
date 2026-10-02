@@ -393,3 +393,77 @@ class TestSugestaoAdicionalEndpoint:
 
         assert resposta.status_code == 200
         assert resposta.json() is None
+
+
+class TestValidacaoDeValoresEndpoint:
+    """S14, FR-009 a FR-012: 422 com mensagem em português, sem gravar nada."""
+
+    def _admin(self, cliente: TestClient, session: Session) -> dict:
+        _criar_usuario_db(session, "admin@vertere.com", Papel.ADMIN)
+        return {"Authorization": f"Bearer {_token(cliente, 'admin@vertere.com')}"}
+
+    def test_criar_exame_com_preco_negativo_retorna_422_sem_gravar(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        headers = self._admin(cliente, session)
+
+        resposta = cliente.post("/exames", json=_payload_exame(preco_base="-10"), headers=headers)
+
+        assert resposta.status_code == 422
+        assert resposta.json() == {"detail": "Preço-base deve ser maior que zero."}
+        assert cliente.get("/exames", headers=headers).json() == []
+
+    def test_editar_exame_com_nome_so_de_espacos_retorna_422_sem_alterar(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        headers = self._admin(cliente, session)
+        criado = cliente.post("/exames", json=_payload_exame(), headers=headers).json()
+
+        resposta = cliente.patch(
+            f"/exames/{criado['id']}", json=_payload_exame(nome="   "), headers=headers
+        )
+
+        assert resposta.status_code == 422
+        assert resposta.json() == {"detail": "Nome não pode ficar vazio."}
+        assert cliente.get("/exames", headers=headers).json() == [criado]
+
+    def test_criar_exame_grava_categoria_sem_espacos_nas_pontas(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        headers = self._admin(cliente, session)
+
+        resposta = cliente.post(
+            "/exames", json=_payload_exame(categoria="  Hematologia  "), headers=headers
+        )
+
+        assert resposta.status_code == 201
+        assert resposta.json()["categoria"] == "Hematologia"
+
+    def test_criar_regra_com_valor_zero_retorna_422_sem_gravar(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        headers = self._admin(cliente, session)
+
+        resposta = cliente.post(
+            "/regras-plantao", json=_payload_regra(valor_adicional="0"), headers=headers
+        )
+
+        assert resposta.status_code == 422
+        assert resposta.json() == {"detail": "Valor adicional deve ser maior que zero."}
+        assert cliente.get("/regras-plantao", headers=headers).json() == []
+
+    def test_editar_regra_com_valor_zero_retorna_422_sem_alterar(
+        self, cliente: TestClient, session: Session
+    ) -> None:
+        headers = self._admin(cliente, session)
+        criada = cliente.post("/regras-plantao", json=_payload_regra(), headers=headers).json()
+
+        resposta = cliente.patch(
+            f"/regras-plantao/{criada['id']}",
+            json=_payload_regra(valor_adicional="0"),
+            headers=headers,
+        )
+
+        assert resposta.status_code == 422
+        assert resposta.json() == {"detail": "Valor adicional deve ser maior que zero."}
+        assert cliente.get("/regras-plantao", headers=headers).json() == [criada]

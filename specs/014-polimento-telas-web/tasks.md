@@ -344,7 +344,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 - [X] T041 [US3] Implementar `RegraPlantaoInvalida` e a validação em
       `cadastrar_regra_plantao`/`editar_regra_plantao` de `apps/api/src/vertere_api/exames/service.py`
       até T040 passar.
-- [ ] T042 [P] [US3] Escrever testes falhos de router em `apps/api/tests/test_exames_router.py`
+- [X] T042 [P] [US3] Escrever testes falhos de router em `apps/api/tests/test_exames_router.py`
       (`TestClient`, admin):
   - `POST /exames` com `preco_base: -10` → 422 `{"detail": "Preço-base deve ser maior que zero."}`;
   - `PATCH /exames/{id}` com `nome: "   "` → 422 `Nome não pode ficar vazio.`;
