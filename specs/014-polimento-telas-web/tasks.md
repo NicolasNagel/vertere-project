@@ -187,7 +187,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
       hook sem adaptador temporário. O `TelaClinicas.tsx` já passa `aoSalvar`/`aoFechar` neste
       commit (parte do T027 adiantada), e o mock de `useClinicas` em `TelaVeterinarios.test.tsx`
       ganhou `aviso: null`.
-- [ ] T020 [P] [US1] Escrever os mesmos testes de T014 para
+- [X] T020 [P] [US1] Escrever os mesmos testes de T014 para
       `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`. A mensagem "Nenhuma clínica
       ativa cadastrada — …" continua aparecendo quando não há clínica ativa, agora com "Cancelar"
       chamando `aoFechar`.
