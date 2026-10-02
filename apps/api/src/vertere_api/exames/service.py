@@ -149,6 +149,15 @@ class RegraPlantaoNaoEncontrada(Exception):
         super().__init__(f"Regra de plantão {regra_id} não encontrada")
 
 
+class RegraPlantaoInvalida(Exception):
+    """Dados de regra de plantão recusados (a mensagem já é a que o usuário vê)."""
+
+
+def _validar_valor_adicional(valor_adicional: Decimal) -> None:
+    if valor_adicional <= 0:
+        raise RegraPlantaoInvalida("Valor adicional deve ser maior que zero.")
+
+
 def cadastrar_regra_plantao(
     dia_semana: int,
     hora_inicio: time,
@@ -156,7 +165,12 @@ def cadastrar_regra_plantao(
     valor_adicional: Decimal,
     repo: RegraPlantaoRepository,
 ) -> RegraPlantao:
-    """Cadastra uma regra de adicional de plantão."""
+    """Cadastra uma regra de adicional de plantão.
+
+    Rejeita valor adicional não positivo (`RegraPlantaoInvalida`). `hora_inicio > hora_fim` é
+    aceito: representa plantão que cruza a meia-noite.
+    """
+    _validar_valor_adicional(valor_adicional)
     regra = RegraPlantao(
         id=str(uuid.uuid4()),
         dia_semana=dia_semana,
@@ -184,7 +198,12 @@ def editar_regra_plantao(
     valor_adicional: Decimal,
     repo: RegraPlantaoRepository,
 ) -> RegraPlantao:
-    """Edita dia da semana, faixa de horário e valor adicional de uma regra existente."""
+    """Edita dia da semana, faixa de horário e valor adicional de uma regra existente.
+
+    Valida antes de buscar a regra: um pedido inválido é recusado com `RegraPlantaoInvalida`
+    mesmo que o id não exista.
+    """
+    _validar_valor_adicional(valor_adicional)
     regra = _buscar_regra_ou_levantar(regra_id, repo)
     atualizada = replace(
         regra,

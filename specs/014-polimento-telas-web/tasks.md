@@ -341,7 +341,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
     `RegraPlantaoInvalida("Valor adicional deve ser maior que zero.")`, sem gravar;
   - `hora_inicio > hora_fim` continua aceito;
   - `editar_regra_plantao` inválido com id inexistente levanta `RegraPlantaoInvalida`.
-- [ ] T041 [US3] Implementar `RegraPlantaoInvalida` e a validação em
+- [X] T041 [US3] Implementar `RegraPlantaoInvalida` e a validação em
       `cadastrar_regra_plantao`/`editar_regra_plantao` de `apps/api/src/vertere_api/exames/service.py`
       até T040 passar.
 - [ ] T042 [P] [US3] Escrever testes falhos de router em `apps/api/tests/test_exames_router.py`
