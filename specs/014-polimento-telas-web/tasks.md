@@ -289,7 +289,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 
   **Nota**: os casos de CRMV e de clínica inexistente já estavam nos testes reescritos na T024; a
   rede nasceu verde por causa da T025.
-- [ ] T035 [US2] Ajustar `mensagemDeErro` em `apps/web/src/veterinarios/useVeterinarios.ts` até
+- [X] T035 [US2] Ajustar `mensagemDeErro` em `apps/web/src/veterinarios/useVeterinarios.ts` até
       T034 passar, com os rótulos `{ nome: 'Nome', crmv: 'CRMV', telefone: 'Telefone', email:
       'E-mail', clinica_id: 'Clínica' }`.
 - [ ] T036 [P] [US2] Escrever testes em `apps/web/src/exames/useExames.test.ts` e

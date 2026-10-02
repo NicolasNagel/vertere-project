@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { extrairDetalheErro } from '../api/erroApi'
+import { extrairDetalheErro, mensagemDeErroPadrao } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
@@ -15,17 +15,25 @@ import {
 type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
 type EditarVeterinarioRequest = components['schemas']['EditarVeterinarioRequest']
 
+const ROTULOS_DE_CAMPO = {
+  nome: 'Nome',
+  crmv: 'CRMV',
+  telefone: 'Telefone',
+  email: 'E-mail',
+  clinica_id: 'Clínica',
+}
+
 /**
- * Mensagens de erro da UI para Veterinários — ver data-model.md → "Erros mapeados para mensagem
- * de UI". `CrmvVazio` e `ClinicaInexistente` são ambos 422 no backend — só se distinguem pelo
- * texto do detalhe (`extrairDetalheErro`), nunca pelo status isoladamente.
+ * Mensagens de erro da UI para Veterinários. `CrmvVazio`, `ClinicaInexistente` e a validação do
+ * Pydantic (ex.: e-mail) são todos 422 no backend: só se distinguem pelo texto do detalhe, nunca
+ * pelo status. O que não for reconhecido cai em `mensagemDeErroPadrao` (S14, FR-006).
  */
 function mensagemDeErro(erro: ErroHttp): string {
   const detalhe = extrairDetalheErro(erro)
-  if (erro.status === 422) {
-    if (detalhe.includes('CRMV')) {
-      return 'Informe o CRMV do veterinário.'
-    }
+  if (erro.status === 422 && detalhe.includes('CRMV')) {
+    return 'Informe o CRMV do veterinário.'
+  }
+  if (erro.status === 422 && detalhe.startsWith('Clínica') && detalhe.includes('não encontrada')) {
     return 'A clínica selecionada não existe mais — atualize a lista de clínicas.'
   }
   if (erro.status === 409) {
@@ -34,7 +42,7 @@ function mensagemDeErro(erro: ErroHttp): string {
   if (erro.status === 404) {
     return 'Veterinário não encontrado — pode ter sido removido por outra sessão.'
   }
-  return detalhe
+  return mensagemDeErroPadrao(erro, ROTULOS_DE_CAMPO)
 }
 
 export function useVeterinarios() {
