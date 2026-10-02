@@ -557,7 +557,7 @@ de FR-014 nas quatro telas.
   - Dados de teste deixados **inativos** no banco de dev (via API, depois que o clique de
     "Inativar" parou de responder na sessão instável do Chrome): exame "Glicose S14" e a regra de
     sexta-feira. A clínica de e-mail inválido não chegou a ser criada. Servidores encerrados.
-- [ ] T057 Atualizar `handoff.md` com o estado da S14 (implementada, números de T054–T056, o que
+- [X] T057 Atualizar `handoff.md` com o estado da S14 (implementada, números de T054–T056, o que
       ficou em "Descobertas") e o próximo passo (`/fechar-spec S14`).
 
 ---
