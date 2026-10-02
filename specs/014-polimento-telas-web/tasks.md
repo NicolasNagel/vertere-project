@@ -420,9 +420,13 @@ de FR-014 nas quatro telas.
   - `atendente` e `tecnico` veem a lista, "Buscar por nome" e "Apenas ativas", mas não veem "Nova
     clínica", "Editar", "Inativar", "Reativar", "Salvar prazo" nem o cabeçalho "Ações";
   - `admin` vê todos.
-- [ ] T049 [US6] Esconder em `apps/web/src/clinicas/TelaClinicas.tsx` a escrita e a coluna "Ações"
+- [X] T049 [US6] Esconder em `apps/web/src/clinicas/TelaClinicas.tsx` a escrita e a coluna "Ações"
       com `podeExecutar(papel, 'CLINICA_GERENCIAR')` até T048 passar. O `colSpan` da linha em
-      edição segue a contagem de colunas.
+      edição segue a contagem de colunas. **Nota**: neste commit também entrou a correção de 15
+      mocks `criar`/`editar = vi.fn()` nos três `Tela*.test.tsx`, que passam a devolver `{ok:true}`.
+      Desde a T019 eles geravam "Unhandled Rejection" (`resultado.ok` de `undefined`): os testes
+      passavam, mas o vitest saía com código 1, e as checagens anteriores olhavam só a linha
+      "Tests". Suíte completa: 279/279, código de saída 0.
 - [ ] T050 [P] [US6] Escrever os testes equivalentes em
       `apps/web/src/veterinarios/TelaVeterinarios.test.tsx` (`VETERINARIO_GERENCIAR`: "Novo
       veterinário", "Editar", "Inativar", "Reativar", cabeçalho "Ações"; busca e filtros continuam

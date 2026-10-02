@@ -94,7 +94,7 @@ describe('TelaVeterinarios', () => {
   })
 
   it('cadastro de veterinário reflete na lista', async () => {
-    const criar = vi.fn()
+    const criar = vi.fn().mockResolvedValue({ ok: true })
     mockarHookClinicas()
     mockarHookVeterinarios({ criar })
     render(<TelaVeterinarios />)
@@ -117,7 +117,7 @@ describe('TelaVeterinarios', () => {
   })
 
   it('ação "Editar" por linha abre o formulário preenchido e salva com editar', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarHookClinicas()
     mockarHookVeterinarios({ veterinarios: [veterinarioA], editar })
     render(<TelaVeterinarios />)
@@ -222,7 +222,7 @@ describe('TelaVeterinarios — formulários fecham só com sucesso (US1)', () =>
   })
 
   it('"Cancelar" no formulário novo fecha sem chamar criar', async () => {
-    const criar = vi.fn()
+    const criar = vi.fn().mockResolvedValue({ ok: true })
     mockarHookClinicas()
     mockarHookVeterinarios({ criar })
     render(<TelaVeterinarios />)
@@ -254,7 +254,7 @@ describe('TelaVeterinarios — formulários fecham só com sucesso (US1)', () =>
   })
 
   it('"Cancelar" na edição descarta a alteração: reabrir mostra o valor original', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarHookClinicas()
     mockarHookVeterinarios({ veterinarios: [veterinarioA], editar })
     render(<TelaVeterinarios />)

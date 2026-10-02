@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useSessao } from '../autenticacao/SessaoContext'
+import { podeExecutar } from '../autenticacao/permissoesDeTela'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
 import type { ResultadoAcao } from '../api/useColecaoCrud'
@@ -11,12 +13,14 @@ type CriarClinicaRequest = components['schemas']['CriarClinicaRequest']
 
 function LinhaClinica({
   clinica,
+  podeGerenciar,
   aoEditar,
   aoInativar,
   aoReativar,
   aoDefinirPrazoPagamento,
 }: {
   clinica: ClinicaResponse
+  podeGerenciar: boolean
   aoEditar: (dados: CriarClinicaRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
@@ -28,7 +32,7 @@ function LinhaClinica({
   if (editando) {
     return (
       <tr>
-        <td colSpan={6}>
+        <td colSpan={podeGerenciar ? 6 : 5}>
           <FormularioClinica
             clinica={clinica}
             aoSalvar={aoEditar}
@@ -46,21 +50,23 @@ function LinhaClinica({
       <td>{clinica.telefone}</td>
       <td>{clinica.email}</td>
       <td>{clinica.ativo ? 'Ativa' : 'Inativa'}</td>
-      <td>
-        <Botao onClick={() => setEditando(true)}>Editar</Botao>
-        {clinica.ativo ? (
-          <Botao onClick={aoInativar}>Inativar</Botao>
-        ) : (
-          <Botao onClick={aoReativar}>Reativar</Botao>
-        )}
-        <CampoTexto
-          rotulo="Prazo de pagamento (dias)"
-          type="number"
-          value={prazo}
-          onChange={(e) => setPrazo(e.target.value)}
-        />
-        <Botao onClick={() => aoDefinirPrazoPagamento(Number(prazo))}>Salvar prazo</Botao>
-      </td>
+      {podeGerenciar ? (
+        <td>
+          <Botao onClick={() => setEditando(true)}>Editar</Botao>
+          {clinica.ativo ? (
+            <Botao onClick={aoInativar}>Inativar</Botao>
+          ) : (
+            <Botao onClick={aoReativar}>Reativar</Botao>
+          )}
+          <CampoTexto
+            rotulo="Prazo de pagamento (dias)"
+            type="number"
+            value={prazo}
+            onChange={(e) => setPrazo(e.target.value)}
+          />
+          <Botao onClick={() => aoDefinirPrazoPagamento(Number(prazo))}>Salvar prazo</Botao>
+        </td>
+      ) : null}
     </tr>
   )
 }
@@ -81,7 +87,9 @@ export function TelaClinicas() {
     reativar,
     definirPrazoPagamento,
   } = useClinicas()
+  const { papel } = useSessao()
   const [formularioAberto, setFormularioAberto] = useState(false)
+  const podeGerenciar = podeExecutar(papel, 'CLINICA_GERENCIAR')
 
   return (
     <div>
@@ -103,7 +111,9 @@ export function TelaClinicas() {
         Apenas ativas
       </label>
 
-      <Botao onClick={() => setFormularioAberto(true)}>Nova clínica</Botao>
+      {podeGerenciar ? (
+        <Botao onClick={() => setFormularioAberto(true)}>Nova clínica</Botao>
+      ) : null}
       {formularioAberto ? (
         <FormularioClinica aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
@@ -118,7 +128,7 @@ export function TelaClinicas() {
               <th>Telefone</th>
               <th>E-mail</th>
               <th>Status</th>
-              <th>Ações</th>
+              {podeGerenciar ? <th>Ações</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -126,6 +136,7 @@ export function TelaClinicas() {
               <LinhaClinica
                 key={clinica.id}
                 clinica={clinica}
+                podeGerenciar={podeGerenciar}
                 aoEditar={(dados) => editar(clinica.id, dados)}
                 aoInativar={() => inativar(clinica.id)}
                 aoReativar={() => reativar(clinica.id)}

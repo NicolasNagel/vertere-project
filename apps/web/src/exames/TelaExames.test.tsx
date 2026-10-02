@@ -105,7 +105,7 @@ describe('TelaExames', () => {
   })
 
   it('admin cadastra um exame novo abrindo o formulário', async () => {
-    const criar = vi.fn()
+    const criar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames({ criar })
     mockarPapel('admin')
     render(<TelaExames />)
@@ -135,7 +135,7 @@ describe('TelaExames', () => {
   })
 
   it('ação "Editar" por linha abre o formulário preenchido e salva com editar', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames({ exames: [exameA], editar })
     mockarPapel('admin')
     render(<TelaExames />)
@@ -209,7 +209,7 @@ describe('TelaExames', () => {
   })
 
   it('admin cadastra uma regra de plantão nova abrindo o formulário', async () => {
-    const criar = vi.fn()
+    const criar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames()
     mockarUseRegrasPlantao({ criar })
     mockarPapel('admin')
@@ -245,7 +245,7 @@ describe('TelaExames', () => {
   })
 
   it('ação "Editar" por linha de regra de plantão abre o formulário preenchido e salva com editar', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames()
     mockarUseRegrasPlantao({ regras: [regraA], editar })
     mockarPapel('admin')
@@ -443,7 +443,7 @@ describe('TelaExames — formulários fecham só com sucesso (US1)', () => {
   })
 
   it('"Cancelar" no novo exame fecha sem chamar criar', async () => {
-    const criar = vi.fn()
+    const criar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames({ criar })
     mockarUseRegrasPlantao()
     render(<TelaExames />)
@@ -457,7 +457,7 @@ describe('TelaExames — formulários fecham só com sucesso (US1)', () => {
   })
 
   it('edição de exame cancelada: reabrir mostra o valor original', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames({ exames: [exameA], editar })
     mockarUseRegrasPlantao()
     render(<TelaExames />)
@@ -512,7 +512,7 @@ describe('TelaExames — formulários fecham só com sucesso (US1)', () => {
   })
 
   it('edição de regra cancelada: reabrir mostra o valor original', async () => {
-    const editar = vi.fn()
+    const editar = vi.fn().mockResolvedValue({ ok: true })
     mockarUseExames()
     mockarUseRegrasPlantao({ regras: [regraA], editar })
     render(<TelaExames />)
