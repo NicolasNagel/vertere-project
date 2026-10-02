@@ -225,13 +225,17 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 
 ### Telas
 
-- [ ] T026 [P] [US1] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
+- [X] T026 [P] [US1] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
   - com `criar` mockado devolvendo `{ok:false, mensagem:'m'}`, o formulário "Nova clínica"
     continua aberto, com os valores digitados e a mensagem;
   - com `{ok:true}`, o formulário fecha;
   - "Cancelar" fecha sem chamar `criar`;
   - o mesmo para a edição por linha;
   - a célula da linha em edição tem `colspan="6"` (FR-019).
+
+  **Nota**: também cobre o cenário 5 da US1 (achado C2 do `/speckit-analyze`): Editar → alterar →
+  Cancelar → Editar mostra o valor original. Só o teste de `colspan` nasceu vermelho; os de
+  fechar/manter aberto já passam por causa da ligação adiantada na T019.
 - [ ] T027 [US1] Ligar `apps/web/src/clinicas/TelaClinicas.tsx` ao contrato novo
       (`aoSalvar` devolve o resultado do hook, `aoFechar` fecha) e corrigir o `colSpan` até T026
       passar.

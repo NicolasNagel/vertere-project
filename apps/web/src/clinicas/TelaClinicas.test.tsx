@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { usuario } from '../../tests/usuario'
 import * as useClinicasModulo from './useClinicas'
 import { TelaClinicas } from './TelaClinicas'
 
@@ -28,8 +29,8 @@ function mockarHook(overrides: Partial<ReturnType<typeof useClinicasModulo.useCl
     apenasAtivas: false,
     definirApenasAtivas: vi.fn(),
     recarregar: vi.fn(),
-    criar: vi.fn(),
-    editar: vi.fn(),
+    criar: vi.fn().mockResolvedValue({ ok: true }),
+    editar: vi.fn().mockResolvedValue({ ok: true }),
     inativar: vi.fn(),
     reativar: vi.fn(),
     definirPrazoPagamento: vi.fn(),
@@ -135,5 +136,89 @@ describe('TelaClinicas', () => {
     await userEvent.click(screen.getByLabelText(/apenas ativas/i))
 
     expect(definirApenasAtivas).toHaveBeenCalledWith(true)
+  })
+})
+
+describe('TelaClinicas — formulários fecham só com sucesso (US1)', () => {
+  it('criar com falha mantém o formulário aberto, com os valores e a mensagem', async () => {
+    mockarHook({ criar: vi.fn().mockResolvedValue({ ok: false, mensagem: 'm' }) })
+    render(<TelaClinicas />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Nova clínica' }))
+    await u.type(screen.getByLabelText('Nome'), 'Clínica Nova')
+    await u.type(screen.getByLabelText('CNPJ'), '99988877000111')
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('m')
+    expect(screen.getByLabelText('Nome')).toHaveValue('Clínica Nova')
+  })
+
+  it('criar com sucesso fecha o formulário', async () => {
+    mockarHook()
+    render(<TelaClinicas />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Nova clínica' }))
+    await u.type(screen.getByLabelText('Nome'), 'Clínica Nova')
+    await u.type(screen.getByLabelText('CNPJ'), '99988877000111')
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.queryByLabelText('CNPJ')).not.toBeInTheDocument()
+  })
+
+  it('"Cancelar" no formulário novo fecha sem chamar criar', async () => {
+    const criar = vi.fn()
+    mockarHook({ criar })
+    render(<TelaClinicas />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Nova clínica' }))
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByLabelText('CNPJ')).not.toBeInTheDocument()
+    expect(criar).not.toHaveBeenCalled()
+  })
+
+  it('editar com falha mantém a linha em edição com os valores e a mensagem', async () => {
+    mockarHook({
+      clinicas: [clinicaA],
+      editar: vi.fn().mockResolvedValue({ ok: false, mensagem: 'm' }),
+    })
+    render(<TelaClinicas />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+    await u.clear(screen.getByLabelText('Telefone'))
+    await u.type(screen.getByLabelText('Telefone'), '999')
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('m')
+    expect(screen.getByLabelText('Telefone')).toHaveValue('999')
+  })
+
+  it('"Cancelar" na edição descarta a alteração: reabrir mostra o valor original', async () => {
+    const editar = vi.fn()
+    mockarHook({ clinicas: [clinicaA], editar })
+    render(<TelaClinicas />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+    await u.clear(screen.getByLabelText('Telefone'))
+    await u.type(screen.getByLabelText('Telefone'), '999')
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+
+    expect(screen.getByLabelText('Telefone')).toHaveValue('4730000000')
+    expect(editar).not.toHaveBeenCalled()
+  })
+
+  it('a linha em edição ocupa as 6 colunas da tabela (FR-019)', async () => {
+    mockarHook({ clinicas: [clinicaA] })
+    render(<TelaClinicas />)
+
+    await usuario().click(screen.getByRole('button', { name: 'Editar' }))
+
+    expect(screen.getByLabelText('CNPJ').closest('td')).toHaveAttribute('colspan', '6')
   })
 })
