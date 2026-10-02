@@ -414,7 +414,7 @@ de FR-014 nas quatro telas.
 
 **Independent Test**: quickstart.md, Cenário 6.
 
-- [ ] T048 [P] [US6] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
+- [X] T048 [P] [US6] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
   - adicionar `vi.mock('../autenticacao/SessaoContext')`, com papel `admin` como padrão dos
     testes existentes;
   - `atendente` e `tecnico` veem a lista, "Buscar por nome" e "Apenas ativas", mas não veem "Nova

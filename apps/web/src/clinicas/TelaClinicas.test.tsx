@@ -1,11 +1,30 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usuario } from '../../tests/usuario'
+import * as SessaoContextModulo from '../autenticacao/SessaoContext'
 import * as useClinicasModulo from './useClinicas'
 import { TelaClinicas } from './TelaClinicas'
 
 vi.mock('./useClinicas')
+vi.mock('../autenticacao/SessaoContext')
+
+function mockarPapel(papel: 'admin' | 'atendente' | 'tecnico') {
+  vi.mocked(SessaoContextModulo.useSessao).mockReturnValue({
+    autenticado: true,
+    papel,
+    email: 'usuario@vertere.com',
+    erro: null,
+    carregando: false,
+    login: vi.fn(),
+    sair: vi.fn(),
+  })
+}
+
+// Os testes anteriores à S14 assumem quem pode gerenciar clínicas.
+beforeEach(() => {
+  mockarPapel('admin')
+})
 
 const clinicaA = {
   id: '1',
@@ -230,5 +249,35 @@ describe('TelaClinicas — aviso de item fora do filtro (US4)', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('TelaClinicas — cada papel vê só o que pode fazer (US6)', () => {
+  it.each(['atendente', 'tecnico'] as const)(
+    '%s vê lista, busca e filtro, mas nenhum controle de escrita',
+    (papel) => {
+      mockarPapel(papel)
+      mockarHook({ clinicas: [clinicaA] })
+      render(<TelaClinicas />)
+
+      expect(screen.getByText('Clínica A')).toBeInTheDocument()
+      expect(screen.getByLabelText('Buscar por nome')).toBeInTheDocument()
+      expect(screen.getByRole('checkbox', { name: /apenas ativas/i })).toBeInTheDocument()
+      for (const nome of ['Nova clínica', 'Editar', 'Inativar', 'Reativar', 'Salvar prazo']) {
+        expect(screen.queryByRole('button', { name: nome })).not.toBeInTheDocument()
+      }
+      expect(screen.queryByLabelText(/prazo de pagamento/i)).not.toBeInTheDocument()
+      expect(screen.queryByRole('columnheader', { name: 'Ações' })).not.toBeInTheDocument()
+    },
+  )
+
+  it('admin vê todos os controles de escrita', () => {
+    mockarHook({ clinicas: [clinicaA] })
+    render(<TelaClinicas />)
+
+    for (const nome of ['Nova clínica', 'Editar', 'Inativar', 'Salvar prazo']) {
+      expect(screen.getByRole('button', { name: nome })).toBeInTheDocument()
+    }
+    expect(screen.getByRole('columnheader', { name: 'Ações' })).toBeInTheDocument()
   })
 })
