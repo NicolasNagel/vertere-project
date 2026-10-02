@@ -518,9 +518,45 @@ de FR-014 nas quatro telas.
     exercitado pelos arquivos de teste rodados aqui). Banco de dev conferido depois: `clinicas=1`,
     `veterinarios=1` intactos; `usuarios=0`, `exames=0`, `regras_plantao=0` (já zerados, ver
     "Descobertas").
-- [ ] T056 Executar `specs/014-polimento-telas-web/quickstart.md` cenários 1 a 7 na UI real
+- [X] T056 Executar `specs/014-polimento-telas-web/quickstart.md` cenários 1 a 7 na UI real
       (Chrome) e na API real, por papel, e registrar o resultado de cada cenário nesta task.
       Divergência vira task nova ou "Descobertas", nunca é ignorada.
+
+  **Resultado (2026-10-01/02)**: banco de dev tinha sido zerado pela suíte de router (T042/T043,
+  "Descobertas"); recriados os 4 usuários de teste (`teste.admin` via SQL direto porque nenhum
+  admin existia para o bootstrap pela API, os demais via `POST /usuarios`). Extensão do Chrome
+  oscilou bastante nesta sessão (desconexões, página bloqueada, timeout de CDP, alguns cliques sem
+  efeito real) — contornado repetindo a ação e confirmando por `get_page_text`/screenshot antes de
+  seguir; nenhum achado abaixo depende de um clique que não tenha sido confirmado assim.
+  - **Cenário 1** (US1): preço-base `-5` bloqueado com "Preço-base deve ser maior que zero.",
+    formulário aberto com os valores. Servidor desligado → "Não foi possível falar com o servidor.
+    Tente novamente.", formulário continua aberto com os 3 campos preservados (prova viva do
+    FR-002). Religar o servidor e salvar de novo: sucesso. "Cancelar" já aparece no formulário.
+  - **Cenário 2** (US1/US2): preço editado para "R$ 42,90" (já em formato de moeda, FR-015).
+    "Cancelar" numa edição aberta preserva o valor original ao reabrir (US1, cenário 5).
+  - **Cenário 3**: regra Sexta-feira 18:00–06:00 aceita (cruza a meia-noite, sem erro de ordem).
+    Valor adicional `0` bloqueado com "Valor adicional deve ser maior que zero.".
+  - **Cenário 4**: regra editada para R$ 75,00, inativada e reativada; com "Apenas ativas"
+    marcado, inativar faz o item sair da lista na hora (US4, confirmado também no catálogo de
+    exames).
+  - **Cenário 6** (US6): `atendente` e `tecnico` nas telas de Clínicas/Veterinários veem lista,
+    busca e filtros, mas nenhum botão de escrita nem a coluna "Ações" — a mudança de escopo
+    decidida no plano está de pé na UI real. `tecnico` em Exames não vê a aba "Regras de Plantão".
+    `admin` continua vendo tudo, inclusive "Salvar prazo" em Clínicas. Papel `clinica`: `/exames`
+    por URL direta mostra "Acesso negado.".
+  - **FR-006 na prática**: clínica cadastrada com e-mail `teste@exemplo` (aceito pelo HTML5, 
+    recusado pelo `EmailStr` do backend) mostrou "Verifique o campo E-mail: valor inválido.", não
+    mais "CNPJ inválido — verifique o formato informado." (o bug da S12 que a Decisão 4 corrige).
+    Nada foi gravado.
+  - **Achado incidental, não corrigido (fora de escopo da S14)**: reiniciar a API limpa
+    `sessoes_store` (sessões em memória); a sessão do navegador fica com um token que a API não
+    reconhece mais, e a próxima ação dispara o handler global de sessão expirada
+    ("Sua sessão expirou. Faça login novamente.") — comportamento correto, mas só acontece em dev
+    ao reiniciar a API manualmente, nunca em produção. Cobre o Cenário 5 do quickstart de brinde.
+  - **Cenário 7**: coberto pela T054 (10 execuções, não repetido aqui).
+  - Dados de teste deixados **inativos** no banco de dev (via API, depois que o clique de
+    "Inativar" parou de responder na sessão instável do Chrome): exame "Glicose S14" e a regra de
+    sexta-feira. A clínica de e-mail inválido não chegou a ser criada. Servidores encerrados.
 - [ ] T057 Atualizar `handoff.md` com o estado da S14 (implementada, números de T054–T056, o que
       ficou em "Descobertas") e o próximo passo (`/fechar-spec S14`).
 
