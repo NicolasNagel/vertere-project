@@ -239,8 +239,9 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 - [X] T027 [US1] Ligar `apps/web/src/clinicas/TelaClinicas.tsx` ao contrato novo
       (`aoSalvar` devolve o resultado do hook, `aoFechar` fecha) e corrigir o `colSpan` até T026
       passar.
-- [ ] T028 [P] [US1] Escrever os mesmos testes de T026 em
-      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com `colspan="6"`.
+- [X] T028 [P] [US1] Escrever os mesmos testes de T026 em
+      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com `colspan="6"`. **Nota**: igual à
+      T026, só o `colspan` nasceu vermelho (ligação adiantada na T021).
 - [ ] T029 [US1] Ligar `apps/web/src/veterinarios/TelaVeterinarios.tsx` até T028 passar.
 - [ ] T030 [P] [US1] Escrever os mesmos testes de T026 em
       `apps/web/src/exames/TelaExames.test.tsx`, para os formulários de exame e de regra de
