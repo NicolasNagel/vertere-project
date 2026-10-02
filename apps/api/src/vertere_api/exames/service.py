@@ -58,10 +58,34 @@ class ExameNaoEncontrado(Exception):
         super().__init__(f"Exame {exame_id} não encontrado")
 
 
+class ExameInvalido(Exception):
+    """Dados de exame recusados pela regra de cadastro (a mensagem já é a que o usuário vê)."""
+
+
+def _validar_dados_de_exame(categoria: str, nome: str, preco_base: Decimal) -> tuple[str, str]:
+    """Valida e normaliza os dados de exame; devolve categoria e nome sem espaços nas pontas.
+
+    Checa na ordem categoria, nome, preço-base, e para na primeira falha.
+    """
+    categoria = categoria.strip()
+    nome = nome.strip()
+    if not categoria:
+        raise ExameInvalido("Categoria não pode ficar vazia.")
+    if not nome:
+        raise ExameInvalido("Nome não pode ficar vazio.")
+    if preco_base <= 0:
+        raise ExameInvalido("Preço-base deve ser maior que zero.")
+    return categoria, nome
+
+
 def cadastrar_exame(
     categoria: str, nome: str, preco_base: Decimal, repo: ExameRepository
 ) -> Exame:
-    """Cadastra um exame no catálogo."""
+    """Cadastra um exame no catálogo.
+
+    Rejeita categoria ou nome vazios e preço-base não positivo (`ExameInvalido`).
+    """
+    categoria, nome = _validar_dados_de_exame(categoria, nome, preco_base)
     exame = Exame(
         id=str(uuid.uuid4()), categoria=categoria, nome=nome, preco_base=preco_base, ativo=True
     )
@@ -79,7 +103,12 @@ def _buscar_exame_ou_levantar(exame_id: str, repo: ExameRepository) -> Exame:
 def editar_exame(
     exame_id: str, categoria: str, nome: str, preco_base: Decimal, repo: ExameRepository
 ) -> Exame:
-    """Edita categoria, nome e preço-base de um exame existente."""
+    """Edita categoria, nome e preço-base de um exame existente.
+
+    Valida os dados antes de buscar o exame: um pedido inválido é recusado com `ExameInvalido`
+    mesmo que o id não exista.
+    """
+    categoria, nome = _validar_dados_de_exame(categoria, nome, preco_base)
     exame = _buscar_exame_ou_levantar(exame_id, repo)
     atualizado = replace(exame, categoria=categoria, nome=nome, preco_base=preco_base)
     repo.salvar(atualizado)

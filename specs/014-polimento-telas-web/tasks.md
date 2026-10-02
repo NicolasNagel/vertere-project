@@ -333,7 +333,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - `editar_exame` com dados inválidos e id inexistente levanta `ExameInvalido`, não
     `ExameNaoEncontrado`.
   - `inativar_exame` e `reativar_exame` de um exame já gravado com `preco_base=-10` funcionam.
-- [ ] T039 [US3] Implementar `ExameInvalido` e a validação em `cadastrar_exame`/`editar_exame` de
+- [X] T039 [US3] Implementar `ExameInvalido` e a validação em `cadastrar_exame`/`editar_exame` de
       `apps/api/src/vertere_api/exames/service.py` até T038 passar. Em `editar_exame`, validar antes
       de buscar.
 - [ ] T040 [P] [US3] Escrever testes falhos em `apps/api/tests/test_exames_regra_plantao_service.py`:
