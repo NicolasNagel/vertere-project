@@ -160,7 +160,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 
 ### Formulários
 
-- [ ] T014 [P] [US1] Escrever testes falhos em `apps/web/src/exames/FormularioExame.test.tsx`
+- [X] T014 [P] [US1] Escrever testes falhos em `apps/web/src/exames/FormularioExame.test.tsx`
       (props novas `aoSalvar: (dados) => Promise<ResultadoAcao>` e `aoFechar`):
   - sucesso chama `aoFechar`;
   - falha mantém os três campos com o que foi digitado e mostra a `mensagem` em `role="alert"`;
