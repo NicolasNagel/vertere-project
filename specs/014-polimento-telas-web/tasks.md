@@ -321,7 +321,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 
 **Independente das phases 2–4**: pode ser feita em paralelo com o frontend.
 
-- [ ] T038 [P] [US3] Escrever testes falhos na seam de service em
+- [X] T038 [P] [US3] Escrever testes falhos na seam de service em
       `apps/api/tests/test_exames_exame_service.py`, com o `ExameRepositorioFake` existente.
   - Cadastrar e editar levantam `ExameInvalido` com a mensagem exata, sem gravar nada no
     repositório:
