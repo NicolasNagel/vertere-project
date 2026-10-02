@@ -192,7 +192,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 
 ### Retrofit dos hooks da S12 sobre `useColecaoCrud` (research.md, Decisão 3)
 
-- [ ] T022 [P] [US1] Reescrever `apps/web/src/clinicas/useClinicas.test.ts` para o contrato novo,
+- [X] T022 [P] [US1] Reescrever `apps/web/src/clinicas/useClinicas.test.ts` para o contrato novo,
       com a API (`clinicasApi`) mockada como hoje:
   - `criar`/`editar` devolvem `ResultadoAcao`;
   - `inativar`, `reativar` e `definirPrazoPagamento` preenchem `erro` em falha;
