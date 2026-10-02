@@ -497,12 +497,27 @@ de FR-014 nas quatro telas.
 
 ## Phase 10: Polish & Cross-Cutting Concerns
 
-- [ ] T055 [P] Rodar e registrar nesta task:
+- [X] T055 [P] Rodar e registrar nesta task:
   - `pnpm --dir apps/web lint` (sem achado novo);
   - `pnpm --dir apps/web build`;
   - `pnpm --dir apps/web test:cobertura`, com números de `src/api/`, `src/ui/`,
     `src/autenticacao/permissoesDeTela.ts`, `src/clinicas/`, `src/veterinarios/` e `src/exames/`;
   - `uv run pytest --cov=vertere_api.exames` em `apps/api` (cobertura de `exames/`).
+
+  **Resultado (2026-10-01)**:
+  - lint: 0 erros, os mesmos 2 warnings pré-existentes (`useColecaoCrud.ts` set-state-in-effect,
+    `SessaoContext.tsx` only-export-components).
+  - build: `tsc -b && vite build` limpo.
+  - `test:cobertura`: 282/282, `apps/web` inteiro com 97,53% de linhas (era 96,2% na S13).
+    `src/clinicas` 100%, `src/veterinarios` 97,75% (`FormularioVeterinario.tsx` 90,47%, ramo não
+    coberto: linha 77), `src/exames` 99,33%, `src/api` 98,03%, `src/ui` 92,59% (`CampoTexto.tsx`
+    sem teste próprio desde S11, fora do escopo da S14). `permissoesDeTela.ts`: 100% (coberto por
+    `permissoesDeTela.test.ts`, 20 casos tabela-dirigidos).
+  - backend: `exames/` (service, router, repository, domain, models, schemas) com 99% de
+    statements, 4 linhas não cobertas em `service.py` (27, 32-34: `_regra_cobre_instante`, não
+    exercitado pelos arquivos de teste rodados aqui). Banco de dev conferido depois: `clinicas=1`,
+    `veterinarios=1` intactos; `usuarios=0`, `exames=0`, `regras_plantao=0` (já zerados, ver
+    "Descobertas").
 - [ ] T056 Executar `specs/014-polimento-telas-web/quickstart.md` cenários 1 a 7 na UI real
       (Chrome) e na API real, por papel, e registrar o resultado de cada cenário nesta task.
       Divergência vira task nova ou "Descobertas", nunca é ignorada.
