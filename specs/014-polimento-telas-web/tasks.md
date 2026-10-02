@@ -431,7 +431,7 @@ de FR-014 nas quatro telas.
       `apps/web/src/veterinarios/TelaVeterinarios.test.tsx` (`VETERINARIO_GERENCIAR`: "Novo
       veterinário", "Editar", "Inativar", "Reativar", cabeçalho "Ações"; busca e filtros continuam
       visíveis).
-- [ ] T051 [US6] Esconder a escrita em `apps/web/src/veterinarios/TelaVeterinarios.tsx` com
+- [X] T051 [US6] Esconder a escrita em `apps/web/src/veterinarios/TelaVeterinarios.tsx` com
       `podeExecutar` até T050 passar.
 - [ ] T052 [US6] Trocar, em `apps/web/src/exames/TelaExames.tsx`:
   - `papel === 'admin'` por `podeExecutar(papel, 'EXAME_GERENCIAR')` no catálogo e por
