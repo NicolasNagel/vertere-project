@@ -5,6 +5,7 @@ import pytest
 
 from vertere_api.exames.domain import RegraPlantao
 from vertere_api.exames.service import (
+    RegraPlantaoInvalida,
     RegraPlantaoNaoEncontrada,
     cadastrar_regra_plantao,
     editar_regra_plantao,
@@ -176,3 +177,68 @@ class TestListarRegrasPlantao:
         resultado = listar_regras_plantao(repo, apenas_ativos=True)
 
         assert [r.id for r in resultado] == ["regra-1"]
+
+
+class TestValidacaoDeRegraPlantao:
+    """S14, FR-010: o service recusa valor adicional não positivo, sem gravar."""
+
+    @pytest.mark.parametrize("valor", [Decimal("0"), Decimal("-1")])
+    def test_cadastrar_com_valor_nao_positivo_levanta_erro_sem_gravar(self, valor: Decimal) -> None:
+        repo = RegraPlantaoRepositorioFake()
+
+        with pytest.raises(RegraPlantaoInvalida, match=r"^Valor adicional deve ser maior que zero\.$"):
+            cadastrar_regra_plantao(
+                dia_semana=4,
+                hora_inicio=time(18, 0),
+                hora_fim=time(6, 0),
+                valor_adicional=valor,
+                repo=repo,
+            )
+
+        assert repo.listar_todas() == []
+
+    @pytest.mark.parametrize("valor", [Decimal("0"), Decimal("-1")])
+    def test_editar_com_valor_nao_positivo_levanta_erro_sem_alterar(self, valor: Decimal) -> None:
+        original = RegraPlantao(
+            id="regra-1",
+            dia_semana=4,
+            hora_inicio=time(18, 0),
+            hora_fim=time(6, 0),
+            valor_adicional=Decimal("50.00"),
+            ativo=True,
+        )
+        repo = RegraPlantaoRepositorioFake([original])
+
+        with pytest.raises(RegraPlantaoInvalida, match=r"^Valor adicional deve ser maior que zero\.$"):
+            editar_regra_plantao(
+                regra_id="regra-1",
+                dia_semana=4,
+                hora_inicio=time(18, 0),
+                hora_fim=time(6, 0),
+                valor_adicional=valor,
+                repo=repo,
+            )
+
+        assert repo.buscar_por_id("regra-1") == original
+
+    def test_hora_inicio_maior_que_hora_fim_continua_aceita(self) -> None:
+        regra = cadastrar_regra_plantao(
+            dia_semana=5,
+            hora_inicio=time(22, 0),
+            hora_fim=time(4, 0),
+            valor_adicional=Decimal("75"),
+            repo=RegraPlantaoRepositorioFake(),
+        )
+
+        assert (regra.hora_inicio, regra.hora_fim) == (time(22, 0), time(4, 0))
+
+    def test_editar_invalido_de_id_inexistente_levanta_regra_invalida(self) -> None:
+        with pytest.raises(RegraPlantaoInvalida):
+            editar_regra_plantao(
+                regra_id="inexistente",
+                dia_semana=4,
+                hora_inicio=time(18, 0),
+                hora_fim=time(6, 0),
+                valor_adicional=Decimal("0"),
+                repo=RegraPlantaoRepositorioFake(),
+            )

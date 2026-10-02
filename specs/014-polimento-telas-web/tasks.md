@@ -336,7 +336,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 - [X] T039 [US3] Implementar `ExameInvalido` e a validação em `cadastrar_exame`/`editar_exame` de
       `apps/api/src/vertere_api/exames/service.py` até T038 passar. Em `editar_exame`, validar antes
       de buscar.
-- [ ] T040 [P] [US3] Escrever testes falhos em `apps/api/tests/test_exames_regra_plantao_service.py`:
+- [X] T040 [P] [US3] Escrever testes falhos em `apps/api/tests/test_exames_regra_plantao_service.py`:
   - `valor_adicional` `Decimal('0')` e `Decimal('-1')` em cadastrar e editar levantam
     `RegraPlantaoInvalida("Valor adicional deve ser maior que zero.")`, sem gravar;
   - `hora_inicio > hora_fim` continua aceito;
