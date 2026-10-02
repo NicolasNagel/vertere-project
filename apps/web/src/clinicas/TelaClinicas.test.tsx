@@ -222,3 +222,13 @@ describe('TelaClinicas — formulários fecham só com sucesso (US1)', () => {
     expect(screen.getByLabelText('CNPJ').closest('td')).toHaveAttribute('colspan', '6')
   })
 })
+
+describe('TelaClinicas — aviso de item fora do filtro (US4)', () => {
+  it('mostra o aviso do hook em role="status", distinto do alerta de erro', () => {
+    mockarHook({ aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.' })
+    render(<TelaClinicas />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})

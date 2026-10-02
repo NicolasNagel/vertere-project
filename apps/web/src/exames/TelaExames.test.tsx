@@ -529,3 +529,28 @@ describe('TelaExames — formulários fecham só com sucesso (US1)', () => {
     expect(editar).not.toHaveBeenCalled()
   })
 })
+
+describe('TelaExames — aviso de item fora do filtro (US4)', () => {
+  beforeEach(() => {
+    mockarPapel('admin')
+  })
+
+  it('catálogo mostra o aviso do hook em role="status"', () => {
+    mockarUseExames({ aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.' })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('aba de regras mostra o aviso do hook em role="status"', async () => {
+    mockarUseExames()
+    mockarUseRegrasPlantao({ aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.' })
+    render(<TelaExames />)
+
+    await usuario().click(screen.getByRole('button', { name: 'Regras de Plantão' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
+  })
+})

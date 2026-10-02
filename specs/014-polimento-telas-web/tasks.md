@@ -373,7 +373,7 @@ de FR-014 nas quatro telas.
 
 **Independent Test**: quickstart.md, Cenário 4.
 
-- [ ] T044 [P] [US4] Escrever testes falhos nas três telas:
+- [X] T044 [P] [US4] Escrever testes falhos nas três telas:
   - em `apps/web/src/exames/TelaExames.test.tsx`, `apps/web/src/clinicas/TelaClinicas.test.tsx` e
     `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com o hook mockado devolvendo
     `aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.'`, a tela

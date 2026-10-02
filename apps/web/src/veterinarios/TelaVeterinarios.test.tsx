@@ -280,3 +280,14 @@ describe('TelaVeterinarios — formulários fecham só com sucesso (US1)', () =>
     expect(screen.getByLabelText('CRMV').closest('td')).toHaveAttribute('colspan', '6')
   })
 })
+
+describe('TelaVeterinarios — aviso de item fora do filtro (US4)', () => {
+  it('mostra o aviso do hook em role="status", distinto do alerta de erro', () => {
+    mockarHookClinicas()
+    mockarHookVeterinarios({ aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.' })
+    render(<TelaVeterinarios />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
