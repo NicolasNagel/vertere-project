@@ -453,14 +453,17 @@ de FR-014 nas quatro telas.
 
 **Independent Test**: quickstart.md, Cenário 7.
 
-- [ ] T053 [US7] Trocar as chamadas diretas `userEvent.*` pelo helper `usuario()` de
+- [X] T053 [US7] Trocar as chamadas diretas `userEvent.*` pelo helper `usuario()` de
       `apps/web/tests/usuario.ts` nos arquivos de teste que ainda as usam:
   - `apps/web/src/autenticacao/TelaLogin.test.tsx`;
   - `apps/web/src/shell/ShellAutenticado.test.tsx`;
   - e qualquer outro `*.test.tsx` de `apps/web/src` que a Phase 3 a 8 não tenha reescrito
     (conferir com `grep -rln "userEvent\." apps/web/src`).
 
-  Sem mudar asserções. Suíte verde.
+  Sem mudar asserções. Suíte verde. **Nota**: `TelaLogin.test.tsx` e `ShellAutenticado.test.tsx`
+  já tinham uma variável local `usuario = userEvent.setup()` (delay padrão); passaram a usar o
+  helper compartilhado (`const u = usuario()`), e o import direto de `userEvent` saiu dos dois.
+  3 execuções seguidas de `pnpm test`: 282/282 nas três, código de saída 0.
 - [ ] T054 [US7] Rodar `pnpm --dir apps/web test` 10 vezes seguidas e registrar nesta task o
       resultado de cada uma (testes, falhas, duração).
   - Aceite: 10/10 sem falha, com o mesmo número de testes, sem `.skip`/`.only`/`.todo` novos, sem

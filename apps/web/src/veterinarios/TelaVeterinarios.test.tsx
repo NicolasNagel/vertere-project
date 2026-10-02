@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usuario } from '../../tests/usuario'
 import * as SessaoContextModulo from '../autenticacao/SessaoContext'
@@ -107,7 +106,7 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ veterinarios: [veterinarioA], definirFiltroClinicaId })
     render(<TelaVeterinarios />)
 
-    await userEvent.selectOptions(screen.getByLabelText(/filtrar por clínica/i), 'c1')
+    await usuario().selectOptions(screen.getByLabelText(/filtrar por clínica/i), 'c1')
 
     expect(definirFiltroClinicaId).toHaveBeenCalledWith('c1')
   })
@@ -118,10 +117,10 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ criar })
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByRole('button', { name: /novo veterinário/i }))
-    await userEvent.type(screen.getByLabelText('Nome'), 'Dr. João')
-    await userEvent.type(screen.getByLabelText('CRMV'), '1234')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().click(screen.getByRole('button', { name: /novo veterinário/i }))
+    await usuario().type(screen.getByLabelText('Nome'), 'Dr. João')
+    await usuario().type(screen.getByLabelText('CRMV'), '1234')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(criar).toHaveBeenCalledWith(
       expect.objectContaining({ nome: 'Dr. João', crmv: '1234' }),
@@ -141,12 +140,12 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ veterinarios: [veterinarioA], editar })
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    await usuario().click(screen.getByRole('button', { name: /editar/i }))
     expect(screen.getByLabelText('Nome')).toHaveValue('Dr. João')
 
-    await userEvent.clear(screen.getByLabelText('Telefone'))
-    await userEvent.type(screen.getByLabelText('Telefone'), '999')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().clear(screen.getByLabelText('Telefone'))
+    await usuario().type(screen.getByLabelText('Telefone'), '999')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(editar).toHaveBeenCalledWith(
       '1',
@@ -160,7 +159,7 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ veterinarios: [veterinarioA], inativar })
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /inativar/i }))
     expect(inativar).toHaveBeenCalledWith('1')
   })
 
@@ -170,7 +169,7 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ veterinarios: [{ ...veterinarioA, ativo: false }], reativar })
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /reativar/i }))
     expect(reativar).toHaveBeenCalledWith('1')
   })
 
@@ -191,7 +190,7 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios({ definirApenasAtivos })
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByLabelText(/apenas ativos/i))
+    await usuario().click(screen.getByLabelText(/apenas ativos/i))
 
     expect(definirApenasAtivos).toHaveBeenCalledWith(true)
   })
@@ -201,7 +200,7 @@ describe('TelaVeterinarios', () => {
     mockarHookVeterinarios()
     render(<TelaVeterinarios />)
 
-    await userEvent.click(screen.getByRole('button', { name: /novo veterinário/i }))
+    await usuario().click(screen.getByRole('button', { name: /novo veterinário/i }))
 
     expect(
       screen.getByText(/nenhuma clínica ativa cadastrada/i),

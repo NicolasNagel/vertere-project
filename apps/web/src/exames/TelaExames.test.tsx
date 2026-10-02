@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usuario } from '../../tests/usuario'
 import * as SessaoContextModulo from '../autenticacao/SessaoContext'
@@ -110,11 +109,11 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /novo exame/i }))
-    await userEvent.type(screen.getByLabelText('Categoria'), 'Hematologia')
-    await userEvent.type(screen.getByLabelText('Nome'), 'Hemograma completo')
-    await userEvent.type(screen.getByLabelText('Preço-base'), '50')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().click(screen.getByRole('button', { name: /novo exame/i }))
+    await usuario().type(screen.getByLabelText('Categoria'), 'Hematologia')
+    await usuario().type(screen.getByLabelText('Nome'), 'Hemograma completo')
+    await usuario().type(screen.getByLabelText('Preço-base'), '50')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(criar).toHaveBeenCalledWith(
       expect.objectContaining({ categoria: 'Hematologia', nome: 'Hemograma completo' }),
@@ -140,12 +139,12 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    await usuario().click(screen.getByRole('button', { name: /editar/i }))
     expect(screen.getByLabelText('Nome')).toHaveValue('Hemograma completo')
 
-    await userEvent.clear(screen.getByLabelText('Preço-base'))
-    await userEvent.type(screen.getByLabelText('Preço-base'), '80')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().clear(screen.getByLabelText('Preço-base'))
+    await usuario().type(screen.getByLabelText('Preço-base'), '80')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(editar).toHaveBeenCalledWith(
       '1',
@@ -159,7 +158,7 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /inativar/i }))
     expect(inativar).toHaveBeenCalledWith('1')
   })
 
@@ -169,7 +168,7 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /reativar/i }))
     expect(reativar).toHaveBeenCalledWith('1')
   })
 
@@ -194,7 +193,7 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.getByRole('button', { name: /nova regra/i })).toBeInTheDocument()
   })
 
@@ -204,7 +203,7 @@ describe('TelaExames', () => {
     mockarPapel('atendente')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.queryByRole('button', { name: /nova regra/i })).not.toBeInTheDocument()
   })
 
@@ -215,12 +214,12 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('button', { name: /nova regra/i }))
-    await userEvent.type(screen.getByLabelText('Horário de início'), '18:00')
-    await userEvent.type(screen.getByLabelText('Horário de fim'), '06:00')
-    await userEvent.type(screen.getByLabelText('Valor adicional'), '50')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /nova regra/i }))
+    await usuario().type(screen.getByLabelText('Horário de início'), '18:00')
+    await usuario().type(screen.getByLabelText('Horário de fim'), '06:00')
+    await usuario().type(screen.getByLabelText('Valor adicional'), '50')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(criar).toHaveBeenCalledWith(
       expect.objectContaining({ hora_inicio: '18:00', hora_fim: '06:00' }),
@@ -233,13 +232,13 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     const { rerender } = render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.getByRole('button', { name: /editar/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /inativar/i })).toBeInTheDocument()
 
     mockarPapel('atendente')
     rerender(<TelaExames />)
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /inativar/i })).not.toBeInTheDocument()
   })
@@ -251,13 +250,13 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /editar/i }))
     expect(screen.getByLabelText('Horário de início')).toHaveValue('18:00')
 
-    await userEvent.clear(screen.getByLabelText('Valor adicional'))
-    await userEvent.type(screen.getByLabelText('Valor adicional'), '80')
-    await userEvent.click(screen.getByRole('button', { name: /salvar/i }))
+    await usuario().clear(screen.getByLabelText('Valor adicional'))
+    await usuario().type(screen.getByLabelText('Valor adicional'), '80')
+    await usuario().click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(editar).toHaveBeenCalledWith(
       '1',
@@ -272,8 +271,8 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('button', { name: /inativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /inativar/i }))
     expect(inativar).toHaveBeenCalledWith('1')
   })
 
@@ -284,8 +283,8 @@ describe('TelaExames', () => {
     mockarPapel('admin')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('button', { name: /reativar/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /reativar/i }))
     expect(reativar).toHaveBeenCalledWith('1')
   })
 })
@@ -308,7 +307,7 @@ describe('TelaExames — filtros do catálogo (FR-002)', () => {
     expect(screen.getByRole('option', { name: 'Bioquímica' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Hematologia' })).toBeInTheDocument()
 
-    await userEvent.selectOptions(filtro, 'Hematologia')
+    await usuario().selectOptions(filtro, 'Hematologia')
     expect(definirCategoria).toHaveBeenLastCalledWith('Hematologia')
   })
 
@@ -317,7 +316,7 @@ describe('TelaExames — filtros do catálogo (FR-002)', () => {
     mockarUseExames({ exames: [exameA], categoria: 'Hematologia', definirCategoria })
     render(<TelaExames />)
 
-    await userEvent.selectOptions(
+    await usuario().selectOptions(
       screen.getByLabelText('Filtrar por categoria'),
       'Todas as categorias',
     )
@@ -329,7 +328,7 @@ describe('TelaExames — filtros do catálogo (FR-002)', () => {
     mockarUseExames({ definirApenasAtivos })
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('checkbox', { name: /apenas ativos/i }))
+    await usuario().click(screen.getByRole('checkbox', { name: /apenas ativos/i }))
     expect(definirApenasAtivos).toHaveBeenCalledWith(true)
   })
 })
@@ -342,8 +341,8 @@ describe('TelaExames — filtro das regras de plantão (FR-006)', () => {
     mockarPapel('atendente')
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('checkbox', { name: /apenas ativas/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('checkbox', { name: /apenas ativas/i }))
     expect(definirApenasAtivos).toHaveBeenCalledWith(true)
   })
 })
@@ -373,7 +372,7 @@ describe('TelaExames — estado vazio (Edge Case)', () => {
     mockarUseRegrasPlantao({ regras: [] })
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.getByText('Nenhuma regra de plantão encontrada.')).toBeInTheDocument()
   })
 
@@ -382,7 +381,7 @@ describe('TelaExames — estado vazio (Edge Case)', () => {
     mockarUseRegrasPlantao({ regras: [], erro: 'Falha ao carregar regras.' })
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
     expect(screen.queryByText('Nenhuma regra de plantão encontrada.')).not.toBeInTheDocument()
   })
 })
@@ -397,7 +396,7 @@ describe('TelaExames — linha em edição ocupa a largura da tabela', () => {
     mockarUseRegrasPlantao()
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    await usuario().click(screen.getByRole('button', { name: /editar/i }))
     const celula = screen.getByLabelText('Categoria').closest('td')
     expect(celula).toHaveAttribute('colspan', '5')
   })
@@ -407,8 +406,8 @@ describe('TelaExames — linha em edição ocupa a largura da tabela', () => {
     mockarUseRegrasPlantao({ regras: [regraA] })
     render(<TelaExames />)
 
-    await userEvent.click(screen.getByRole('button', { name: /regras de plantão/i }))
-    await userEvent.click(screen.getByRole('button', { name: /editar/i }))
+    await usuario().click(screen.getByRole('button', { name: /regras de plantão/i }))
+    await usuario().click(screen.getByRole('button', { name: /editar/i }))
     const celula = screen.getByLabelText('Valor adicional').closest('td')
     expect(celula).toHaveAttribute('colspan', '5')
   })
