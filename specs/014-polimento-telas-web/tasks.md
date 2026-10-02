@@ -173,7 +173,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
       `aoSalvar={criar|aoEditar}` e `aoFechar` ao formulário de exame neste commit, para o `tsc`
       continuar verde. Parte do T031 (catálogo) adiantada; os testes do T030 para o catálogo podem
       nascer verdes.
-- [ ] T016 [P] [US1] Escrever os mesmos testes de T014 para
+- [X] T016 [P] [US1] Escrever os mesmos testes de T014 para
       `apps/web/src/exames/FormularioRegraPlantao.test.tsx`, incluindo a validação local de valor
       adicional ≤ 0.
 - [ ] T017 [US1] Implementar em `apps/web/src/exames/FormularioRegraPlantao.tsx` até T016 passar.
