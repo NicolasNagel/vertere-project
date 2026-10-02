@@ -121,7 +121,7 @@ describe('useExames', () => {
     expect(examesApi.listarExames).toHaveBeenCalledTimes(2)
   })
 
-  it('criar com erro HTTP inesperado devolve a mensagem sem preencher o erro de tela', async () => {
+  it('criar com erro 500 devolve a mensagem genérica de servidor sem preencher o erro de tela', async () => {
     vi.mocked(examesApi.listarExames).mockResolvedValueOnce([])
     vi.mocked(examesApi.criarExame).mockRejectedValueOnce(
       new ErroHttp(500, '{"detail":"falha interna"}'),
@@ -139,7 +139,10 @@ describe('useExames', () => {
       })
     })
 
-    expect(resultado).toEqual({ ok: false, mensagem: 'falha interna' })
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'Problema no servidor. Tente novamente em instantes.',
+    })
     expect(result.current.erro).toBeNull()
   })
 

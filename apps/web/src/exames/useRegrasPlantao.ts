@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { extrairDetalheErro } from '../api/erroApi'
+import { mensagemDeErroPadrao } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
@@ -14,12 +14,19 @@ import {
 type CriarRegraPlantaoRequest = components['schemas']['CriarRegraPlantaoRequest']
 type EditarRegraPlantaoRequest = components['schemas']['EditarRegraPlantaoRequest']
 
+const ROTULOS_DE_CAMPO = {
+  dia_semana: 'Dia da semana',
+  hora_inicio: 'Horário de início',
+  hora_fim: 'Horário de fim',
+  valor_adicional: 'Valor adicional',
+}
+
 /** Mensagens de erro da UI para Regras de Plantão — mesmo padrão de useExames.ts. */
 function mensagemDeErro(erro: ErroHttp): string {
   if (erro.status === 404) {
     return 'Regra de plantão não encontrada — pode ter sido removida por outra sessão.'
   }
-  return extrairDetalheErro(erro)
+  return mensagemDeErroPadrao(erro, ROTULOS_DE_CAMPO)
 }
 
 export function useRegrasPlantao() {

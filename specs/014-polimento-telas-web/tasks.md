@@ -299,12 +299,15 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - 422 lista em `valor_adicional` → `Verifique o campo Valor adicional: …`;
   - 500 → servidor;
   - 404 continua com a mensagem específica da S13.
-- [ ] T037 [US2] Trocar o fallback `extrairDetalheErro` por `mensagemDeErroPadrao` em
+- [X] T037 [US2] Trocar o fallback `extrairDetalheErro` por `mensagemDeErroPadrao` em
       `apps/web/src/exames/useExames.ts` e `apps/web/src/exames/useRegrasPlantao.ts` até T036
       passar, com os rótulos:
   - exames: `{ categoria: 'Categoria', nome: 'Nome', preco_base: 'Preço-base' }`;
   - regras: `{ dia_semana: 'Dia da semana', hora_inicio: 'Horário de início', hora_fim: 'Horário
     de fim', valor_adicional: 'Valor adicional' }`.
+
+  **Nota**: os dois testes da S13 que esperavam `falha interna` num 500 passam a esperar a mensagem
+  genérica de servidor (FR-007).
 
 **Checkpoint**: US2 completa. Nenhuma mensagem das quatro telas expõe JSON ou texto técnico (SC-002).
 
