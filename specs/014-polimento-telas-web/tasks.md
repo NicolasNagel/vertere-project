@@ -212,7 +212,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
   `apenasAtivas`, `definirApenasAtivas`, …).
 - [X] T023 [US1] Reimplementar `apps/web/src/clinicas/useClinicas.ts` sobre
       `apps/web/src/api/useColecaoCrud.ts` até T022 passar.
-- [ ] T024 [P] [US1] Reescrever `apps/web/src/veterinarios/useVeterinarios.test.ts` no mesmo
+- [X] T024 [P] [US1] Reescrever `apps/web/src/veterinarios/useVeterinarios.test.ts` no mesmo
       molde de T022:
   - a carga usa `buscarVeterinariosPorNome` com `termoBusca`, senão `listarVeterinarios`, ambos
     com `filtroClinicaId` e `apenasAtivos`;
