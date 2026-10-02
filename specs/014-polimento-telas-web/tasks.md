@@ -206,7 +206,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 
   Manter os nomes públicos já usados pela tela (`clinicas`, `termoBusca`, `definirTermoBusca`,
   `apenasAtivas`, `definirApenasAtivas`, …).
-- [ ] T023 [US1] Reimplementar `apps/web/src/clinicas/useClinicas.ts` sobre
+- [X] T023 [US1] Reimplementar `apps/web/src/clinicas/useClinicas.ts` sobre
       `apps/web/src/api/useColecaoCrud.ts` até T022 passar.
 - [ ] T024 [P] [US1] Reescrever `apps/web/src/veterinarios/useVeterinarios.test.ts` no mesmo
       molde de T022:
