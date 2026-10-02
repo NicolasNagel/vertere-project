@@ -70,6 +70,7 @@ export function TelaClinicas() {
     clinicas,
     carregando,
     erro,
+    aviso,
     termoBusca,
     definirTermoBusca,
     apenasAtivas,
@@ -86,6 +87,7 @@ export function TelaClinicas() {
     <div>
       <h1>Clínicas</h1>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <CampoTexto
         rotulo="Buscar por nome"

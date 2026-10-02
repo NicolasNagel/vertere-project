@@ -74,6 +74,7 @@ function CatalogoDeExames() {
     exames,
     carregando,
     erro,
+    aviso,
     categoria,
     definirCategoria,
     apenasAtivos,
@@ -108,6 +109,7 @@ function CatalogoDeExames() {
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <label htmlFor={idFiltroCategoria}>Filtrar por categoria</label>
       <select
@@ -229,6 +231,7 @@ function RegrasDePlantao() {
     regras,
     carregando,
     erro,
+    aviso,
     apenasAtivos,
     definirApenasAtivos,
     criar,
@@ -243,6 +246,7 @@ function RegrasDePlantao() {
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <label>
         <input

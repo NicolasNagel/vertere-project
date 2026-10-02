@@ -379,7 +379,7 @@ de FR-014 nas quatro telas.
     `aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.'`, a tela
     mostra o texto em `role="status"`, distinto do `role="alert"` de erro;
   - em `TelaExames`, o aviso aparece nas duas abas (catálogo e regras).
-- [ ] T045 [US4] Renderizar `aviso` em `role="status"` em `apps/web/src/exames/TelaExames.tsx`,
+- [X] T045 [US4] Renderizar `aviso` em `role="status"` em `apps/web/src/exames/TelaExames.tsx`,
       `apps/web/src/clinicas/TelaClinicas.tsx` e `apps/web/src/veterinarios/TelaVeterinarios.tsx`
       até T044 passar.
 

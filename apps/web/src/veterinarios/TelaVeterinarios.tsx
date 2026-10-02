@@ -66,6 +66,7 @@ export function TelaVeterinarios() {
     veterinarios,
     carregando,
     erro,
+    aviso,
     definirFiltroClinicaId,
     termoBusca,
     definirTermoBusca,
@@ -84,6 +85,7 @@ export function TelaVeterinarios() {
     <div>
       <h1>Veterinários</h1>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <CampoTexto
         rotulo="Buscar por nome"
