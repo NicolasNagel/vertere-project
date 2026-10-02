@@ -273,7 +273,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - 500 → `Problema no servidor. Tente novamente em instantes.`
 
   **Nota**: os dois casos de rede (carga e ação de linha) nasceram verdes por causa da T023.
-- [ ] T033 [US2] Ajustar `mensagemDeErro` em `apps/web/src/clinicas/useClinicas.ts` até T032
+- [X] T033 [US2] Ajustar `mensagemDeErro` em `apps/web/src/clinicas/useClinicas.ts` até T032
       passar:
   - 422 só vira mensagem de CNPJ quando o `detail` string contém `CNPJ`;
   - todo o resto cai em `mensagemDeErroPadrao` com os rótulos `{ nome: 'Nome', cnpj: 'CNPJ',

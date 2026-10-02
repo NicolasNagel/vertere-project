@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { extrairDetalheErro } from '../api/erroApi'
+import { extrairDetalheErro, mensagemDeErroPadrao } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
@@ -16,10 +16,21 @@ import {
 type CriarClinicaRequest = components['schemas']['CriarClinicaRequest']
 type EditarClinicaRequest = components['schemas']['EditarClinicaRequest']
 
-/** Mensagens de erro da UI para Clínicas — ver data-model.md → "Erros mapeados para mensagem de UI". */
+const ROTULOS_DE_CAMPO = {
+  nome: 'Nome',
+  cnpj: 'CNPJ',
+  endereco: 'Endereço',
+  telefone: 'Telefone',
+  email: 'E-mail',
+}
+
+/**
+ * Mensagens de erro da UI para Clínicas. O 422 tem duas origens (regra de CNPJ do service ou
+ * validação do Pydantic, ex.: e-mail), então só vira a mensagem de CNPJ quando o detalhe fala de
+ * CNPJ; o resto cai em `mensagemDeErroPadrao` (S14, FR-006).
+ */
 function mensagemDeErro(erro: ErroHttp): string {
-  const detalhe = extrairDetalheErro(erro)
-  if (erro.status === 422) {
+  if (erro.status === 422 && extrairDetalheErro(erro).includes('CNPJ')) {
     return 'CNPJ inválido — verifique o formato informado.'
   }
   if (erro.status === 409) {
@@ -28,7 +39,7 @@ function mensagemDeErro(erro: ErroHttp): string {
   if (erro.status === 404) {
     return 'Clínica não encontrada — pode ter sido removida por outra sessão.'
   }
-  return detalhe
+  return mensagemDeErroPadrao(erro, ROTULOS_DE_CAMPO)
 }
 
 export function useClinicas() {
