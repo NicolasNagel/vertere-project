@@ -352,11 +352,15 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - `POST /regras-plantao` e `PATCH /regras-plantao/{id}` com `valor_adicional: 0` → 422 `Valor
     adicional deve ser maior que zero.`;
   - em todos os casos de 422, `GET` confirma que nada foi gravado ou alterado.
-- [ ] T043 [US3] Converter `ExameInvalido`/`RegraPlantaoInvalida` em
+- [X] T043 [US3] Converter `ExameInvalido`/`RegraPlantaoInvalida` em
       `HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro))` nos quatro endpoints de
       `apps/api/src/vertere_api/exames/router.py` (mesmo padrão de `CrmvVazio` em
       `veterinarios/router.py`) até T042 passar. Rodar `uv run pytest --cov` em `apps/api`
-      inteiro.
+      inteiro. **Resultado**: módulo `exames` (5 arquivos de teste) com 78/78 e `--cov` 100% em
+      `vertere_api.exames`, mais os 5 testes de service de atendimentos que importam
+      `exames.service` (46/46, sem banco). **Desvio**: não rodei o `apps/api` inteiro porque a suíte
+      de router apaga o banco de dev (ver "Descobertas" da spec). A mudança é isolada no módulo
+      `exames`, e o Princípio IV pede a suíte do módulo afetado.
 
 **Checkpoint**: US3 completa. SC-003 verificável por curl.
 
