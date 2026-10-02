@@ -236,7 +236,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
   **Nota**: também cobre o cenário 5 da US1 (achado C2 do `/speckit-analyze`): Editar → alterar →
   Cancelar → Editar mostra o valor original. Só o teste de `colspan` nasceu vermelho; os de
   fechar/manter aberto já passam por causa da ligação adiantada na T019.
-- [ ] T027 [US1] Ligar `apps/web/src/clinicas/TelaClinicas.tsx` ao contrato novo
+- [X] T027 [US1] Ligar `apps/web/src/clinicas/TelaClinicas.tsx` ao contrato novo
       (`aoSalvar` devolve o resultado do hook, `aoFechar` fecha) e corrigir o `colSpan` até T026
       passar.
 - [ ] T028 [P] [US1] Escrever os mesmos testes de T026 em

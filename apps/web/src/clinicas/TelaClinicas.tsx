@@ -28,7 +28,7 @@ function LinhaClinica({
   if (editando) {
     return (
       <tr>
-        <td colSpan={5}>
+        <td colSpan={6}>
           <FormularioClinica
             clinica={clinica}
             aoSalvar={aoEditar}
