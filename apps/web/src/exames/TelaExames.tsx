@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
+import { formatarMoeda } from '../ui/formatacao'
 import { useSessao } from '../autenticacao/SessaoContext'
 import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
@@ -47,7 +48,7 @@ function LinhaExame({
     <tr>
       <td>{exame.categoria}</td>
       <td>{exame.nome}</td>
-      <td>{exame.preco_base}</td>
+      <td>{formatarMoeda(exame.preco_base)}</td>
       <td>{exame.ativo ? 'Ativo' : 'Inativo'}</td>
       {podeGerenciar ? (
         <td>
@@ -210,7 +211,7 @@ function LinhaRegraPlantao({
       <td>
         {paraHoraSemSegundos(regra.hora_inicio)}–{paraHoraSemSegundos(regra.hora_fim)}
       </td>
-      <td>{regra.valor_adicional}</td>
+      <td>{formatarMoeda(regra.valor_adicional)}</td>
       <td>{regra.ativo ? 'Ativa' : 'Inativa'}</td>
       {podeGerenciar ? (
         <td>
