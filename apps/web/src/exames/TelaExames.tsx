@@ -182,7 +182,7 @@ function LinhaRegraPlantao({
 }: {
   regra: RegraPlantaoResponse
   podeGerenciar: boolean
-  aoEditar: (dados: CriarRegraPlantaoRequest) => void
+  aoEditar: (dados: CriarRegraPlantaoRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -194,10 +194,8 @@ function LinhaRegraPlantao({
         <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioRegraPlantao
             regra={regra}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -259,12 +257,7 @@ function RegrasDePlantao() {
         <Botao onClick={() => setFormularioAberto(true)}>Nova regra</Botao>
       ) : null}
       {formularioAberto ? (
-        <FormularioRegraPlantao
-          aoSalvar={(dados: CriarRegraPlantaoRequest) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
-        />
+        <FormularioRegraPlantao aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
 
       {carregando ? (
