@@ -182,7 +182,11 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
 - [X] T018 [P] [US1] Escrever os mesmos testes de T014 para
       `apps/web/src/clinicas/FormularioClinica.test.tsx`, com os campos Nome, CNPJ, Endereço,
       Telefone e E-mail. O CNPJ continua somente leitura em edição.
-- [ ] T019 [US1] Implementar em `apps/web/src/clinicas/FormularioClinica.tsx` até T018 passar.
+- [X] T019 [US1] Implementar em `apps/web/src/clinicas/FormularioClinica.tsx` até T018 passar.
+      **Nota**: executada depois de T022/T023, para o `TelaClinicas` já receber `ResultadoAcao` do
+      hook sem adaptador temporário. O `TelaClinicas.tsx` já passa `aoSalvar`/`aoFechar` neste
+      commit (parte do T027 adiantada), e o mock de `useClinicas` em `TelaVeterinarios.test.tsx`
+      ganhou `aviso: null`.
 - [ ] T020 [P] [US1] Escrever os mesmos testes de T014 para
       `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`. A mensagem "Nenhuma clínica
       ativa cadastrada — …" continua aparecendo quando não há clínica ativa, agora com "Cancelar"

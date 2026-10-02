@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioClinica } from './FormularioClinica'
 import { useClinicas } from './useClinicas'
@@ -16,7 +17,7 @@ function LinhaClinica({
   aoDefinirPrazoPagamento,
 }: {
   clinica: ClinicaResponse
-  aoEditar: (dados: CriarClinicaRequest) => void
+  aoEditar: (dados: CriarClinicaRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
   aoDefinirPrazoPagamento: (dias: number) => void
@@ -30,10 +31,8 @@ function LinhaClinica({
         <td colSpan={5}>
           <FormularioClinica
             clinica={clinica}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -104,12 +103,7 @@ export function TelaClinicas() {
 
       <Botao onClick={() => setFormularioAberto(true)}>Nova clínica</Botao>
       {formularioAberto ? (
-        <FormularioClinica
-          aoSalvar={(dados) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
-        />
+        <FormularioClinica aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
       {carregando ? (
         <p>Carregando…</p>

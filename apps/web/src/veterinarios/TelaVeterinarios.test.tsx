@@ -56,6 +56,7 @@ function mockarHookClinicas(overrides: Partial<ReturnType<typeof useClinicasModu
     clinicas: [clinicaA],
     carregando: false,
     erro: null,
+    aviso: null,
     termoBusca: '',
     definirTermoBusca: vi.fn(),
     apenasAtivas: false,
