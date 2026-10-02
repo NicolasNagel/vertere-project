@@ -1,13 +1,32 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usuario } from '../../tests/usuario'
+import * as SessaoContextModulo from '../autenticacao/SessaoContext'
 import * as useVeterinariosModulo from './useVeterinarios'
 import * as useClinicasModulo from '../clinicas/useClinicas'
 import { TelaVeterinarios } from './TelaVeterinarios'
 
 vi.mock('./useVeterinarios')
 vi.mock('../clinicas/useClinicas')
+vi.mock('../autenticacao/SessaoContext')
+
+function mockarPapel(papel: 'admin' | 'atendente' | 'tecnico') {
+  vi.mocked(SessaoContextModulo.useSessao).mockReturnValue({
+    autenticado: true,
+    papel,
+    email: 'usuario@vertere.com',
+    erro: null,
+    carregando: false,
+    login: vi.fn(),
+    sair: vi.fn(),
+  })
+}
+
+// Os testes anteriores à S14 assumem quem pode gerenciar veterinários.
+beforeEach(() => {
+  mockarPapel('admin')
+})
 
 const clinicaA = {
   id: 'c1',
@@ -289,5 +308,37 @@ describe('TelaVeterinarios — aviso de item fora do filtro (US4)', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('TelaVeterinarios — cada papel vê só o que pode fazer (US6)', () => {
+  it.each(['atendente', 'tecnico'] as const)(
+    '%s vê lista, busca e filtros, mas nenhum controle de escrita',
+    (papel) => {
+      mockarPapel(papel)
+      mockarHookClinicas()
+      mockarHookVeterinarios({ veterinarios: [veterinarioA] })
+      render(<TelaVeterinarios />)
+
+      expect(screen.getByText('Dr. João')).toBeInTheDocument()
+      expect(screen.getByLabelText('Buscar por nome')).toBeInTheDocument()
+      expect(screen.getByRole('checkbox', { name: /apenas ativos/i })).toBeInTheDocument()
+      expect(screen.getByLabelText('Filtrar por clínica')).toBeInTheDocument()
+      for (const nome of ['Novo veterinário', 'Editar', 'Inativar', 'Reativar']) {
+        expect(screen.queryByRole('button', { name: nome })).not.toBeInTheDocument()
+      }
+      expect(screen.queryByRole('columnheader', { name: 'Ações' })).not.toBeInTheDocument()
+    },
+  )
+
+  it('admin vê todos os controles de escrita', () => {
+    mockarHookClinicas()
+    mockarHookVeterinarios({ veterinarios: [veterinarioA] })
+    render(<TelaVeterinarios />)
+
+    for (const nome of ['Novo veterinário', 'Editar', 'Inativar']) {
+      expect(screen.getByRole('button', { name: nome })).toBeInTheDocument()
+    }
+    expect(screen.getByRole('columnheader', { name: 'Ações' })).toBeInTheDocument()
   })
 })

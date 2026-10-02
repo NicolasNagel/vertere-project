@@ -427,7 +427,7 @@ de FR-014 nas quatro telas.
       Desde a T019 eles geravam "Unhandled Rejection" (`resultado.ok` de `undefined`): os testes
       passavam, mas o vitest saía com código 1, e as checagens anteriores olhavam só a linha
       "Tests". Suíte completa: 279/279, código de saída 0.
-- [ ] T050 [P] [US6] Escrever os testes equivalentes em
+- [X] T050 [P] [US6] Escrever os testes equivalentes em
       `apps/web/src/veterinarios/TelaVeterinarios.test.tsx` (`VETERINARIO_GERENCIAR`: "Novo
       veterinário", "Editar", "Inativar", "Reativar", cabeçalho "Ações"; busca e filtros continuam
       visíveis).
