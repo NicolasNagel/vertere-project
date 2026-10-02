@@ -218,7 +218,7 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
     com `filtroClinicaId` e `apenasAtivos`;
   - 404 → `Veterinário não encontrado — pode ter sido removido por outra sessão.`;
   - 409 → `Já existe um veterinário cadastrado com esse CRMV.`
-- [ ] T025 [US1] Reimplementar `apps/web/src/veterinarios/useVeterinarios.ts` sobre
+- [X] T025 [US1] Reimplementar `apps/web/src/veterinarios/useVeterinarios.ts` sobre
       `useColecaoCrud` até T024 passar.
 
 ### Telas

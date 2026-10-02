@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { extrairDetalheErro } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
+import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import {
   buscarVeterinariosPorNome,
@@ -11,7 +12,6 @@ import {
   reativarVeterinario,
 } from './veterinariosApi'
 
-type VeterinarioResponse = components['schemas']['VeterinarioResponse']
 type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
 type EditarVeterinarioRequest = components['schemas']['EditarVeterinarioRequest']
 
@@ -38,89 +38,54 @@ function mensagemDeErro(erro: ErroHttp): string {
 }
 
 export function useVeterinarios() {
-  const [veterinarios, setVeterinarios] = useState<VeterinarioResponse[]>([])
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState<string | null>(null)
   const [filtroClinicaId, setFiltroClinicaId] = useState<string | undefined>(undefined)
   const [termoBusca, setTermoBusca] = useState('')
   const [apenasAtivos, setApenasAtivos] = useState(false)
 
-  const recarregar = useCallback(async () => {
-    setCarregando(true)
-    setErro(null)
-    try {
-      setVeterinarios(
-        termoBusca
-          ? await buscarVeterinariosPorNome(termoBusca, filtroClinicaId, apenasAtivos)
-          : await listarVeterinarios(filtroClinicaId, apenasAtivos),
-      )
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    } finally {
-      setCarregando(false)
-    }
-  }, [filtroClinicaId, termoBusca, apenasAtivos])
+  const carregarLista = useCallback(
+    () =>
+      termoBusca
+        ? buscarVeterinariosPorNome(termoBusca, filtroClinicaId, apenasAtivos)
+        : listarVeterinarios(filtroClinicaId, apenasAtivos),
+    [termoBusca, filtroClinicaId, apenasAtivos],
+  )
 
-  useEffect(() => {
-    recarregar()
-  }, [recarregar])
+  const { itens, carregando, erro, aviso, recarregar, criar, salvarItem, executarAcaoSobreItem } =
+    useColecaoCrud(carregarLista, mensagemDeErro)
 
-  const definirFiltroClinicaId = useCallback((clinicaId: string | undefined) => {
-    setFiltroClinicaId(clinicaId)
-  }, [])
-
+  const definirFiltroClinicaId = useCallback(
+    (clinicaId: string | undefined) => setFiltroClinicaId(clinicaId),
+    [],
+  )
   const definirTermoBusca = useCallback((termo: string) => setTermoBusca(termo), [])
   const definirApenasAtivos = useCallback((valor: boolean) => setApenasAtivos(valor), [])
 
-  const criar = useCallback(async (dados: CriarVeterinarioRequest) => {
-    setErro(null)
-    try {
-      const veterinario = await criarVeterinario(dados)
-      setVeterinarios((atual) => [...atual, veterinario])
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    }
-  }, [])
-
-  function substituirNoEstado(veterinario: VeterinarioResponse) {
-    setVeterinarios((atual) => atual.map((v) => (v.id === veterinario.id ? veterinario : v)))
-  }
-
-  async function executarAcaoSobreVeterinario(acao: () => Promise<VeterinarioResponse>) {
-    setErro(null)
-    try {
-      substituirNoEstado(await acao())
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    }
-  }
+  const criarComDados = useCallback(
+    (dados: CriarVeterinarioRequest) => criar(() => criarVeterinario(dados)),
+    [criar],
+  )
 
   const editar = useCallback(
     (id: string, dados: EditarVeterinarioRequest) =>
-      executarAcaoSobreVeterinario(() => editarVeterinario(id, dados)),
-    [],
+      salvarItem(() => editarVeterinario(id, dados)),
+    [salvarItem],
   )
 
   const inativar = useCallback(
-    (id: string) => executarAcaoSobreVeterinario(() => inativarVeterinario(id)),
-    [],
+    (id: string) => executarAcaoSobreItem(() => inativarVeterinario(id)),
+    [executarAcaoSobreItem],
   )
 
   const reativar = useCallback(
-    (id: string) => executarAcaoSobreVeterinario(() => reativarVeterinario(id)),
-    [],
+    (id: string) => executarAcaoSobreItem(() => reativarVeterinario(id)),
+    [executarAcaoSobreItem],
   )
 
   return {
-    veterinarios,
+    veterinarios: itens,
     carregando,
     erro,
+    aviso,
     filtroClinicaId,
     definirFiltroClinicaId,
     termoBusca,
@@ -128,7 +93,7 @@ export function useVeterinarios() {
     apenasAtivos,
     definirApenasAtivos,
     recarregar,
-    criar,
+    criar: criarComDados,
     editar,
     inativar,
     reativar,

@@ -36,6 +36,7 @@ function mockarHookVeterinarios(
     veterinarios: [],
     carregando: false,
     erro: null,
+    aviso: null,
     filtroClinicaId: undefined,
     definirFiltroClinicaId: vi.fn(),
     termoBusca: '',
