@@ -263,7 +263,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 
 **Independent Test**: quickstart.md, Cenário 2.
 
-- [ ] T032 [P] [US2] Escrever testes falhos de mensagem em
+- [X] T032 [P] [US2] Escrever testes falhos de mensagem em
       `apps/web/src/clinicas/useClinicas.test.ts`:
   - `TypeError` de rede na carga → `erro` igual à mensagem de sem conexão (FR-005; pode nascer
     verde por causa de T023, registrar);
@@ -271,6 +271,8 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
     mensagem de CNPJ;
   - 422 com `detail` string contendo `CNPJ` → `CNPJ inválido — verifique o formato informado.`;
   - 500 → `Problema no servidor. Tente novamente em instantes.`
+
+  **Nota**: os dois casos de rede (carga e ação de linha) nasceram verdes por causa da T023.
 - [ ] T033 [US2] Ajustar `mensagemDeErro` em `apps/web/src/clinicas/useClinicas.ts` até T032
       passar:
   - 422 só vira mensagem de CNPJ quando o `detail` string contém `CNPJ`;

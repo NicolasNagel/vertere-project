@@ -250,3 +250,79 @@ describe('useClinicas', () => {
     expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('useClinicas — mensagens de erro (US2)', () => {
+  beforeEach(() => {
+    for (const funcao of Object.values(clinicasApi)) {
+      vi.mocked(funcao).mockReset()
+    }
+  })
+
+  it('falha de rede na carga vira mensagem de sem conexão, não lista vazia silenciosa', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('falha de rede numa ação de linha vira mensagem de sem conexão', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.inativarClinica).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const { result } = await montar()
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('422 do Pydantic no e-mail cita o campo E-mail, nunca a mensagem de CNPJ', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
+      new ErroHttp(
+        422,
+        JSON.stringify({
+          detail: [{ loc: ['body', 'email'], type: 'value_error', msg: 'not a valid email' }],
+        }),
+      ),
+    )
+    const { result } = await montar()
+
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar({ ...dadosNovaClinica, email: 'teste@exemplo' })
+    })
+
+    expect(resultado).toEqual({ ok: false, mensagem: 'Verifique o campo E-mail: valor inválido.' })
+  })
+
+  it('422 de domínio com "CNPJ" no detalhe vira a mensagem de CNPJ', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
+      new ErroHttp(422, '{"detail":"CNPJ inválido: \'123\' — esperado 14 dígitos"}'),
+    )
+    const { result } = await montar()
+
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar({ ...dadosNovaClinica, cnpj: '123' })
+    })
+
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'CNPJ inválido — verifique o formato informado.',
+    })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockRejectedValueOnce(
+      new ErroHttp(500, 'Internal Server Error'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Problema no servidor. Tente novamente em instantes.')
+  })
+})
