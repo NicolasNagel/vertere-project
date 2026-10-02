@@ -396,6 +396,10 @@ de FR-014 nas quatro telas.
 - [X] T046 [US5] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx`:
   - exame com `preco_base: '1234.50'` aparece como `R$ 1.234,50`;
   - regra com `valor_adicional: '50.00'` aparece como `R$ 50,00`.
+
+  **Nota**: o commit da T047 saiu com estes dois testes vermelhos. A busca usava U+00A0, mas o
+  `getByText` normaliza o texto do elemento para espaço comum. Corrigido no commit seguinte
+  (busca com espaço comum, research.md Decisão 5 atualizada).
 - [X] T047 [US5] Usar `formatarMoeda` nas células de preço-base e valor adicional de
       `apps/web/src/exames/TelaExames.tsx` até T046 passar. Os inputs dos formulários continuam
       numéricos crus, porque a formatação é só para exibição.

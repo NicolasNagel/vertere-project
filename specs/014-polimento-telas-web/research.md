@@ -137,8 +137,10 @@ da S13). Também registra duas questões de escopo achadas durante a pesquisa e 
   - A API manda `Decimal` serializado como string (`"50.00"`). `Number()` é seguro para **exibir**
     valores desta ordem de grandeza.
   - Nada é calculado com o resultado (Princípio I).
-- **Nota para os testes**: o `Intl` coloca espaço não separável (U+00A0) entre "R$" e o número. Os
-  testes comparam com `'R$ 50,00'` ou normalizam o espaço, nunca com espaço comum.
+- **Nota para os testes**: o `Intl` coloca espaço não separável (U+00A0) entre "R$" e o número.
+  Teste unitário de `formatarMoeda` compara com `'R$ 50,00'`. Já o `getByText` do Testing
+  Library normaliza o texto do elemento (U+00A0 vira espaço comum) e compara com a busca crua,
+  então busca na tela usa espaço comum: `'R$ 50,00'`.
 - **Alternatives considered**: biblioteca de moeda (dinero.js, currency.js) seria dependência nova
   para algo que o `Intl` faz. Formatar à mão com `toFixed` + `replace` erra o separador de milhar.
   Ambas rejeitadas.
