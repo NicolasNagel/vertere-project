@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { usuario } from '../../tests/usuario'
 import * as SessaoContextModulo from '../autenticacao/SessaoContext'
 import * as useExamesModulo from './useExames'
 import * as useRegrasPlantaoModulo from './useRegrasPlantao'
@@ -29,8 +30,8 @@ function mockarUseExames(overrides: Partial<ReturnType<typeof useExamesModulo.us
     apenasAtivos: false,
     definirApenasAtivos: vi.fn(),
     recarregar: vi.fn(),
-    criar: vi.fn(),
-    editar: vi.fn(),
+    criar: vi.fn().mockResolvedValue({ ok: true }),
+    editar: vi.fn().mockResolvedValue({ ok: true }),
     inativar: vi.fn(),
     reativar: vi.fn(),
     ...overrides,
@@ -57,8 +58,8 @@ function mockarUseRegrasPlantao(
     apenasAtivos: false,
     definirApenasAtivos: vi.fn(),
     recarregar: vi.fn(),
-    criar: vi.fn(),
-    editar: vi.fn(),
+    criar: vi.fn().mockResolvedValue({ ok: true }),
+    editar: vi.fn().mockResolvedValue({ ok: true }),
     inativar: vi.fn(),
     reativar: vi.fn(),
     ...overrides,
@@ -410,5 +411,121 @@ describe('TelaExames — linha em edição ocupa a largura da tabela', () => {
     await userEvent.click(screen.getByRole('button', { name: /editar/i }))
     const celula = screen.getByLabelText('Valor adicional').closest('td')
     expect(celula).toHaveAttribute('colspan', '5')
+  })
+})
+
+describe('TelaExames — formulários fecham só com sucesso (US1)', () => {
+  beforeEach(() => {
+    mockarPapel('admin')
+  })
+
+  it('novo exame com falha fica aberto com os valores e a mensagem; com sucesso fecha', async () => {
+    const criar = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, mensagem: 'm' })
+      .mockResolvedValueOnce({ ok: true })
+    mockarUseExames({ criar })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Novo exame' }))
+    await u.type(screen.getByLabelText('Categoria'), 'Hematologia')
+    await u.type(screen.getByLabelText('Nome'), 'Hemograma')
+    await u.type(screen.getByLabelText('Preço-base'), '50')
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('m')
+    expect(screen.getByLabelText('Nome')).toHaveValue('Hemograma')
+
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+    expect(screen.queryByLabelText('Preço-base')).not.toBeInTheDocument()
+  })
+
+  it('"Cancelar" no novo exame fecha sem chamar criar', async () => {
+    const criar = vi.fn()
+    mockarUseExames({ criar })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Novo exame' }))
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByLabelText('Preço-base')).not.toBeInTheDocument()
+    expect(criar).not.toHaveBeenCalled()
+  })
+
+  it('edição de exame cancelada: reabrir mostra o valor original', async () => {
+    const editar = vi.fn()
+    mockarUseExames({ exames: [exameA], editar })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+    await u.clear(screen.getByLabelText('Nome'))
+    await u.type(screen.getByLabelText('Nome'), 'Outro')
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+
+    expect(screen.getByLabelText('Nome')).toHaveValue('Hemograma completo')
+    expect(editar).not.toHaveBeenCalled()
+  })
+
+  it('edição de exame com falha fica aberta com a mensagem', async () => {
+    mockarUseExames({
+      exames: [exameA],
+      editar: vi.fn().mockResolvedValue({ ok: false, mensagem: 'm' }),
+    })
+    mockarUseRegrasPlantao()
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('m')
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument()
+  })
+
+  it('nova regra com falha fica aberta com a mensagem; "Cancelar" fecha sem criar de novo', async () => {
+    const criar = vi.fn().mockResolvedValue({ ok: false, mensagem: 'm' })
+    mockarUseExames()
+    mockarUseRegrasPlantao({ criar })
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Regras de Plantão' }))
+    await u.click(screen.getByRole('button', { name: 'Nova regra' }))
+    await u.type(screen.getByLabelText('Horário de início'), '18:00')
+    await u.type(screen.getByLabelText('Horário de fim'), '06:00')
+    await u.type(screen.getByLabelText('Valor adicional'), '50')
+    await u.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('m')
+    expect(screen.getByLabelText('Valor adicional')).toHaveValue(50)
+
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+    expect(screen.queryByLabelText('Valor adicional')).not.toBeInTheDocument()
+    expect(criar).toHaveBeenCalledTimes(1)
+  })
+
+  it('edição de regra cancelada: reabrir mostra o valor original', async () => {
+    const editar = vi.fn()
+    mockarUseExames()
+    mockarUseRegrasPlantao({ regras: [regraA], editar })
+    render(<TelaExames />)
+    const u = usuario()
+
+    await u.click(screen.getByRole('button', { name: 'Regras de Plantão' }))
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+    await u.clear(screen.getByLabelText('Valor adicional'))
+    await u.type(screen.getByLabelText('Valor adicional'), '99')
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await u.click(screen.getByRole('button', { name: 'Editar' }))
+
+    expect(screen.getByLabelText('Valor adicional')).toHaveValue(50)
+    expect(editar).not.toHaveBeenCalled()
   })
 })

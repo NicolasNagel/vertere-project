@@ -243,10 +243,14 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
       `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com `colspan="6"`. **Nota**: igual à
       T026, só o `colspan` nasceu vermelho (ligação adiantada na T021).
 - [X] T029 [US1] Ligar `apps/web/src/veterinarios/TelaVeterinarios.tsx` até T028 passar.
-- [ ] T030 [P] [US1] Escrever os mesmos testes de T026 em
+- [X] T030 [P] [US1] Escrever os mesmos testes de T026 em
       `apps/web/src/exames/TelaExames.test.tsx`, para os formulários de exame e de regra de
-      plantão, novo e edição. O `colspan` da S13 (5 para admin) continua igual.
-- [ ] T031 [US1] Ligar `apps/web/src/exames/TelaExames.tsx` até T030 passar.
+      plantão, novo e edição. O `colspan` da S13 (5 para admin) continua igual. **Nota**: os 6
+      testes novos nasceram verdes, porque a ligação veio na T015/T017. Inclui o "reabrir depois de
+      cancelar" (C2) para exame e regra.
+- [ ] T031 [US1] Ligar `apps/web/src/exames/TelaExames.tsx` até T030 passar. **Já entregue na
+      T015/T017** (`aoSalvar={criar|aoEditar}` e `aoFechar` nos dois formulários). Nenhum código
+      novo nesta task.
 
 **Checkpoint**: US1 completa. Cenário 1 do quickstart reproduzível nas quatro telas.
 
