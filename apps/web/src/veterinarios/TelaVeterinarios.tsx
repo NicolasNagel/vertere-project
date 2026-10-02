@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
 import { useClinicas } from '../clinicas/useClinicas'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioVeterinario } from './FormularioVeterinario'
 import { useVeterinarios } from './useVeterinarios'
@@ -19,7 +20,7 @@ function LinhaVeterinario({
 }: {
   veterinario: VeterinarioResponse
   clinicasAtivas: ClinicaResponse[]
-  aoEditar: (dados: CriarVeterinarioRequest) => void
+  aoEditar: (dados: CriarVeterinarioRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -32,10 +33,8 @@ function LinhaVeterinario({
           <FormularioVeterinario
             clinicasAtivas={clinicasAtivas}
             veterinario={veterinario}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -117,10 +116,8 @@ export function TelaVeterinarios() {
       {formularioAberto ? (
         <FormularioVeterinario
           clinicasAtivas={clinicasAtivas}
-          aoSalvar={(dados) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
+          aoSalvar={criar}
+          aoFechar={() => setFormularioAberto(false)}
         />
       ) : null}
 

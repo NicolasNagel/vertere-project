@@ -191,8 +191,10 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
       `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`. A mensagem "Nenhuma clínica
       ativa cadastrada — …" continua aparecendo quando não há clínica ativa, agora com "Cancelar"
       chamando `aoFechar`.
-- [ ] T021 [US1] Implementar em `apps/web/src/veterinarios/FormularioVeterinario.tsx` até T020
-      passar.
+- [X] T021 [US1] Implementar em `apps/web/src/veterinarios/FormularioVeterinario.tsx` até T020
+      passar. **Nota**: executada depois de T024/T025 (mesmo motivo da T019); o
+      `TelaVeterinarios.tsx` já passa `aoSalvar`/`aoFechar` neste commit (parte do T029
+      adiantada).
 
 ### Retrofit dos hooks da S12 sobre `useColecaoCrud` (research.md, Decisão 3)
 
