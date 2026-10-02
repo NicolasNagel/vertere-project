@@ -401,3 +401,15 @@ Durante o `/speckit-plan` (2026-10-01):
 - **`dia_semana` sem validação de faixa no backend** (fora de escopo, só registro): o backend aceita
   regra de plantão com `dia_semana` fora de 0-6. A tela web só oferece 0-6, então não há impacto
   hoje. Fica para decisão do usuário se vira item de uma spec futura.
+
+Durante o `/speckit-implement` (2026-10-01):
+
+- **A suíte do backend roda contra o banco de dev e o apaga** (harness, fora de escopo, só
+  registro). `apps/api/tests/test_exames_router.py`, e provavelmente os outros `test_*_router.py`,
+  usam o `engine` de `vertere_api.db`, que aponta para `DATABASE_URL` do `.env`
+  (`localhost:5434/vertere`, o mesmo banco do dev). Não existe `conftest.py` com banco separado, e o
+  fixture faz `query(...).delete()` em `usuarios`, `exames` e `regras_plantao`. Rodar a T001
+  zerou essas três tabelas no dev: os usuários `teste.*`, os exames e as regras das verificações da
+  S13 e o "Exame Negativo" (-10,00). Eram dados de teste, mas qualquer cadastro manual no dev se
+  perde do mesmo jeito. Fica para decisão do usuário: banco de teste separado (ex.: `DATABASE_URL`
+  de teste em `conftest.py`) como spec ou task de harness.
