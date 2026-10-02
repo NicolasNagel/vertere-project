@@ -168,8 +168,11 @@ vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001�
   - "Salvar" e "Cancelar" ficam desabilitados enquanto o envio está pendente;
   - "Cancelar" chama `aoFechar` sem chamar `aoSalvar`;
   - a validação local de preço-base ≤ 0 (S13) continua barrando antes de `aoSalvar`.
-- [ ] T015 [US1] Implementar em `apps/web/src/exames/FormularioExame.tsx` com `useEnvioFormulario`
-      até T014 passar.
+- [X] T015 [US1] Implementar em `apps/web/src/exames/FormularioExame.tsx` com `useEnvioFormulario`
+      até T014 passar. **Nota**: as props novas são obrigatórias, então o `TelaExames.tsx` já passa
+      `aoSalvar={criar|aoEditar}` e `aoFechar` ao formulário de exame neste commit, para o `tsc`
+      continuar verde. Parte do T031 (catálogo) adiantada; os testes do T030 para o catálogo podem
+      nascer verdes.
 - [ ] T016 [P] [US1] Escrever os mesmos testes de T014 para
       `apps/web/src/exames/FormularioRegraPlantao.test.tsx`, incluindo a validação local de valor
       adicional ≤ 0.

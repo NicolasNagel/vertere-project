@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { useSessao } from '../autenticacao/SessaoContext'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioExame } from './FormularioExame'
 import { FormularioRegraPlantao } from './FormularioRegraPlantao'
@@ -22,7 +23,7 @@ function LinhaExame({
 }: {
   exame: ExameResponse
   podeGerenciar: boolean
-  aoEditar: (dados: CriarExameRequest) => void
+  aoEditar: (dados: CriarExameRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -34,10 +35,8 @@ function LinhaExame({
         <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioExame
             exame={exame}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -136,12 +135,7 @@ function CatalogoDeExames() {
         <Botao onClick={() => setFormularioAberto(true)}>Novo exame</Botao>
       ) : null}
       {formularioAberto ? (
-        <FormularioExame
-          aoSalvar={(dados: CriarExameRequest) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
-        />
+        <FormularioExame aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
 
       {carregando ? (
