@@ -29,7 +29,7 @@ function LinhaVeterinario({
   if (editando) {
     return (
       <tr>
-        <td colSpan={5}>
+        <td colSpan={6}>
           <FormularioVeterinario
             clinicasAtivas={clinicasAtivas}
             veterinario={veterinario}
