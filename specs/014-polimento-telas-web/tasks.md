@@ -278,7 +278,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - 422 só vira mensagem de CNPJ quando o `detail` string contém `CNPJ`;
   - todo o resto cai em `mensagemDeErroPadrao` com os rótulos `{ nome: 'Nome', cnpj: 'CNPJ',
     endereco: 'Endereço', telefone: 'Telefone', email: 'E-mail' }`.
-- [ ] T034 [P] [US2] Escrever os testes equivalentes em
+- [X] T034 [P] [US2] Escrever os testes equivalentes em
       `apps/web/src/veterinarios/useVeterinarios.test.ts`:
   - rede → sem conexão;
   - 422 lista em `email` → `Verifique o campo E-mail: valor inválido.`;
@@ -286,6 +286,9 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
   - 422 com detail `Clínica … não encontrada` → `A clínica selecionada não existe mais — atualize
     a lista de clínicas.`;
   - 500 → servidor.
+
+  **Nota**: os casos de CRMV e de clínica inexistente já estavam nos testes reescritos na T024; a
+  rede nasceu verde por causa da T025.
 - [ ] T035 [US2] Ajustar `mensagemDeErro` em `apps/web/src/veterinarios/useVeterinarios.ts` até
       T034 passar, com os rótulos `{ nome: 'Nome', crmv: 'CRMV', telefone: 'Telefone', email:
       'E-mail', clinica_id: 'Clínica' }`.

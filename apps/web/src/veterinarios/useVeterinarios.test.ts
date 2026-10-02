@@ -242,3 +242,48 @@ describe('useVeterinarios', () => {
     expect(veterinariosApi.listarVeterinarios).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('useVeterinarios — mensagens de erro (US2)', () => {
+  beforeEach(() => {
+    for (const funcao of Object.values(veterinariosApi)) {
+      vi.mocked(funcao).mockReset()
+    }
+  })
+
+  it('falha de rede na carga vira mensagem de sem conexão', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockRejectedValueOnce(
+      new TypeError('Failed to fetch'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('422 do Pydantic no e-mail cita o campo E-mail, nunca a mensagem de clínica', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
+    vi.mocked(veterinariosApi.criarVeterinario).mockRejectedValueOnce(
+      new ErroHttp(
+        422,
+        JSON.stringify({
+          detail: [{ loc: ['body', 'email'], type: 'value_error', msg: 'not a valid email' }],
+        }),
+      ),
+    )
+    const { result } = await montar()
+
+    expect(
+      await criarDevolvendoResultado(result, { ...dadosNovoVeterinario, email: 'joao@exemplo' }),
+    ).toEqual({ ok: false, mensagem: 'Verifique o campo E-mail: valor inválido.' })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockRejectedValueOnce(
+      new ErroHttp(500, 'Internal Server Error'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Problema no servidor. Tente novamente em instantes.')
+  })
+})
