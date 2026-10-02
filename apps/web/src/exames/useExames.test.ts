@@ -173,3 +173,43 @@ describe('useExames', () => {
     expect(examesApi.listarExames).toHaveBeenLastCalledWith(undefined, true)
   })
 })
+
+describe('useExames — mensagens de erro (US2)', () => {
+  const dados = { categoria: exameA.categoria, nome: exameA.nome, preco_base: '-1' }
+
+  async function criarComErro(erro: unknown) {
+    vi.mocked(examesApi.listarExames).mockReset().mockResolvedValue([])
+    vi.mocked(examesApi.criarExame).mockReset().mockRejectedValueOnce(erro)
+    const { result } = renderHook(() => useExames())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar(dados)
+    })
+    return resultado
+  }
+
+  it('422 de domínio do backend (detail string) passa como está', async () => {
+    expect(
+      await criarComErro(new ErroHttp(422, '{"detail":"Preço-base deve ser maior que zero."}')),
+    ).toEqual({ ok: false, mensagem: 'Preço-base deve ser maior que zero.' })
+  })
+
+  it('422 do Pydantic em preco_base cita o campo Preço-base', async () => {
+    expect(
+      await criarComErro(
+        new ErroHttp(
+          422,
+          JSON.stringify({ detail: [{ loc: ['body', 'preco_base'], type: 'decimal_parsing' }] }),
+        ),
+      ),
+    ).toEqual({ ok: false, mensagem: 'Verifique o campo Preço-base: precisa ser um número.' })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    expect(await criarComErro(new ErroHttp(500, 'Internal Server Error'))).toEqual({
+      ok: false,
+      mensagem: 'Problema no servidor. Tente novamente em instantes.',
+    })
+  })
+})

@@ -292,7 +292,7 @@ telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
 - [X] T035 [US2] Ajustar `mensagemDeErro` em `apps/web/src/veterinarios/useVeterinarios.ts` até
       T034 passar, com os rótulos `{ nome: 'Nome', crmv: 'CRMV', telefone: 'Telefone', email:
       'E-mail', clinica_id: 'Clínica' }`.
-- [ ] T036 [P] [US2] Escrever testes em `apps/web/src/exames/useExames.test.ts` e
+- [X] T036 [P] [US2] Escrever testes em `apps/web/src/exames/useExames.test.ts` e
       `apps/web/src/exames/useRegrasPlantao.test.ts`:
   - 422 com detail string `Preço-base deve ser maior que zero.` passa como está (contrato de US3);
   - 422 lista em `preco_base` → `Verifique o campo Preço-base: …`;

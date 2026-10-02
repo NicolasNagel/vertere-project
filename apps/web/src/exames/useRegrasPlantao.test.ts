@@ -163,3 +163,50 @@ describe('useRegrasPlantao', () => {
     expect(regrasPlantaoApi.listarRegrasPlantao).toHaveBeenLastCalledWith(true)
   })
 })
+
+describe('useRegrasPlantao — mensagens de erro (US2)', () => {
+  const dados = {
+    dia_semana: regraA.dia_semana,
+    hora_inicio: regraA.hora_inicio,
+    hora_fim: regraA.hora_fim,
+    valor_adicional: '0',
+  }
+
+  async function criarComErro(erro: unknown) {
+    vi.mocked(regrasPlantaoApi.listarRegrasPlantao).mockReset().mockResolvedValue([])
+    vi.mocked(regrasPlantaoApi.criarRegraPlantao).mockReset().mockRejectedValueOnce(erro)
+    const { result } = renderHook(() => useRegrasPlantao())
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar(dados)
+    })
+    return resultado
+  }
+
+  it('422 de domínio do backend (detail string) passa como está', async () => {
+    expect(
+      await criarComErro(
+        new ErroHttp(422, '{"detail":"Valor adicional deve ser maior que zero."}'),
+      ),
+    ).toEqual({ ok: false, mensagem: 'Valor adicional deve ser maior que zero.' })
+  })
+
+  it('422 do Pydantic em valor_adicional cita o campo Valor adicional', async () => {
+    expect(
+      await criarComErro(
+        new ErroHttp(
+          422,
+          JSON.stringify({ detail: [{ loc: ['body', 'valor_adicional'], type: 'decimal_parsing' }] }),
+        ),
+      ),
+    ).toEqual({ ok: false, mensagem: 'Verifique o campo Valor adicional: precisa ser um número.' })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    expect(await criarComErro(new ErroHttp(500, 'Internal Server Error'))).toEqual({
+      ok: false,
+      mensagem: 'Problema no servidor. Tente novamente em instantes.',
+    })
+  })
+})
