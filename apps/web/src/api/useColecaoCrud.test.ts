@@ -55,6 +55,35 @@ describe('useColecaoCrud — carga', () => {
     const { result } = await montar(vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
     expect(result.current.erro).toBe(MENSAGEM_SEM_CONEXAO)
   })
+
+  it('resposta do filtro anterior não sobrescreve a lista do filtro atual', async () => {
+    let resolverCargaAntiga!: (itens: ItemFake[]) => void
+    const cargaAntiga = new Promise<ItemFake[]>((resolver) => {
+      resolverCargaAntiga = resolver
+    })
+    const carregarFiltroAntigo = vi
+      .fn()
+      .mockResolvedValueOnce([itemA])
+      .mockReturnValueOnce(cargaAntiga)
+    const hook = await montar(carregarFiltroAntigo)
+
+    let acaoPendente!: Promise<unknown>
+    act(() => {
+      acaoPendente = hook.result.current.salvarItem(vi.fn().mockResolvedValue(itemA))
+    })
+    await waitFor(() => expect(carregarFiltroAntigo).toHaveBeenCalledTimes(2))
+
+    const carregarFiltroAtual = vi.fn().mockResolvedValue([itemB])
+    hook.rerender({ carregar: carregarFiltroAtual })
+    await waitFor(() => expect(hook.result.current.itens).toEqual([itemB]))
+
+    await act(async () => {
+      resolverCargaAntiga([itemA])
+      await acaoPendente
+    })
+
+    expect(hook.result.current.itens).toEqual([itemB])
+  })
 })
 
 describe('useColecaoCrud — ações de formulário (criar, salvarItem)', () => {
