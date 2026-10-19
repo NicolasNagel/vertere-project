@@ -28,7 +28,10 @@ export function useColecaoCrud<T extends { id: string }>(
   const [aviso, setAviso] = useState<string | null>(null)
   const carregarListaAtual = useRef(carregarLista)
   const versaoDaCarga = useRef(0)
-  carregarListaAtual.current = carregarLista
+
+  useEffect(() => {
+    carregarListaAtual.current = carregarLista
+  }, [carregarLista])
 
   // Falha sem resposta HTTP (rede fora, servidor desligado — o `fetch` rejeita com `TypeError`)
   // precisa virar erro visível: engolida, a tela mostraria a lista vazia como se não houvesse itens.
