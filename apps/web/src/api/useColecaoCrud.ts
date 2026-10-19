@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ErroHttp } from './clienteHttp'
 
 const MENSAGEM_SEM_CONEXAO = 'Não foi possível falar com o servidor. Tente novamente.'
@@ -26,6 +26,9 @@ export function useColecaoCrud<T extends { id: string }>(
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
+  const carregarListaAtual = useRef(carregarLista)
+  const versaoDaCarga = useRef(0)
+  carregarListaAtual.current = carregarLista
 
   // Falha sem resposta HTTP (rede fora, servidor desligado — o `fetch` rejeita com `TypeError`)
   // precisa virar erro visível: engolida, a tela mostraria a lista vazia como se não houvesse itens.
@@ -36,33 +39,49 @@ export function useColecaoCrud<T extends { id: string }>(
   )
 
   const recarregar = useCallback(async () => {
+    const versao = ++versaoDaCarga.current
+    const carregar = carregarListaAtual.current
     setCarregando(true)
     setErro(null)
     setAviso(null)
     try {
-      setItens(await carregarLista())
+      const lista = await carregar()
+      if (versao === versaoDaCarga.current) {
+        setItens(lista)
+      }
     } catch (erroRequisicao) {
-      setErro(mensagemParaFalha(erroRequisicao))
+      if (versao === versaoDaCarga.current) {
+        setErro(mensagemParaFalha(erroRequisicao))
+      }
     } finally {
-      setCarregando(false)
+      if (versao === versaoDaCarga.current) {
+        setCarregando(false)
+      }
     }
-  }, [carregarLista, mensagemParaFalha])
+  }, [mensagemParaFalha])
 
   useEffect(() => {
     recarregar()
-  }, [recarregar])
+  }, [carregarLista, recarregar])
 
   /** Recarga depois de uma ação: sem "carregando", e com a falha indo para o erro de tela. */
   const recarregarDepoisDeAcao = useCallback(async (): Promise<T[] | null> => {
+    const versao = ++versaoDaCarga.current
+    const carregar = carregarListaAtual.current
     try {
-      const lista = await carregarLista()
-      setItens(lista)
-      return lista
+      const lista = await carregar()
+      if (versao === versaoDaCarga.current) {
+        setItens(lista)
+        return lista
+      }
+      return null
     } catch (erroRequisicao) {
-      setErro(mensagemParaFalha(erroRequisicao))
+      if (versao === versaoDaCarga.current) {
+        setErro(mensagemParaFalha(erroRequisicao))
+      }
       return null
     }
-  }, [carregarLista, mensagemParaFalha])
+  }, [mensagemParaFalha])
 
   const criar = useCallback(
     async (acao: () => Promise<T>): Promise<ResultadoAcao> => {

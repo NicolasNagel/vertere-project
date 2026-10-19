@@ -544,7 +544,7 @@ de FR-014 nas quatro telas.
     decidida no plano está de pé na UI real. `tecnico` em Exames não vê a aba "Regras de Plantão".
     `admin` continua vendo tudo, inclusive "Salvar prazo" em Clínicas. Papel `clinica`: `/exames`
     por URL direta mostra "Acesso negado.".
-  - **FR-006 na prática**: clínica cadastrada com e-mail `teste@exemplo` (aceito pelo HTML5, 
+  - **FR-006 na prática**: clínica cadastrada com e-mail `teste@exemplo` (aceito pelo HTML5,
     recusado pelo `EmailStr` do backend) mostrou "Verifique o campo E-mail: valor inválido.", não
     mais "CNPJ inválido — verifique o formato informado." (o bug da S12 que a Decisão 4 corrige).
     Nada foi gravado.
