@@ -1,6 +1,8 @@
 import { useId, type FormEvent, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
+import { useEnvioFormulario } from '../ui/useEnvioFormulario'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { DIAS_DA_SEMANA, paraHoraSemSegundos } from './regraPlantao'
 
@@ -10,10 +12,12 @@ type RegraPlantaoResponse = components['schemas']['RegraPlantaoResponse']
 interface FormularioRegraPlantaoProps {
   /** Presente em modo edição: pré-preenche os campos. */
   regra?: RegraPlantaoResponse
-  aoSalvar: (dados: CriarRegraPlantaoRequest) => void
+  aoSalvar: (dados: CriarRegraPlantaoRequest) => Promise<ResultadoAcao>
+  /** Chamado no sucesso do salvamento e no "Cancelar". */
+  aoFechar: () => void
 }
 
-export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlantaoProps) {
+export function FormularioRegraPlantao({ regra, aoSalvar, aoFechar }: FormularioRegraPlantaoProps) {
   const [diaSemana, setDiaSemana] = useState(regra?.dia_semana ?? 0)
   const [horaInicio, setHoraInicio] = useState(
     regra ? paraHoraSemSegundos(regra.hora_inicio) : '',
@@ -21,27 +25,32 @@ export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlant
   const [horaFim, setHoraFim] = useState(regra ? paraHoraSemSegundos(regra.hora_fim) : '')
   const [valorAdicional, setValorAdicional] = useState(regra?.valor_adicional ?? '')
   const [erroValidacao, setErroValidacao] = useState<string | null>(null)
+  const { salvando, erroEnvio, enviar } = useEnvioFormulario(
+    () =>
+      aoSalvar({
+        dia_semana: diaSemana,
+        hora_inicio: horaInicio,
+        hora_fim: horaFim,
+        valor_adicional: valorAdicional,
+      }),
+    aoFechar,
+  )
   const idDiaSemana = useId()
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    // Mesmo motivo de FormularioExame: o backend (S5) não rejeita valor não positivo.
+    // Validação local para resposta imediata; o backend também recusa desde S14 (FR-010).
     if (!(Number(valorAdicional) > 0)) {
       setErroValidacao('Valor adicional deve ser maior que zero.')
       return
     }
     setErroValidacao(null)
-    aoSalvar({
-      dia_semana: diaSemana,
-      hora_inicio: horaInicio,
-      hora_fim: horaFim,
-      valor_adicional: valorAdicional,
-    })
+    void enviar()
   }
 
   return (
     <form onSubmit={aoSubmeter}>
-      {erroValidacao ? <p role="alert">{erroValidacao}</p> : null}
+      {erroValidacao || erroEnvio ? <p role="alert">{erroValidacao ?? erroEnvio}</p> : null}
       <label htmlFor={idDiaSemana}>Dia da semana</label>
       <select
         id={idDiaSemana}
@@ -76,8 +85,11 @@ export function FormularioRegraPlantao({ regra, aoSalvar }: FormularioRegraPlant
         value={valorAdicional}
         onChange={(e) => setValorAdicional(e.target.value)}
       />
-      <Botao type="submit" variante="primario">
-        Salvar
+      <Botao type="submit" variante="primario" disabled={salvando}>
+        {salvando ? 'Salvando…' : 'Salvar'}
+      </Botao>
+      <Botao variante="secundario" disabled={salvando} onClick={aoFechar}>
+        Cancelar
       </Botao>
     </form>
   )

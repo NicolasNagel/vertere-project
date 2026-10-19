@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
-import { extrairDetalheErro } from '../api/erroApi'
+import { useCallback, useState } from 'react'
+import { extrairDetalheErro, mensagemDeErroPadrao } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
+import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import {
   buscarClinicasPorNome,
@@ -12,14 +13,24 @@ import {
   reativarClinica,
 } from './clinicasApi'
 
-type ClinicaResponse = components['schemas']['ClinicaResponse']
 type CriarClinicaRequest = components['schemas']['CriarClinicaRequest']
 type EditarClinicaRequest = components['schemas']['EditarClinicaRequest']
 
-/** Mensagens de erro da UI para Clínicas — ver data-model.md → "Erros mapeados para mensagem de UI". */
+const ROTULOS_DE_CAMPO = {
+  nome: 'Nome',
+  cnpj: 'CNPJ',
+  endereco: 'Endereço',
+  telefone: 'Telefone',
+  email: 'E-mail',
+}
+
+/**
+ * Mensagens de erro da UI para Clínicas. O 422 tem duas origens (regra de CNPJ do service ou
+ * validação do Pydantic, ex.: e-mail), então só vira a mensagem de CNPJ quando o detalhe fala de
+ * CNPJ; o resto cai em `mensagemDeErroPadrao` (S14, FR-006).
+ */
 function mensagemDeErro(erro: ErroHttp): string {
-  const detalhe = extrairDetalheErro(erro)
-  if (erro.status === 422) {
+  if (erro.status === 422 && extrairDetalheErro(erro).includes('CNPJ')) {
     return 'CNPJ inválido — verifique o formato informado.'
   }
   if (erro.status === 409) {
@@ -28,100 +39,62 @@ function mensagemDeErro(erro: ErroHttp): string {
   if (erro.status === 404) {
     return 'Clínica não encontrada — pode ter sido removida por outra sessão.'
   }
-  return detalhe
+  return mensagemDeErroPadrao(erro, ROTULOS_DE_CAMPO)
 }
 
 export function useClinicas() {
-  const [clinicas, setClinicas] = useState<ClinicaResponse[]>([])
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState<string | null>(null)
   const [termoBusca, setTermoBusca] = useState('')
   const [apenasAtivas, setApenasAtivas] = useState(false)
 
-  const recarregar = useCallback(async () => {
-    setCarregando(true)
-    setErro(null)
-    try {
-      setClinicas(
-        termoBusca
-          ? await buscarClinicasPorNome(termoBusca, apenasAtivas)
-          : await listarClinicas(apenasAtivas),
-      )
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    } finally {
-      setCarregando(false)
-    }
-  }, [termoBusca, apenasAtivas])
+  const carregarLista = useCallback(
+    () =>
+      termoBusca ? buscarClinicasPorNome(termoBusca, apenasAtivas) : listarClinicas(apenasAtivas),
+    [termoBusca, apenasAtivas],
+  )
 
-  useEffect(() => {
-    recarregar()
-  }, [recarregar])
+  const { itens, carregando, erro, aviso, recarregar, criar, salvarItem, executarAcaoSobreItem } =
+    useColecaoCrud(carregarLista, mensagemDeErro)
 
   const definirTermoBusca = useCallback((termo: string) => setTermoBusca(termo), [])
   const definirApenasAtivas = useCallback((valor: boolean) => setApenasAtivas(valor), [])
 
-  const criar = useCallback(async (dados: CriarClinicaRequest) => {
-    setErro(null)
-    try {
-      const clinica = await criarClinica(dados)
-      setClinicas((atual) => [...atual, clinica])
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    }
-  }, [])
-
-  function substituirNoEstado(clinica: ClinicaResponse) {
-    setClinicas((atual) => atual.map((c) => (c.id === clinica.id ? clinica : c)))
-  }
-
-  async function executarAcaoSobreClinica(acao: () => Promise<ClinicaResponse>) {
-    setErro(null)
-    try {
-      substituirNoEstado(await acao())
-    } catch (erroRequisicao) {
-      if (erroRequisicao instanceof ErroHttp) {
-        setErro(mensagemDeErro(erroRequisicao))
-      }
-    }
-  }
+  const criarComDados = useCallback(
+    (dados: CriarClinicaRequest) => criar(() => criarClinica(dados)),
+    [criar],
+  )
 
   const editar = useCallback(
-    (id: string, dados: EditarClinicaRequest) =>
-      executarAcaoSobreClinica(() => editarClinica(id, dados)),
-    [],
+    (id: string, dados: EditarClinicaRequest) => salvarItem(() => editarClinica(id, dados)),
+    [salvarItem],
   )
 
   const inativar = useCallback(
-    (id: string) => executarAcaoSobreClinica(() => inativarClinica(id)),
-    [],
+    (id: string) => executarAcaoSobreItem(() => inativarClinica(id)),
+    [executarAcaoSobreItem],
   )
 
   const reativar = useCallback(
-    (id: string) => executarAcaoSobreClinica(() => reativarClinica(id)),
-    [],
+    (id: string) => executarAcaoSobreItem(() => reativarClinica(id)),
+    [executarAcaoSobreItem],
   )
 
   const definirPrazoPagamento = useCallback(
     (id: string, prazoPagamentoDias: number | null) =>
-      executarAcaoSobreClinica(() => definirPrazoPagamentoApi(id, prazoPagamentoDias)),
-    [],
+      executarAcaoSobreItem(() => definirPrazoPagamentoApi(id, prazoPagamentoDias)),
+    [executarAcaoSobreItem],
   )
 
   return {
-    clinicas,
+    clinicas: itens,
     carregando,
     erro,
+    aviso,
     termoBusca,
     definirTermoBusca,
     apenasAtivas,
     definirApenasAtivas,
     recarregar,
-    criar,
+    criar: criarComDados,
     editar,
     inativar,
     reativar,

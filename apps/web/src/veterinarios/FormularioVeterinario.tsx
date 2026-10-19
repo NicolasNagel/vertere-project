@@ -1,6 +1,8 @@
 import { type FormEvent, useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
+import { useEnvioFormulario } from '../ui/useEnvioFormulario'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 
 type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
@@ -11,13 +13,16 @@ interface FormularioVeterinarioProps {
   clinicasAtivas: ClinicaResponse[]
   /** Presente em modo edição: pré-preenche os campos e torna CRMV/clínica somente leitura. */
   veterinario?: VeterinarioResponse
-  aoSalvar: (dados: CriarVeterinarioRequest) => void
+  aoSalvar: (dados: CriarVeterinarioRequest) => Promise<ResultadoAcao>
+  /** Chamado no sucesso do salvamento e no "Cancelar". */
+  aoFechar: () => void
 }
 
 export function FormularioVeterinario({
   clinicasAtivas,
   veterinario,
   aoSalvar,
+  aoFechar,
 }: FormularioVeterinarioProps) {
   const idClinica = useId()
   const [nome, setNome] = useState(veterinario?.nome ?? '')
@@ -25,19 +30,33 @@ export function FormularioVeterinario({
   const [telefone, setTelefone] = useState(veterinario?.telefone ?? '')
   const [email, setEmail] = useState(veterinario?.email ?? '')
   const [clinicaId, setClinicaId] = useState(veterinario?.clinica_id ?? clinicasAtivas[0]?.id ?? '')
+  const { salvando, erroEnvio, enviar } = useEnvioFormulario(
+    () => aoSalvar({ nome, crmv, telefone, email, clinica_id: clinicaId }),
+    aoFechar,
+  )
 
   if (!veterinario && clinicasAtivas.length === 0) {
-    return <p>Nenhuma clínica ativa cadastrada — cadastre uma clínica antes de cadastrar um veterinário.</p>
+    return (
+      <div>
+        <p>
+          Nenhuma clínica ativa cadastrada — cadastre uma clínica antes de cadastrar um veterinário.
+        </p>
+        <Botao variante="secundario" onClick={aoFechar}>
+          Cancelar
+        </Botao>
+      </div>
+    )
   }
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (!clinicaId) return
-    aoSalvar({ nome, crmv, telefone, email, clinica_id: clinicaId })
+    void enviar()
   }
 
   return (
     <form onSubmit={aoSubmeter}>
+      {erroEnvio ? <p role="alert">{erroEnvio}</p> : null}
       <CampoTexto rotulo="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
       <CampoTexto
         rotulo="CRMV"
@@ -71,8 +90,11 @@ export function FormularioVeterinario({
           </option>
         ))}
       </select>
-      <Botao type="submit" variante="primario">
-        Salvar
+      <Botao type="submit" variante="primario" disabled={salvando}>
+        {salvando ? 'Salvando…' : 'Salvar'}
+      </Botao>
+      <Botao variante="secundario" disabled={salvando} onClick={aoFechar}>
+        Cancelar
       </Botao>
     </form>
   )

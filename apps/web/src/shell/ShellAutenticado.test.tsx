@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as useSessaoModulo from '../autenticacao/SessaoContext'
 import { ShellAutenticado } from './ShellAutenticado'
+import { usuario } from '../../tests/usuario'
 
 function renderizarComoPapel(papel: 'admin' | 'atendente' | 'tecnico' | 'clinica', sair = vi.fn()) {
   vi.spyOn(useSessaoModulo, 'useSessao').mockReturnValue({
@@ -59,9 +59,9 @@ describe('ShellAutenticado', () => {
   it('"Sair" chama useSessao.sair', async () => {
     const sair = vi.fn()
     renderizarComoPapel('admin', sair)
-    const usuario = userEvent.setup()
+    const u = usuario()
 
-    await usuario.click(screen.getByRole('button', { name: /sair/i }))
+    await u.click(screen.getByRole('button', { name: /sair/i }))
 
     expect(sair).toHaveBeenCalledTimes(1)
   })

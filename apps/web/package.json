@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:cobertura": "vitest run --coverage --maxWorkers=2",
+    "test:cobertura": "vitest run --coverage",
     "gerar-tipos-api": "openapi-typescript http://localhost:8000/openapi.json -o src/api/tipos.gerados.ts"
   },
   "dependencies": {

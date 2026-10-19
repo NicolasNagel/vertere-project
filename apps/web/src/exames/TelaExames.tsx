@@ -1,6 +1,9 @@
 import { useId, useState } from 'react'
 import { Botao } from '../ui/Botao'
+import { formatarMoeda } from '../ui/formatacao'
 import { useSessao } from '../autenticacao/SessaoContext'
+import { podeExecutar } from '../autenticacao/permissoesDeTela'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioExame } from './FormularioExame'
 import { FormularioRegraPlantao } from './FormularioRegraPlantao'
@@ -22,7 +25,7 @@ function LinhaExame({
 }: {
   exame: ExameResponse
   podeGerenciar: boolean
-  aoEditar: (dados: CriarExameRequest) => void
+  aoEditar: (dados: CriarExameRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -34,10 +37,8 @@ function LinhaExame({
         <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioExame
             exame={exame}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -48,7 +49,7 @@ function LinhaExame({
     <tr>
       <td>{exame.categoria}</td>
       <td>{exame.nome}</td>
-      <td>{exame.preco_base}</td>
+      <td>{formatarMoeda(exame.preco_base)}</td>
       <td>{exame.ativo ? 'Ativo' : 'Inativo'}</td>
       {podeGerenciar ? (
         <td>
@@ -75,6 +76,7 @@ function CatalogoDeExames() {
     exames,
     carregando,
     erro,
+    aviso,
     categoria,
     definirCategoria,
     apenasAtivos,
@@ -88,7 +90,7 @@ function CatalogoDeExames() {
   const [formularioAberto, setFormularioAberto] = useState(false)
   const [categoriasConhecidas, setCategoriasConhecidas] = useState<string[]>([])
   const idFiltroCategoria = useId()
-  const podeGerenciar = papel === 'admin'
+  const podeGerenciar = podeExecutar(papel, 'EXAME_GERENCIAR')
 
   // Com o filtro de categoria ativo a lista só traz aquela categoria (o backend filtra por igualdade
   // exata), então as opções do select vêm da última listagem sem filtro — senão não daria para
@@ -109,6 +111,7 @@ function CatalogoDeExames() {
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <label htmlFor={idFiltroCategoria}>Filtrar por categoria</label>
       <select
@@ -136,12 +139,7 @@ function CatalogoDeExames() {
         <Botao onClick={() => setFormularioAberto(true)}>Novo exame</Botao>
       ) : null}
       {formularioAberto ? (
-        <FormularioExame
-          aoSalvar={(dados: CriarExameRequest) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
-        />
+        <FormularioExame aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
 
       {carregando ? (
@@ -188,7 +186,7 @@ function LinhaRegraPlantao({
 }: {
   regra: RegraPlantaoResponse
   podeGerenciar: boolean
-  aoEditar: (dados: CriarRegraPlantaoRequest) => void
+  aoEditar: (dados: CriarRegraPlantaoRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -200,10 +198,8 @@ function LinhaRegraPlantao({
         <td colSpan={podeGerenciar ? 5 : 4}>
           <FormularioRegraPlantao
             regra={regra}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -216,7 +212,7 @@ function LinhaRegraPlantao({
       <td>
         {paraHoraSemSegundos(regra.hora_inicio)}–{paraHoraSemSegundos(regra.hora_fim)}
       </td>
-      <td>{regra.valor_adicional}</td>
+      <td>{formatarMoeda(regra.valor_adicional)}</td>
       <td>{regra.ativo ? 'Ativa' : 'Inativa'}</td>
       {podeGerenciar ? (
         <td>
@@ -237,6 +233,7 @@ function RegrasDePlantao() {
     regras,
     carregando,
     erro,
+    aviso,
     apenasAtivos,
     definirApenasAtivos,
     criar,
@@ -246,11 +243,12 @@ function RegrasDePlantao() {
   } = useRegrasPlantao()
   const { papel } = useSessao()
   const [formularioAberto, setFormularioAberto] = useState(false)
-  const podeGerenciar = papel === 'admin'
+  const podeGerenciar = podeExecutar(papel, 'REGRA_PLANTAO_GERENCIAR')
 
   return (
     <div>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <label>
         <input
@@ -265,12 +263,7 @@ function RegrasDePlantao() {
         <Botao onClick={() => setFormularioAberto(true)}>Nova regra</Botao>
       ) : null}
       {formularioAberto ? (
-        <FormularioRegraPlantao
-          aoSalvar={(dados: CriarRegraPlantaoRequest) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
-        />
+        <FormularioRegraPlantao aoSalvar={criar} aoFechar={() => setFormularioAberto(false)} />
       ) : null}
 
       {carregando ? (
@@ -311,7 +304,7 @@ function RegrasDePlantao() {
 export function TelaExames() {
   const { papel } = useSessao()
   const [abaAtiva, setAbaAtiva] = useState<'exames' | 'regras-plantao'>('exames')
-  const podeVerRegrasPlantao = papel === 'admin' || papel === 'atendente'
+  const podeVerRegrasPlantao = podeExecutar(papel, 'REGRA_PLANTAO_VER')
 
   return (
     <div>

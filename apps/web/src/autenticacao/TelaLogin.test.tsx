@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as useSessaoModulo from './SessaoContext'
 import { TelaLogin } from './TelaLogin'
+import { usuario } from '../../tests/usuario'
 
 function renderizarNaRota() {
   return render(
@@ -34,11 +34,11 @@ describe('TelaLogin', () => {
     })
 
     renderizarNaRota()
-    const usuario = userEvent.setup()
+    const u = usuario()
 
-    await usuario.type(screen.getByLabelText(/usuário/i), 'admin@vertere.com')
-    await usuario.type(screen.getByLabelText(/senha/i), 'senha-correta')
-    await usuario.click(screen.getByRole('button', { name: /entrar no sistema/i }))
+    await u.type(screen.getByLabelText(/usuário/i), 'admin@vertere.com')
+    await u.type(screen.getByLabelText(/senha/i), 'senha-correta')
+    await u.click(screen.getByRole('button', { name: /entrar no sistema/i }))
 
     expect(login).toHaveBeenCalledWith('admin@vertere.com', 'senha-correta')
   })

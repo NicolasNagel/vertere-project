@@ -16,27 +16,50 @@ const veterinarioA = {
   ativo: true,
 }
 
+const dadosNovoVeterinario = {
+  nome: veterinarioA.nome,
+  crmv: veterinarioA.crmv,
+  telefone: veterinarioA.telefone,
+  email: veterinarioA.email,
+  clinica_id: veterinarioA.clinica_id,
+}
+
+async function montar() {
+  const hook = renderHook(() => useVeterinarios())
+  await waitFor(() => expect(hook.result.current.carregando).toBe(false))
+  return hook
+}
+
+async function criarDevolvendoResultado(
+  result: { current: ReturnType<typeof useVeterinarios> },
+  dados = dadosNovoVeterinario,
+) {
+  let resultado: unknown
+  await act(async () => {
+    resultado = await result.current.criar(dados)
+  })
+  return resultado
+}
+
 describe('useVeterinarios', () => {
   beforeEach(() => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockReset()
-    vi.mocked(veterinariosApi.criarVeterinario).mockReset()
+    for (const funcao of Object.values(veterinariosApi)) {
+      vi.mocked(funcao).mockReset()
+    }
   })
 
   it('carrega a lista de veterinários ao montar', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
 
-    const { result } = renderHook(() => useVeterinarios())
+    const { result } = await montar()
 
-    await waitFor(() => expect(result.current.carregando).toBe(false))
     expect(result.current.veterinarios).toEqual([veterinarioA])
+    expect(result.current.aviso).toBeNull()
   })
 
   it('definirFiltroClinicaId refaz a listagem filtrada', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA]).mockResolvedValueOnce([])
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirFiltroClinicaId('c2')
@@ -46,136 +69,108 @@ describe('useVeterinarios', () => {
     expect(veterinariosApi.listarVeterinarios).toHaveBeenLastCalledWith('c2', false)
   })
 
-  it('criar bem-sucedido adiciona o veterinário ao estado local', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
+  it('criar bem-sucedido devolve ok e recarrega a lista', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([]).mockResolvedValueOnce([veterinarioA])
     vi.mocked(veterinariosApi.criarVeterinario).mockResolvedValueOnce(veterinarioA)
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
-    await act(async () => {
-      await result.current.criar({
-        nome: veterinarioA.nome,
-        crmv: veterinarioA.crmv,
-        telefone: veterinarioA.telefone,
-        email: veterinarioA.email,
-        clinica_id: veterinarioA.clinica_id,
-      })
-    })
-
+    expect(await criarDevolvendoResultado(result)).toEqual({ ok: true })
     expect(result.current.veterinarios).toEqual([veterinarioA])
+    expect(veterinariosApi.listarVeterinarios).toHaveBeenCalledTimes(2)
   })
 
-  it('criar com CRMV vazio (422, detalhe "CRMV não pode ser vazio") resulta na mensagem específica', async () => {
+  it('criar cujo veterinário não volta na recarga (filtro ativo) expõe o aviso', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValue([])
+    vi.mocked(veterinariosApi.criarVeterinario).mockResolvedValueOnce(veterinarioA)
+    const { result } = await montar()
+
+    await criarDevolvendoResultado(result)
+
+    expect(result.current.aviso).toBe(
+      'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.',
+    )
+  })
+
+  it('criar com CRMV vazio (422, detalhe "CRMV não pode ser vazio") devolve a mensagem específica', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
     vi.mocked(veterinariosApi.criarVeterinario).mockRejectedValueOnce(
       new ErroHttp(422, '{"detail":"CRMV não pode ser vazio"}'),
     )
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
-    await act(async () => {
-      await result.current.criar({
-        nome: veterinarioA.nome,
-        crmv: '',
-        telefone: veterinarioA.telefone,
-        email: veterinarioA.email,
-        clinica_id: veterinarioA.clinica_id,
-      })
+    expect(await criarDevolvendoResultado(result, { ...dadosNovoVeterinario, crmv: '' })).toEqual({
+      ok: false,
+      mensagem: 'Informe o CRMV do veterinário.',
     })
-
-    expect(result.current.erro).toBe('Informe o CRMV do veterinário.')
+    expect(result.current.erro).toBeNull()
   })
 
-  it('criar com clínica inexistente (422, detalhe "Clínica ... não encontrada") resulta na mensagem específica', async () => {
+  it('criar com clínica inexistente (422, detalhe "Clínica ... não encontrada") devolve a mensagem específica', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
     vi.mocked(veterinariosApi.criarVeterinario).mockRejectedValueOnce(
-      new ErroHttp(422, '{"detail":"Clínica x não encontrada"}'),
+      new ErroHttp(422, '{"detail":"Clínica c9 não encontrada"}'),
     )
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
-    await act(async () => {
-      await result.current.criar({
-        nome: veterinarioA.nome,
-        crmv: veterinarioA.crmv,
-        telefone: veterinarioA.telefone,
-        email: veterinarioA.email,
-        clinica_id: 'inexistente',
-      })
+    expect(await criarDevolvendoResultado(result)).toEqual({
+      ok: false,
+      mensagem: 'A clínica selecionada não existe mais — atualize a lista de clínicas.',
     })
-
-    expect(result.current.erro).toBe(
-      'A clínica selecionada não existe mais — atualize a lista de clínicas.',
-    )
   })
 
-  it('criar com CRMV duplicado (409) resulta na mensagem específica', async () => {
+  it('criar com CRMV duplicado (409) devolve a mensagem específica', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
     vi.mocked(veterinariosApi.criarVeterinario).mockRejectedValueOnce(
       new ErroHttp(409, '{"detail":"Já existe um veterinário com o CRMV 1234"}'),
     )
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
-    await act(async () => {
-      await result.current.criar({
-        nome: veterinarioA.nome,
-        crmv: veterinarioA.crmv,
-        telefone: veterinarioA.telefone,
-        email: veterinarioA.email,
-        clinica_id: veterinarioA.clinica_id,
-      })
+    expect(await criarDevolvendoResultado(result)).toEqual({
+      ok: false,
+      mensagem: 'Já existe um veterinário cadastrado com esse CRMV.',
     })
-
-    expect(result.current.erro).toBe('Já existe um veterinário cadastrado com esse CRMV.')
   })
 
-  it('editar atualiza o veterinário correspondente no estado local', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+  it('editar devolve ok e recarrega a lista', async () => {
     const editado = { ...veterinarioA, telefone: '999' }
+    vi.mocked(veterinariosApi.listarVeterinarios)
+      .mockResolvedValueOnce([veterinarioA])
+      .mockResolvedValueOnce([editado])
     vi.mocked(veterinariosApi.editarVeterinario).mockResolvedValueOnce(editado)
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
+    let resultado: unknown
     await act(async () => {
-      await result.current.editar('1', {
+      resultado = await result.current.editar('1', {
         nome: veterinarioA.nome,
         telefone: '999',
         email: veterinarioA.email,
       })
     })
 
+    expect(resultado).toEqual({ ok: true })
     expect(result.current.veterinarios).toEqual([editado])
+    expect(veterinariosApi.listarVeterinarios).toHaveBeenCalledTimes(2)
   })
 
-  it('inativar atualiza o status do veterinário no estado local', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
-    const inativado = { ...veterinarioA, ativo: false }
-    vi.mocked(veterinariosApi.inativarVeterinario).mockResolvedValueOnce(inativado)
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+  it('inativar recarrega a lista (com "apenas ativos", o veterinário sai)', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA]).mockResolvedValueOnce([])
+    vi.mocked(veterinariosApi.inativarVeterinario).mockResolvedValueOnce({ ...veterinarioA, ativo: false })
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.inativar('1')
     })
 
-    expect(result.current.veterinarios).toEqual([inativado])
+    expect(result.current.veterinarios).toEqual([])
   })
 
-  it('reativar atualiza o status do veterinário no estado local', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([
-      { ...veterinarioA, ativo: false },
-    ])
+  it('reativar recarrega a lista', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios)
+      .mockResolvedValueOnce([{ ...veterinarioA, ativo: false }])
+      .mockResolvedValueOnce([veterinarioA])
     vi.mocked(veterinariosApi.reativarVeterinario).mockResolvedValueOnce(veterinarioA)
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.reativar('1')
@@ -184,14 +179,12 @@ describe('useVeterinarios', () => {
     expect(result.current.veterinarios).toEqual([veterinarioA])
   })
 
-  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+  it('erro 404 numa ação de linha preenche o erro de tela com a mensagem específica', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
     vi.mocked(veterinariosApi.inativarVeterinario).mockRejectedValueOnce(
       new ErroHttp(404, '{"detail":"Veterinário 1 não encontrado"}'),
     )
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.inativar('1')
@@ -205,9 +198,7 @@ describe('useVeterinarios', () => {
   it('definirTermoBusca refaz a listagem via buscarVeterinariosPorNome', async () => {
     vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
     vi.mocked(veterinariosApi.buscarVeterinariosPorNome).mockResolvedValueOnce([])
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirTermoBusca('joão')
@@ -222,11 +213,8 @@ describe('useVeterinarios', () => {
   })
 
   it('definirApenasAtivos refaz a listagem com o filtro', async () => {
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
-    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
-
-    const { result } = renderHook(() => useVeterinarios())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA]).mockResolvedValueOnce([])
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirApenasAtivos(true)
@@ -234,5 +222,68 @@ describe('useVeterinarios', () => {
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
     expect(veterinariosApi.listarVeterinarios).toHaveBeenLastCalledWith(undefined, true)
+  })
+
+  it('com busca ativa, a recarga depois de uma ação também usa a busca', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([veterinarioA])
+    vi.mocked(veterinariosApi.buscarVeterinariosPorNome).mockResolvedValue([veterinarioA])
+    vi.mocked(veterinariosApi.inativarVeterinario).mockResolvedValueOnce({ ...veterinarioA, ativo: false })
+    const { result } = await montar()
+    await act(async () => {
+      result.current.definirTermoBusca('jo')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(veterinariosApi.buscarVeterinariosPorNome).toHaveBeenCalledTimes(2)
+    expect(veterinariosApi.listarVeterinarios).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('useVeterinarios — mensagens de erro (US2)', () => {
+  beforeEach(() => {
+    for (const funcao of Object.values(veterinariosApi)) {
+      vi.mocked(funcao).mockReset()
+    }
+  })
+
+  it('falha de rede na carga vira mensagem de sem conexão', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockRejectedValueOnce(
+      new TypeError('Failed to fetch'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('422 do Pydantic no e-mail cita o campo E-mail, nunca a mensagem de clínica', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockResolvedValueOnce([])
+    vi.mocked(veterinariosApi.criarVeterinario).mockRejectedValueOnce(
+      new ErroHttp(
+        422,
+        JSON.stringify({
+          detail: [{ loc: ['body', 'email'], type: 'value_error', msg: 'not a valid email' }],
+        }),
+      ),
+    )
+    const { result } = await montar()
+
+    expect(
+      await criarDevolvendoResultado(result, { ...dadosNovoVeterinario, email: 'joao@exemplo' }),
+    ).toEqual({ ok: false, mensagem: 'Verifique o campo E-mail: valor inválido.' })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    vi.mocked(veterinariosApi.listarVeterinarios).mockRejectedValueOnce(
+      new ErroHttp(500, 'Internal Server Error'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Problema no servidor. Tente novamente em instantes.')
   })
 })

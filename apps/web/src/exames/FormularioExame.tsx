@@ -1,6 +1,8 @@
 import { type FormEvent, useState } from 'react'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
+import { useEnvioFormulario } from '../ui/useEnvioFormulario'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 
 type CriarExameRequest = components['schemas']['CriarExameRequest']
@@ -9,30 +11,35 @@ type ExameResponse = components['schemas']['ExameResponse']
 interface FormularioExameProps {
   /** Presente em modo edição: pré-preenche os campos. */
   exame?: ExameResponse
-  aoSalvar: (dados: CriarExameRequest) => void
+  aoSalvar: (dados: CriarExameRequest) => Promise<ResultadoAcao>
+  /** Chamado no sucesso do salvamento e no "Cancelar". */
+  aoFechar: () => void
 }
 
-export function FormularioExame({ exame, aoSalvar }: FormularioExameProps) {
+export function FormularioExame({ exame, aoSalvar, aoFechar }: FormularioExameProps) {
   const [categoria, setCategoria] = useState(exame?.categoria ?? '')
   const [nome, setNome] = useState(exame?.nome ?? '')
   const [precoBase, setPrecoBase] = useState(exame?.preco_base ?? '')
   const [erroValidacao, setErroValidacao] = useState<string | null>(null)
+  const { salvando, erroEnvio, enviar } = useEnvioFormulario(
+    () => aoSalvar({ categoria, nome, preco_base: precoBase }),
+    aoFechar,
+  )
 
   function aoSubmeter(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    // Única camada que rejeita preço não positivo: o backend (S5) aceita qualquer decimal (ver
-    // spec.md → "Descobertas").
+    // Validação local para resposta imediata; o backend também recusa desde S14 (FR-009).
     if (!(Number(precoBase) > 0)) {
       setErroValidacao('Preço-base deve ser maior que zero.')
       return
     }
     setErroValidacao(null)
-    aoSalvar({ categoria, nome, preco_base: precoBase })
+    void enviar()
   }
 
   return (
     <form onSubmit={aoSubmeter}>
-      {erroValidacao ? <p role="alert">{erroValidacao}</p> : null}
+      {erroValidacao || erroEnvio ? <p role="alert">{erroValidacao ?? erroEnvio}</p> : null}
       <CampoTexto
         rotulo="Categoria"
         required
@@ -48,8 +55,11 @@ export function FormularioExame({ exame, aoSalvar }: FormularioExameProps) {
         value={precoBase}
         onChange={(e) => setPrecoBase(e.target.value)}
       />
-      <Botao type="submit" variante="primario">
-        Salvar
+      <Botao type="submit" variante="primario" disabled={salvando}>
+        {salvando ? 'Salvando…' : 'Salvar'}
+      </Botao>
+      <Botao variante="secundario" disabled={salvando} onClick={aoFechar}>
+        Cancelar
       </Botao>
     </form>
   )

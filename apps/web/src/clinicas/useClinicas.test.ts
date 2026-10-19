@@ -17,96 +17,111 @@ const clinicaA = {
   prazo_pagamento_dias: 30,
 }
 
+const dadosNovaClinica = {
+  nome: clinicaA.nome,
+  cnpj: clinicaA.cnpj,
+  endereco: clinicaA.endereco,
+  telefone: clinicaA.telefone,
+  email: clinicaA.email,
+}
+
+async function montar() {
+  const hook = renderHook(() => useClinicas())
+  await waitFor(() => expect(hook.result.current.carregando).toBe(false))
+  return hook
+}
+
 describe('useClinicas', () => {
   beforeEach(() => {
-    vi.mocked(clinicasApi.listarClinicas).mockReset()
-    vi.mocked(clinicasApi.criarClinica).mockReset()
+    for (const funcao of Object.values(clinicasApi)) {
+      vi.mocked(funcao).mockReset()
+    }
   })
 
   it('carrega a lista de clínicas ao montar', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
 
-    const { result } = renderHook(() => useClinicas())
+    const { result } = await montar()
 
-    await waitFor(() => expect(result.current.carregando).toBe(false))
     expect(result.current.clinicas).toEqual([clinicaA])
+    expect(result.current.aviso).toBeNull()
   })
 
-  it('criar bem-sucedido adiciona a clínica ao estado local sem novo GET', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+  it('criar bem-sucedido devolve ok e recarrega a lista', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([]).mockResolvedValueOnce([clinicaA])
     vi.mocked(clinicasApi.criarClinica).mockResolvedValueOnce(clinicaA)
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
+    let resultado: unknown
     await act(async () => {
-      await result.current.criar({
-        nome: clinicaA.nome,
-        cnpj: clinicaA.cnpj,
-        endereco: clinicaA.endereco,
-        telefone: clinicaA.telefone,
-        email: clinicaA.email,
-      })
+      resultado = await result.current.criar(dadosNovaClinica)
     })
 
+    expect(resultado).toEqual({ ok: true })
     expect(result.current.clinicas).toEqual([clinicaA])
-    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(1)
+    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(2)
   })
 
-  it('criar com CNPJ inválido (422) resulta na mensagem de erro específica', async () => {
+  it('criar cuja clínica não volta na recarga (filtro ativo) expõe o aviso', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValue([])
+    vi.mocked(clinicasApi.criarClinica).mockResolvedValueOnce(clinicaA)
+    const { result } = await montar()
+
+    await act(async () => {
+      await result.current.criar(dadosNovaClinica)
+    })
+
+    expect(result.current.aviso).toBe(
+      'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.',
+    )
+  })
+
+  it('criar com CNPJ inválido (422) devolve a mensagem específica sem preencher o erro de tela', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
     vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
       new ErroHttp(422, '{"detail":"CNPJ inválido"}'),
     )
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
+    let resultado: unknown
     await act(async () => {
-      await result.current.criar({
-        nome: clinicaA.nome,
-        cnpj: 'invalido',
-        endereco: clinicaA.endereco,
-        telefone: clinicaA.telefone,
-        email: clinicaA.email,
-      })
+      resultado = await result.current.criar({ ...dadosNovaClinica, cnpj: 'invalido' })
     })
 
-    expect(result.current.erro).toBe('CNPJ inválido — verifique o formato informado.')
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'CNPJ inválido — verifique o formato informado.',
+    })
+    expect(result.current.erro).toBeNull()
   })
 
-  it('criar com CNPJ duplicado (409) resulta na mensagem de erro específica', async () => {
+  it('criar com CNPJ duplicado (409) devolve a mensagem específica', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
     vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
       new ErroHttp(409, '{"detail":"Já existe uma clínica com o CNPJ 123"}'),
     )
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
+    let resultado: unknown
     await act(async () => {
-      await result.current.criar({
-        nome: clinicaA.nome,
-        cnpj: clinicaA.cnpj,
-        endereco: clinicaA.endereco,
-        telefone: clinicaA.telefone,
-        email: clinicaA.email,
-      })
+      resultado = await result.current.criar(dadosNovaClinica)
     })
 
-    expect(result.current.erro).toBe('Já existe uma clínica cadastrada com esse CNPJ.')
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'Já existe uma clínica cadastrada com esse CNPJ.',
+    })
   })
 
-  it('editar atualiza a clínica correspondente no estado local', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+  it('editar devolve ok e recarrega a lista', async () => {
     const editada = { ...clinicaA, telefone: '999' }
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA]).mockResolvedValueOnce([editada])
     vi.mocked(clinicasApi.editarClinica).mockResolvedValueOnce(editada)
+    const { result } = await montar()
 
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
-
+    let resultado: unknown
     await act(async () => {
-      await result.current.editar('1', {
+      resultado = await result.current.editar('1', {
         nome: clinicaA.nome,
         endereco: clinicaA.endereco,
         telefone: '999',
@@ -114,31 +129,29 @@ describe('useClinicas', () => {
       })
     })
 
+    expect(resultado).toEqual({ ok: true })
     expect(result.current.clinicas).toEqual([editada])
-    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(1)
+    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(2)
   })
 
-  it('inativar atualiza o status da clínica no estado local', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
-    const inativada = { ...clinicaA, ativo: false }
-    vi.mocked(clinicasApi.inativarClinica).mockResolvedValueOnce(inativada)
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+  it('inativar recarrega a lista (com "apenas ativas", a clínica sai)', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA]).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.inativarClinica).mockResolvedValueOnce({ ...clinicaA, ativo: false })
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.inativar('1')
     })
 
-    expect(result.current.clinicas).toEqual([inativada])
+    expect(result.current.clinicas).toEqual([])
   })
 
-  it('reativar atualiza o status da clínica no estado local', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([{ ...clinicaA, ativo: false }])
+  it('reativar recarrega a lista', async () => {
+    vi.mocked(clinicasApi.listarClinicas)
+      .mockResolvedValueOnce([{ ...clinicaA, ativo: false }])
+      .mockResolvedValueOnce([clinicaA])
     vi.mocked(clinicasApi.reativarClinica).mockResolvedValueOnce(clinicaA)
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.reativar('1')
@@ -147,29 +160,26 @@ describe('useClinicas', () => {
     expect(result.current.clinicas).toEqual([clinicaA])
   })
 
-  it('definirPrazoPagamento atualiza o prazo da clínica no estado local', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+  it('definirPrazoPagamento recarrega a lista', async () => {
     const comNovoPrazo = { ...clinicaA, prazo_pagamento_dias: 45 }
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA]).mockResolvedValueOnce([comNovoPrazo])
     vi.mocked(clinicasApi.definirPrazoPagamento).mockResolvedValueOnce(comNovoPrazo)
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.definirPrazoPagamento('1', 45)
     })
 
+    expect(clinicasApi.definirPrazoPagamento).toHaveBeenCalledWith('1', 45)
     expect(result.current.clinicas).toEqual([comNovoPrazo])
   })
 
-  it('erro HTTP 404 em qualquer ação de edição resulta na mensagem específica', async () => {
+  it('erro 404 numa ação de linha preenche o erro de tela com a mensagem específica', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
     vi.mocked(clinicasApi.inativarClinica).mockRejectedValueOnce(
       new ErroHttp(404, '{"detail":"Clínica 1 não encontrada"}'),
     )
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       await result.current.inativar('1')
@@ -183,9 +193,7 @@ describe('useClinicas', () => {
   it('definirTermoBusca refaz a listagem via buscarClinicasPorNome', async () => {
     vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
     vi.mocked(clinicasApi.buscarClinicasPorNome).mockResolvedValueOnce([])
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirTermoBusca('clínica')
@@ -196,18 +204,14 @@ describe('useClinicas', () => {
   })
 
   it('termo de busca vazio volta a usar listarClinicas', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValue([clinicaA])
     vi.mocked(clinicasApi.buscarClinicasPorNome).mockResolvedValueOnce([])
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirTermoBusca('x')
     })
     await waitFor(() => expect(result.current.carregando).toBe(false))
-
     await act(async () => {
       result.current.definirTermoBusca('')
     })
@@ -217,11 +221,8 @@ describe('useClinicas', () => {
   })
 
   it('definirApenasAtivas refaz a listagem com o filtro', async () => {
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
-    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
-
-    const { result } = renderHook(() => useClinicas())
-    await waitFor(() => expect(result.current.carregando).toBe(false))
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA]).mockResolvedValueOnce([])
+    const { result } = await montar()
 
     await act(async () => {
       result.current.definirApenasAtivas(true)
@@ -229,5 +230,99 @@ describe('useClinicas', () => {
     await waitFor(() => expect(result.current.carregando).toBe(false))
 
     expect(clinicasApi.listarClinicas).toHaveBeenLastCalledWith(true)
+  })
+
+  it('com busca ativa, a recarga depois de uma ação também usa a busca', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.buscarClinicasPorNome).mockResolvedValue([clinicaA])
+    vi.mocked(clinicasApi.inativarClinica).mockResolvedValueOnce({ ...clinicaA, ativo: false })
+    const { result } = await montar()
+    await act(async () => {
+      result.current.definirTermoBusca('A')
+    })
+    await waitFor(() => expect(result.current.carregando).toBe(false))
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(clinicasApi.buscarClinicasPorNome).toHaveBeenCalledTimes(2)
+    expect(clinicasApi.listarClinicas).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('useClinicas — mensagens de erro (US2)', () => {
+  beforeEach(() => {
+    for (const funcao of Object.values(clinicasApi)) {
+      vi.mocked(funcao).mockReset()
+    }
+  })
+
+  it('falha de rede na carga vira mensagem de sem conexão, não lista vazia silenciosa', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('falha de rede numa ação de linha vira mensagem de sem conexão', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([clinicaA])
+    vi.mocked(clinicasApi.inativarClinica).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const { result } = await montar()
+
+    await act(async () => {
+      await result.current.inativar('1')
+    })
+
+    expect(result.current.erro).toBe('Não foi possível falar com o servidor. Tente novamente.')
+  })
+
+  it('422 do Pydantic no e-mail cita o campo E-mail, nunca a mensagem de CNPJ', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
+      new ErroHttp(
+        422,
+        JSON.stringify({
+          detail: [{ loc: ['body', 'email'], type: 'value_error', msg: 'not a valid email' }],
+        }),
+      ),
+    )
+    const { result } = await montar()
+
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar({ ...dadosNovaClinica, email: 'teste@exemplo' })
+    })
+
+    expect(resultado).toEqual({ ok: false, mensagem: 'Verifique o campo E-mail: valor inválido.' })
+  })
+
+  it('422 de domínio com "CNPJ" no detalhe vira a mensagem de CNPJ', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockResolvedValueOnce([])
+    vi.mocked(clinicasApi.criarClinica).mockRejectedValueOnce(
+      new ErroHttp(422, '{"detail":"CNPJ inválido: \'123\' — esperado 14 dígitos"}'),
+    )
+    const { result } = await montar()
+
+    let resultado: unknown
+    await act(async () => {
+      resultado = await result.current.criar({ ...dadosNovaClinica, cnpj: '123' })
+    })
+
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'CNPJ inválido — verifique o formato informado.',
+    })
+  })
+
+  it('erro 500 vira mensagem genérica de servidor', async () => {
+    vi.mocked(clinicasApi.listarClinicas).mockRejectedValueOnce(
+      new ErroHttp(500, 'Internal Server Error'),
+    )
+
+    const { result } = await montar()
+
+    expect(result.current.erro).toBe('Problema no servidor. Tente novamente em instantes.')
   })
 })

@@ -1,7 +1,10 @@
 import { useId, useState } from 'react'
+import { useSessao } from '../autenticacao/SessaoContext'
+import { podeExecutar } from '../autenticacao/permissoesDeTela'
 import { Botao } from '../ui/Botao'
 import { CampoTexto } from '../ui/CampoTexto'
 import { useClinicas } from '../clinicas/useClinicas'
+import type { ResultadoAcao } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
 import { FormularioVeterinario } from './FormularioVeterinario'
 import { useVeterinarios } from './useVeterinarios'
@@ -13,13 +16,15 @@ type CriarVeterinarioRequest = components['schemas']['CriarVeterinarioRequest']
 function LinhaVeterinario({
   veterinario,
   clinicasAtivas,
+  podeGerenciar,
   aoEditar,
   aoInativar,
   aoReativar,
 }: {
   veterinario: VeterinarioResponse
   clinicasAtivas: ClinicaResponse[]
-  aoEditar: (dados: CriarVeterinarioRequest) => void
+  podeGerenciar: boolean
+  aoEditar: (dados: CriarVeterinarioRequest) => Promise<ResultadoAcao>
   aoInativar: () => void
   aoReativar: () => void
 }) {
@@ -28,14 +33,12 @@ function LinhaVeterinario({
   if (editando) {
     return (
       <tr>
-        <td colSpan={5}>
+        <td colSpan={podeGerenciar ? 6 : 5}>
           <FormularioVeterinario
             clinicasAtivas={clinicasAtivas}
             veterinario={veterinario}
-            aoSalvar={(dados) => {
-              aoEditar(dados)
-              setEditando(false)
-            }}
+            aoSalvar={aoEditar}
+            aoFechar={() => setEditando(false)}
           />
         </td>
       </tr>
@@ -49,14 +52,16 @@ function LinhaVeterinario({
       <td>{veterinario.telefone}</td>
       <td>{veterinario.email}</td>
       <td>{veterinario.ativo ? 'Ativo' : 'Inativo'}</td>
-      <td>
-        <Botao onClick={() => setEditando(true)}>Editar</Botao>
-        {veterinario.ativo ? (
-          <Botao onClick={aoInativar}>Inativar</Botao>
-        ) : (
-          <Botao onClick={aoReativar}>Reativar</Botao>
-        )}
-      </td>
+      {podeGerenciar ? (
+        <td>
+          <Botao onClick={() => setEditando(true)}>Editar</Botao>
+          {veterinario.ativo ? (
+            <Botao onClick={aoInativar}>Inativar</Botao>
+          ) : (
+            <Botao onClick={aoReativar}>Reativar</Botao>
+          )}
+        </td>
+      ) : null}
     </tr>
   )
 }
@@ -67,6 +72,7 @@ export function TelaVeterinarios() {
     veterinarios,
     carregando,
     erro,
+    aviso,
     definirFiltroClinicaId,
     termoBusca,
     definirTermoBusca,
@@ -77,6 +83,8 @@ export function TelaVeterinarios() {
     inativar,
     reativar,
   } = useVeterinarios()
+  const { papel } = useSessao()
+  const podeGerenciar = podeExecutar(papel, 'VETERINARIO_GERENCIAR')
   const [formularioAberto, setFormularioAberto] = useState(false)
   const idFiltro = useId()
   const clinicasAtivas = clinicas.filter((clinica) => clinica.ativo)
@@ -85,6 +93,7 @@ export function TelaVeterinarios() {
     <div>
       <h1>Veterinários</h1>
       {erro ? <p role="alert">{erro}</p> : null}
+      {aviso ? <p role="status">{aviso}</p> : null}
 
       <CampoTexto
         rotulo="Buscar por nome"
@@ -113,14 +122,14 @@ export function TelaVeterinarios() {
         ))}
       </select>
 
-      <Botao onClick={() => setFormularioAberto(true)}>Novo veterinário</Botao>
+      {podeGerenciar ? (
+        <Botao onClick={() => setFormularioAberto(true)}>Novo veterinário</Botao>
+      ) : null}
       {formularioAberto ? (
         <FormularioVeterinario
           clinicasAtivas={clinicasAtivas}
-          aoSalvar={(dados) => {
-            criar(dados)
-            setFormularioAberto(false)
-          }}
+          aoSalvar={criar}
+          aoFechar={() => setFormularioAberto(false)}
         />
       ) : null}
 
@@ -135,7 +144,7 @@ export function TelaVeterinarios() {
               <th>Telefone</th>
               <th>E-mail</th>
               <th>Status</th>
-              <th>Ações</th>
+              {podeGerenciar ? <th>Ações</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -143,6 +152,7 @@ export function TelaVeterinarios() {
               <LinhaVeterinario
                 key={veterinario.id}
                 veterinario={veterinario}
+                podeGerenciar={podeGerenciar}
                 clinicasAtivas={clinicasAtivas}
                 aoEditar={(dados) => editar(veterinario.id, dados)}
                 aoInativar={() => inativar(veterinario.id)}

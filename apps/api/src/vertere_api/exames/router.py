@@ -20,7 +20,9 @@ from vertere_api.exames.schemas import (
     RegraPlantaoResponse,
 )
 from vertere_api.exames.service import (
+    ExameInvalido,
     ExameNaoEncontrado,
+    RegraPlantaoInvalida,
     RegraPlantaoNaoEncontrada,
     cadastrar_exame,
     cadastrar_regra_plantao,
@@ -68,9 +70,12 @@ def _regra_para_response(regra: RegraPlantao) -> RegraPlantaoResponse:
 )
 def criar_exame(dados: CriarExameRequest, db: Session = Depends(obter_db)) -> ExameResponse:
     repo = SQLAlchemyExameRepository(db)
-    exame = cadastrar_exame(
-        categoria=dados.categoria, nome=dados.nome, preco_base=dados.preco_base, repo=repo
-    )
+    try:
+        exame = cadastrar_exame(
+            categoria=dados.categoria, nome=dados.nome, preco_base=dados.preco_base, repo=repo
+        )
+    except ExameInvalido as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     return _exame_para_response(exame)
 
 
@@ -91,6 +96,8 @@ def editar_exame_endpoint(
             preco_base=dados.preco_base,
             repo=repo,
         )
+    except ExameInvalido as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     except ExameNaoEncontrado as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     return _exame_para_response(exame)
@@ -146,13 +153,16 @@ def criar_regra_plantao(
     dados: CriarRegraPlantaoRequest, db: Session = Depends(obter_db)
 ) -> RegraPlantaoResponse:
     repo = SQLAlchemyRegraPlantaoRepository(db)
-    regra = cadastrar_regra_plantao(
-        dia_semana=dados.dia_semana,
-        hora_inicio=dados.hora_inicio,
-        hora_fim=dados.hora_fim,
-        valor_adicional=dados.valor_adicional,
-        repo=repo,
-    )
+    try:
+        regra = cadastrar_regra_plantao(
+            dia_semana=dados.dia_semana,
+            hora_inicio=dados.hora_inicio,
+            hora_fim=dados.hora_fim,
+            valor_adicional=dados.valor_adicional,
+            repo=repo,
+        )
+    except RegraPlantaoInvalida as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     return _regra_para_response(regra)
 
 
@@ -188,6 +198,8 @@ def editar_regra_plantao_endpoint(
             valor_adicional=dados.valor_adicional,
             repo=repo,
         )
+    except RegraPlantaoInvalida as erro:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro)) from erro
     except RegraPlantaoNaoEncontrada as erro:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(erro)) from erro
     return _regra_para_response(regra)

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { extrairDetalheErro } from '../api/erroApi'
+import { mensagemDeErroPadrao } from '../api/erroApi'
 import { ErroHttp } from '../api/clienteHttp'
 import { useColecaoCrud } from '../api/useColecaoCrud'
 import type { components } from '../api/tipos.gerados'
@@ -8,12 +8,18 @@ import { criarExame, editarExame, inativarExame, listarExames, reativarExame } f
 type CriarExameRequest = components['schemas']['CriarExameRequest']
 type EditarExameRequest = components['schemas']['EditarExameRequest']
 
+const ROTULOS_DE_CAMPO = {
+  categoria: 'Categoria',
+  nome: 'Nome',
+  preco_base: 'Preço-base',
+}
+
 /** Mensagens de erro da UI para Exames — ver data-model.md → "Achado de verificação do backend". */
 function mensagemDeErro(erro: ErroHttp): string {
   if (erro.status === 404) {
     return 'Exame não encontrado — pode ter sido removido por outra sessão.'
   }
-  return extrairDetalheErro(erro)
+  return mensagemDeErroPadrao(erro, ROTULOS_DE_CAMPO)
 }
 
 export function useExames() {
@@ -22,7 +28,8 @@ export function useExames() {
 
   const carregarLista = useCallback(() => listarExames(categoria, apenasAtivos), [categoria, apenasAtivos])
 
-  const { itens, carregando, erro, recarregar, criar, executarAcaoSobreItem } = useColecaoCrud(
+  const { itens, carregando, erro, aviso, recarregar, criar, salvarItem, executarAcaoSobreItem } =
+    useColecaoCrud(
     carregarLista,
     mensagemDeErro,
   )
@@ -37,8 +44,8 @@ export function useExames() {
 
   const editar = useCallback(
     (id: string, dados: EditarExameRequest) =>
-      executarAcaoSobreItem(() => editarExame(id, dados)),
-    [executarAcaoSobreItem],
+      salvarItem(() => editarExame(id, dados)),
+    [salvarItem],
   )
 
   const inativar = useCallback(
@@ -55,6 +62,7 @@ export function useExames() {
     exames: itens,
     carregando,
     erro,
+    aviso,
     categoria,
     definirCategoria,
     apenasAtivos,

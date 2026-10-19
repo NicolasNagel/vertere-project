@@ -7,9 +7,60 @@
 > Atualize este arquivo ao final de cada sessão relevante (mudança de escopo, spec fechada,
 > decisão de harness) e no início de uma sessão nova que retome trabalho em andamento.
 
-**Última atualização**: 2026-10-01, por sessão Claude Code (Opus 5.5).
+**Última atualização**: 2026-10-02, por sessão Claude Code (Sonnet 5).
 
-## S13 — ✅ entregue (`/fechar-spec` aprovou na 4ª rodada), `/code-review` feito, PR aberto
+## S14 (Polimento das telas S12/S13 + validação de valores no backend de S5) — implementada, pronta para `/fechar-spec S14`
+
+Branch `spec/s14-polimento-telas-web`, ainda sem push. 57 tasks de `specs/014-polimento-telas-web/
+tasks.md` marcadas `[X]`, um commit por task (`feat|fix|test|refactor|chore|docs(s14): T0NN …`).
+
+**O que mudou**:
+- **Backend** (`apps/api/src/vertere_api/exames/`): `cadastrar_exame`/`editar_exame` e
+  `cadastrar_/editar_regra_plantao` validam preço-base/valor adicional `> 0` e categoria/nome não
+  vazios (com `strip()`), levantando `ExameInvalido`/`RegraPlantaoInvalida` → 422 com `detail` em
+  português. Mesmo padrão de `CrmvVazio` (S3). Módulo `exames` com 99% de cobertura de linha.
+- **Frontend**: os quatro formulários (Clínica, Veterinário, Exame, Regra de Plantão) só fecham
+  com sucesso, mostram "Salvando…", têm "Cancelar" e preservam os dados em erro
+  (`ui/useEnvioFormulario.ts`). `useColecaoCrud` devolve `ResultadoAcao` nas ações de formulário,
+  recarrega a lista do servidor depois de toda ação e expõe `aviso` quando o item criado não volta
+  por causa de um filtro. `useClinicas`/`useVeterinarios` (S12) foram migrados para
+  `useColecaoCrud` — fecha o retrofit que o handoff da S13 tinha deixado em aberto. Erros 422 do
+  Pydantic citam o campo pelo rótulo da tela (`mensagemDeErroPadrao`); 500 e corpo não-JSON viram
+  mensagem genérica. Valores de Exames/Regras de Plantão em R$ (`ui/formatacao.ts`). Visibilidade
+  de escrita centralizada em `autenticacao/permissoesDeTela.ts` (espelho de `_PERMISSOES`),
+  substituindo todo `papel === …` nas telas — inclusive escondendo a escrita de Clínicas e
+  Veterinários para quem não é admin, que a S12 mostrava a todos sem o backend permitir.
+- **Estabilidade de teste**: `maxWorkers: '50%'` em `vite.config.ts` + helper
+  `tests/usuario.ts` (`userEvent.setup({ delay: null })`). Medido antes/depois: baseline ~40-60%
+  de falha por execução → 2 falhas em 35 execuções com concorrência externa (uma delas causada por
+  um `pytest` rodando em paralelo nesta própria sessão) → **10/10 limpas** sem concorrência
+  (critério formal do SC-006 satisfeito). Detalhe completo em `tasks.md` T054.
+
+**Verificado na UI real** (T056, Chrome): os 6 cenários do `quickstart.md`, por papel
+(`admin`/`atendente`/`tecnico`/`clinica`), incluindo o bug de "CNPJ inválido" da S12 confirmado
+corrigido (`teste@exemplo` agora mostra "Verifique o campo E-mail: valor inválido."). A extensão
+do Chrome oscilou bastante nesta sessão (desconexões, cliques sem efeito) — contornado repetindo e
+confirmando cada ação por `get_page_text`/screenshot antes de seguir.
+
+**Achado novo, registrado em "Descobertas" da spec, fora do escopo desta sessão**: a suíte de
+router do backend (`test_exames_router.py` e, presumivelmente, os outros `test_*_router.py`) roda
+contra o banco de dev (`DATABASE_URL` do `.env`) e apaga `usuarios`/`exames`/`regras_plantao` a
+cada execução — não há banco de teste separado. Isso já tinha acontecido na S13 sem ser percebido
+como causa raiz; nesta sessão ficou claro ao rodar a T001. Os 4 usuários de teste precisaram ser
+recriados para a verificação manual (T056); `teste.admin` via SQL direto, porque sem nenhum admin
+não há como logar e usar `POST /usuarios`. Clínica e veterinário de teste (tabelas não tocadas por
+esses fixtures) sobreviveram. Fica para decisão do usuário: banco de teste separado como spec ou
+task de harness futura.
+
+Números finais: frontend `test:cobertura` 282/282, `apps/web` inteiro com 97,53% de linhas (era
+96,2% na S13); backend `exames/` com 99%. Lint e build limpos.
+
+**Próximo passo**: rodar `/fechar-spec S14`. Esperado que a verificação independente confira os 10
+FRs de mensagem/formulário/filtro/moeda/papel na UI real (mesma lição da S12/S13: FR de tela se
+confere contando controles visíveis, não só chamadas HTTP) e os 4 FRs de validação de backend por
+API. Depois `/code-review` e PR (branch ainda sem push).
+
+## S13 — ✅ entregue e mergeada em `main` (PR #30, squash, 2026-10-01)
 
 Relatório final: `docs/specs/relatorios/S13-verificacao.md`. Histórico das rodadas:
 - **1ª rodada (❌)**: filtros e estado vazio fora da tela, mensagem de valor ≤ 0 ausente, T039 sem UI
@@ -103,6 +154,8 @@ das abas e formulários.
 `5434`) já estava rodando; `uvicorn`/`vite` foram iniciados e finalizados dentro desta sessão —
 nenhum processo de servidor ficou pendurado ao final.
 
+
+
 ## S12 (Clínicas + Veterinários no web) — mergeada em `main`
 
 PR [#28](https://github.com/NicolasNagel/vertere-project/pull/28) squash-mergeado em `main`
@@ -155,21 +208,20 @@ o mapa `componentePorRota`).
 
 ## Próximo passo real
 
-Revisar e mergear o PR da S13 (squash, fecha a #29). Próxima spec é decisão do usuário (Pacientes?
-Atendimentos? polimento das telas S12/S13?). Ponto de entrada: `/speckit-specify`, numeração `014`.
+`/speckit-tasks` da S14 na branch `spec/s14-polimento-telas-web`, depois `/speckit-implement`
+(consultar `dev-router` antes). Depois da S14, a próxima spec (Pacientes?
+Atendimentos? Laudos?) é decisão do usuário, não presumir. Numeração `015` (confirmar contra
+`docs/specs.md`).
 
-A próxima spec depois de S13 (Pacientes? Atendimentos? Laudos?) é decisão do usuário, não presumir
-(mesma regra aplicada antes de S12/S13). Ponto de entrada: `/speckit-specify`, numeração `014`
-(confirmar contra `docs/specs.md` antes).
+## `main` está com tudo mergeado até S13
 
-## `main` está com tudo mergeado até S12; S13 com PR aberto
-
-PRs #23 (harness), #26 (S11), #25 (S10) e #28 (S12) todos squash-mergeados em `main`, nesta ordem.
-Issues #20, #22, #24, #27 fecharam automaticamente. `docs/specs.md` reflete S1–S12 `entregue`, S13
-`em-desenvolvimento` na branch `spec/s13-exames-precificacao-web` (não mergeada ainda).
+PRs #23 (harness), #26 (S11), #25 (S10), #28 (S12) e #30 (S13) todos squash-mergeados em `main`,
+nesta ordem. Issues #20, #22, #24, #27 e #29 fecharam automaticamente. `docs/specs.md` reflete
+S1–S13 `entregue` e S14 `rascunho`.
 
 Branches remotas `chore/spec-kit-harness`, `spec/s10-importacao-dados-historicos`,
-`spec/s11-frontend-web` e `spec/s12-clinicas-veterinarios-web` continuam não deletadas (mesmo
+`spec/s11-frontend-web`, `spec/s12-clinicas-veterinarios-web` e
+`spec/s13-exames-precificacao-web` continuam não deletadas (mesmo
 padrão de merge, `--delete-branch=false`) — seguro deletar quando quiser, ninguém mais devia
 precisar delas.
 

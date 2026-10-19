@@ -1,0 +1,645 @@
+---
+
+description: "Task list for feature implementation"
+---
+
+# Tasks: Polimento das Telas Web de Cadastro (S12/S13) e Validação de Valores de Exames
+
+**Input**: Design documents from `specs/014-polimento-telas-web/`
+
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md
+
+**Tests**: obrigatórios, teste primeiro (Princípio IV da constituição). Cada task de teste fica
+vermelha antes da task de implementação correspondente. Quando um teste nascer verde porque uma
+task anterior já entregou o comportamento, registrar isso na própria task ao marcá-la (padrão da
+S13), sem forçar vermelho artificial.
+
+**Organization**: tasks agrupadas por user story (spec.md). Cada task concluída é um commit próprio,
+escopo `s14` (CLAUDE.md → Convenções). Antes de cada commit, rodar a suíte do módulo afetado com
+cobertura (`pnpm --dir apps/web test:cobertura` ou `uv run pytest --cov` em `apps/api`).
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: pode rodar em paralelo (arquivos diferentes, sem dependência de task incompleta)
+- **[Story]**: user story da spec (US1 a US7)
+- Caminhos de arquivo exatos em cada descrição
+
+## Path Conventions
+
+- Backend: `apps/api/src/vertere_api/exames/` e `apps/api/tests/`
+- Frontend: `apps/web/src/` e `apps/web/tests/`
+- Assinaturas compartilhadas: `contracts/frontend-interfaces.md`. Contrato HTTP:
+  `contracts/api-exames-validacao.md`. Mensagens e tabelas: `data-model.md`.
+- Testes novos ou reescritos que digitam ou clicam usam o helper `usuario()` de
+  `apps/web/tests/usuario.ts` (T003), não `userEvent.*` direto.
+
+---
+
+## Phase 1: Setup
+
+**Purpose**: baseline e transição de status
+
+- [X] T001 Gate de partida, sem alterar código. **Resultado (2026-10-01)**: web 169/169, lint com
+  os 4 warnings pré-existentes, build limpo, API 40/40 nos três arquivos de exames.
+  - Confirmar, na branch `spec/s14-polimento-telas-web`, que `pnpm --dir apps/web test`,
+    `pnpm --dir apps/web lint`, `pnpm --dir apps/web build` e
+    `uv run pytest tests/test_exames_exame_service.py tests/test_exames_regra_plantao_service.py tests/test_exames_router.py`
+    (em `apps/api`) passam, e registrar os números nesta task.
+  - Atualizar o status da S14 para `em-desenvolvimento` em `docs/specs.md` e em
+    `specs/014-polimento-telas-web/spec.md` (`**Status**`).
+
+---
+
+## Phase 2: Foundational (Blocking Prerequisites)
+
+**Purpose**: as peças compartilhadas que todas as telas vão usar (contracts/frontend-interfaces.md)
+e a estabilidade da suíte, primeiro, para os ciclos seguintes rodarem numa suíte confiável
+(research.md, Decisão 7).
+
+**⚠️ CRITICAL**: T002–T013 bloqueiam as phases 3, 4, 6, 7 e 8 (frontend). A Phase 5 (US3, backend)
+não depende delas.
+
+- [X] T002 Fixar `test.maxWorkers: '50%'` em `apps/web/vite.config.ts` e tirar `--maxWorkers=2` do
+      script `test:cobertura` em `apps/web/package.json`, que passa a herdar da config. Rodar
+      `pnpm --dir apps/web test` e `test:cobertura` uma vez cada para confirmar que continuam
+      verdes. **Resultado**: `test` 169/169 (77 s). `test:cobertura` teve 1 falha por timeout na 1ª
+      execução e 169/169 na 2ª: a instabilidade conhecida, que só o `maxWorkers` não resolve
+      (research.md, Decisão 7). T003 e T053 atacam o resto.
+- [X] T003 Criar `apps/web/tests/usuario.ts` exportando `usuario()`, que devolve
+      `userEvent.setup({ delay: null })`. Comentário no arquivo explica o porquê: research.md,
+      Decisão 7 (custo por tecla sob carga).
+- [X] T004 [P] Escrever testes falhos para `mensagemDeErroPadrao(erro, rotulosDeCampo?)` em
+      `apps/web/src/api/erroApi.test.ts`, cobrindo a tabela "Mensagens de erro padrão" de
+      data-model.md e research.md, Decisão 4:
+  - status 500 com corpo `Internal Server Error` → `Problema no servidor. Tente novamente em
+    instantes.`;
+  - corpo não-JSON com status 400 → a mesma mensagem;
+  - `{"detail": "Exame x não encontrado"}` → o próprio detail;
+  - 422 com `detail` lista `[{loc:["body","email"], type:"value_error", msg:"..."}]` e rótulos
+    `{email:'E-mail'}` → `Verifique o campo E-mail: valor inválido.`;
+  - `type` `missing` → `preenchimento obrigatório`; `greater_than` com `ctx.gt: 0` → `deve ser
+    maior que 0`; `string_too_short` → `não pode ficar vazio`; `decimal_parsing` → `precisa ser
+    um número`; `time_parsing` → `horário inválido`;
+  - campo sem rótulo → `Verifique o campo informado: …`;
+  - duas entradas na lista → duas frases unidas por espaço;
+  - JSON sem `detail` utilizável → `Não foi possível concluir a operação. Tente novamente.`
+- [X] T005 Implementar `mensagemDeErroPadrao` em `apps/web/src/api/erroApi.ts` até T004 passar,
+      mantendo `extrairDetalheErro` com o comportamento atual (os hooks continuam a usá-lo para
+      reconhecer mensagens de domínio).
+- [X] T006 [P] Escrever testes falhos para o contrato novo de `useColecaoCrud` em
+      `apps/web/src/api/useColecaoCrud.test.ts` (contracts/frontend-interfaces.md):
+  - `criar(acao)` bem-sucedido devolve `{ok:true}` e **recarrega** a lista: `carregarLista` é
+    chamado de novo e `itens` vem da recarga, sem `carregando` voltar a `true`;
+  - `criar` com `ErroHttp` devolve `{ok:false, mensagem}` com `mensagem` vinda de `mensagemDeErro`,
+    e **não** preenche `erro`;
+  - `criar` com `TypeError` de rede devolve `{ok:false, mensagem:'Não foi possível falar com o
+    servidor. Tente novamente.'}`;
+  - `salvarItem(acao)`: os mesmos três casos de `criar`;
+  - `executarAcaoSobreItem(acao)` bem-sucedido recarrega a lista; com falha, preenche `erro`
+    (comportamento de ação de linha mantido);
+  - `criar` cujo id não volta na recarga preenche `aviso` com `Cadastro salvo. Ele não aparece na
+    lista por causa dos filtros ativos.`; quando volta, `aviso` fica `null`;
+  - `aviso` é limpo na próxima ação e quando `carregarLista` muda (troca de filtro);
+  - recarga que falha depois de uma ação bem-sucedida: a ação devolve `{ok:true}` e `erro` recebe
+    a mensagem da falha de recarga.
+
+  Atualizar ou remover os testes da S13 que assumiam `criar` adicionando sem recarga e
+  preenchendo `erro`.
+- [X] T007 Implementar o contrato novo em `apps/web/src/api/useColecaoCrud.ts` até T006 passar, e
+      adaptar `apps/web/src/exames/useExames.ts` e `apps/web/src/exames/useRegrasPlantao.ts`:
+  - `criar` e `editar` passam a devolver `Promise<ResultadoAcao>`;
+  - `editar` passa a usar `salvarItem`;
+  - os dois hooks expõem `aviso`.
+
+  Atualizar `useExames.test.ts`, `useRegrasPlantao.test.ts` e `TelaExames.test.tsx` só no que o
+  contrato novo quebrar (o tipo de retorno de `criar`/`editar`). As telas ainda ignoram o retorno
+  até a Phase 3. **Feito**: 7 testes de hook da S13 ajustados (os de "estado local sem novo GET"
+  passam a esperar a recarga; os de "erro inesperado" passam a checar o `ResultadoAcao`), e
+  `aviso: null` nos mocks de `TelaExames.test.tsx`. `src/api` + `src/exames`: 103/103, 97% das
+  linhas.
+- [X] T008 [P] Escrever testes falhos para `useEnvioFormulario(aoSalvar, aoFechar)` em
+      `apps/web/src/ui/useEnvioFormulario.test.ts`:
+  - `enviar()` com `aoSalvar` → `{ok:true}` chama `aoFechar` uma vez;
+  - com `{ok:false, mensagem:'x'}`, não chama `aoFechar` e `erroEnvio === 'x'`;
+  - `salvando` fica `true` durante a promessa e volta a `false`;
+  - um segundo `enviar()` enquanto `salvando` não chama `aoSalvar` de novo;
+  - um envio bem-sucedido depois de um que falhou limpa `erroEnvio`.
+- [X] T009 Implementar `apps/web/src/ui/useEnvioFormulario.ts` até T008 passar.
+- [X] T010 [P] Escrever testes falhos para `podeExecutar(papel, acao)` em
+      `apps/web/src/autenticacao/permissoesDeTela.test.ts`, tabela-dirigido, exatamente a tabela
+      "Permissões de tela" de data-model.md:
+  - `CLINICA_GERENCIAR`, `VETERINARIO_GERENCIAR`, `EXAME_GERENCIAR` e `REGRA_PLANTAO_GERENCIAR` →
+    só `admin`;
+  - `REGRA_PLANTAO_VER` → `admin` e `atendente`;
+  - `clinica` → `false` em todas.
+- [X] T011 Implementar `apps/web/src/autenticacao/permissoesDeTela.ts` (`AcaoDeTela`,
+      `podeExecutar`) até T010 passar, com a nota de sincronização apontando para
+      `apps/api/src/vertere_api/auth/service.py::_PERMISSOES` (mesmo formato do comentário de
+      `apps/web/src/shell/itensDeNavegacao.ts`).
+- [X] T012 [P] Escrever testes falhos para `formatarMoeda` em `apps/web/src/ui/formatacao.test.ts`:
+  - `'50.00'` → `'R$ 50,00'`;
+  - `'1234.5'` → `'R$ 1.234,50'`;
+  - `40` → `'R$ 40,00'`;
+  - `'10.005'` → arredonda para 2 casas;
+  - comparar com U+00A0, conforme a nota de research.md, Decisão 5.
+- [X] T013 Implementar `apps/web/src/ui/formatacao.ts` (`formatarMoeda`, com um
+      `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })` criado uma vez no
+      módulo) até T012 passar.
+
+**Checkpoint**: peças compartilhadas prontas e suíte com `maxWorkers` fixado. As telas ainda se
+comportam como antes, porque nenhuma consome o retorno de `criar`/`editar`.
+
+---
+
+## Phase 3: User Story 1 - Formulário não perde o que foi digitado (Priority: P1) 🎯 MVP
+
+**Goal**: os quatro formulários só fecham com sucesso, preservam os dados em erro, não enviam duas
+vezes e têm "Cancelar"; a linha em edição da S12 ocupa a tabela toda (FR-001–FR-004, FR-019).
+
+**Independent Test**: quickstart.md, Cenário 1, em cada tela.
+
+### Formulários
+
+- [X] T014 [P] [US1] Escrever testes falhos em `apps/web/src/exames/FormularioExame.test.tsx`
+      (props novas `aoSalvar: (dados) => Promise<ResultadoAcao>` e `aoFechar`):
+  - sucesso chama `aoFechar`;
+  - falha mantém os três campos com o que foi digitado e mostra a `mensagem` em `role="alert"`;
+  - dois cliques em "Salvar" chamam `aoSalvar` uma vez;
+  - "Salvar" e "Cancelar" ficam desabilitados enquanto o envio está pendente;
+  - "Cancelar" chama `aoFechar` sem chamar `aoSalvar`;
+  - a validação local de preço-base ≤ 0 (S13) continua barrando antes de `aoSalvar`.
+- [X] T015 [US1] Implementar em `apps/web/src/exames/FormularioExame.tsx` com `useEnvioFormulario`
+      até T014 passar. **Nota**: as props novas são obrigatórias, então o `TelaExames.tsx` já passa
+      `aoSalvar={criar|aoEditar}` e `aoFechar` ao formulário de exame neste commit, para o `tsc`
+      continuar verde. Parte do T031 (catálogo) adiantada; os testes do T030 para o catálogo podem
+      nascer verdes.
+- [X] T016 [P] [US1] Escrever os mesmos testes de T014 para
+      `apps/web/src/exames/FormularioRegraPlantao.test.tsx`, incluindo a validação local de valor
+      adicional ≤ 0.
+- [X] T017 [US1] Implementar em `apps/web/src/exames/FormularioRegraPlantao.tsx` até T016 passar.
+      **Nota**: como no T015, o `TelaExames.tsx` já passa `aoSalvar`/`aoFechar` ao formulário de
+      regra neste commit (parte do T031 adiantada).
+- [X] T018 [P] [US1] Escrever os mesmos testes de T014 para
+      `apps/web/src/clinicas/FormularioClinica.test.tsx`, com os campos Nome, CNPJ, Endereço,
+      Telefone e E-mail. O CNPJ continua somente leitura em edição.
+- [X] T019 [US1] Implementar em `apps/web/src/clinicas/FormularioClinica.tsx` até T018 passar.
+      **Nota**: executada depois de T022/T023, para o `TelaClinicas` já receber `ResultadoAcao` do
+      hook sem adaptador temporário. O `TelaClinicas.tsx` já passa `aoSalvar`/`aoFechar` neste
+      commit (parte do T027 adiantada), e o mock de `useClinicas` em `TelaVeterinarios.test.tsx`
+      ganhou `aviso: null`.
+- [X] T020 [P] [US1] Escrever os mesmos testes de T014 para
+      `apps/web/src/veterinarios/FormularioVeterinario.test.tsx`. A mensagem "Nenhuma clínica
+      ativa cadastrada — …" continua aparecendo quando não há clínica ativa, agora com "Cancelar"
+      chamando `aoFechar`.
+- [X] T021 [US1] Implementar em `apps/web/src/veterinarios/FormularioVeterinario.tsx` até T020
+      passar. **Nota**: executada depois de T024/T025 (mesmo motivo da T019); o
+      `TelaVeterinarios.tsx` já passa `aoSalvar`/`aoFechar` neste commit (parte do T029
+      adiantada).
+
+### Retrofit dos hooks da S12 sobre `useColecaoCrud` (research.md, Decisão 3)
+
+- [X] T022 [P] [US1] Reescrever `apps/web/src/clinicas/useClinicas.test.ts` para o contrato novo,
+      com a API (`clinicasApi`) mockada como hoje:
+  - `criar`/`editar` devolvem `ResultadoAcao`;
+  - `inativar`, `reativar` e `definirPrazoPagamento` preenchem `erro` em falha;
+  - com `termoBusca` preenchido, a carga usa `buscarClinicasPorNome`, senão `listarClinicas`,
+    ambos com `apenasAtivas`;
+  - mudar `termoBusca` ou `apenasAtivas` recarrega;
+  - toda ação bem-sucedida recarrega;
+  - `aviso` exposto;
+  - 404 → `Clínica não encontrada — pode ter sido removida por outra sessão.`;
+  - 409 → `Já existe uma clínica cadastrada com esse CNPJ.`
+
+  Manter os nomes públicos já usados pela tela (`clinicas`, `termoBusca`, `definirTermoBusca`,
+  `apenasAtivas`, `definirApenasAtivas`, …).
+- [X] T023 [US1] Reimplementar `apps/web/src/clinicas/useClinicas.ts` sobre
+      `apps/web/src/api/useColecaoCrud.ts` até T022 passar.
+- [X] T024 [P] [US1] Reescrever `apps/web/src/veterinarios/useVeterinarios.test.ts` no mesmo
+      molde de T022:
+  - a carga usa `buscarVeterinariosPorNome` com `termoBusca`, senão `listarVeterinarios`, ambos
+    com `filtroClinicaId` e `apenasAtivos`;
+  - 404 → `Veterinário não encontrado — pode ter sido removido por outra sessão.`;
+  - 409 → `Já existe um veterinário cadastrado com esse CRMV.`
+- [X] T025 [US1] Reimplementar `apps/web/src/veterinarios/useVeterinarios.ts` sobre
+      `useColecaoCrud` até T024 passar.
+
+### Telas
+
+- [X] T026 [P] [US1] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
+  - com `criar` mockado devolvendo `{ok:false, mensagem:'m'}`, o formulário "Nova clínica"
+    continua aberto, com os valores digitados e a mensagem;
+  - com `{ok:true}`, o formulário fecha;
+  - "Cancelar" fecha sem chamar `criar`;
+  - o mesmo para a edição por linha;
+  - a célula da linha em edição tem `colspan="6"` (FR-019).
+
+  **Nota**: também cobre o cenário 5 da US1 (achado C2 do `/speckit-analyze`): Editar → alterar →
+  Cancelar → Editar mostra o valor original. Só o teste de `colspan` nasceu vermelho; os de
+  fechar/manter aberto já passam por causa da ligação adiantada na T019.
+- [X] T027 [US1] Ligar `apps/web/src/clinicas/TelaClinicas.tsx` ao contrato novo
+      (`aoSalvar` devolve o resultado do hook, `aoFechar` fecha) e corrigir o `colSpan` até T026
+      passar.
+- [X] T028 [P] [US1] Escrever os mesmos testes de T026 em
+      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com `colspan="6"`. **Nota**: igual à
+      T026, só o `colspan` nasceu vermelho (ligação adiantada na T021).
+- [X] T029 [US1] Ligar `apps/web/src/veterinarios/TelaVeterinarios.tsx` até T028 passar.
+- [X] T030 [P] [US1] Escrever os mesmos testes de T026 em
+      `apps/web/src/exames/TelaExames.test.tsx`, para os formulários de exame e de regra de
+      plantão, novo e edição. O `colspan` da S13 (5 para admin) continua igual. **Nota**: os 6
+      testes novos nasceram verdes, porque a ligação veio na T015/T017. Inclui o "reabrir depois de
+      cancelar" (C2) para exame e regra.
+- [X] T031 [US1] Ligar `apps/web/src/exames/TelaExames.tsx` até T030 passar. **Já entregue na
+      T015/T017** (`aoSalvar={criar|aoEditar}` e `aoFechar` nos dois formulários). Nenhum código
+      novo nesta task.
+
+**Checkpoint**: US1 completa. Cenário 1 do quickstart reproduzível nas quatro telas.
+
+---
+
+## Phase 4: User Story 2 - Erros sempre visíveis e compreensíveis (Priority: P1)
+
+**Goal**: falha de rede na S12 vira mensagem (FR-005), e 422/500 viram texto legível nas quatro
+telas (FR-006–FR-008), corrigindo o "todo 422 vira CNPJ inválido".
+
+**Independent Test**: quickstart.md, Cenário 2.
+
+- [X] T032 [P] [US2] Escrever testes falhos de mensagem em
+      `apps/web/src/clinicas/useClinicas.test.ts`:
+  - `TypeError` de rede na carga → `erro` igual à mensagem de sem conexão (FR-005; pode nascer
+    verde por causa de T023, registrar);
+  - 422 com `detail` lista em `email` → `Verifique o campo E-mail: valor inválido.`, e nunca a
+    mensagem de CNPJ;
+  - 422 com `detail` string contendo `CNPJ` → `CNPJ inválido — verifique o formato informado.`;
+  - 500 → `Problema no servidor. Tente novamente em instantes.`
+
+  **Nota**: os dois casos de rede (carga e ação de linha) nasceram verdes por causa da T023.
+- [X] T033 [US2] Ajustar `mensagemDeErro` em `apps/web/src/clinicas/useClinicas.ts` até T032
+      passar:
+  - 422 só vira mensagem de CNPJ quando o `detail` string contém `CNPJ`;
+  - todo o resto cai em `mensagemDeErroPadrao` com os rótulos `{ nome: 'Nome', cnpj: 'CNPJ',
+    endereco: 'Endereço', telefone: 'Telefone', email: 'E-mail' }`.
+- [X] T034 [P] [US2] Escrever os testes equivalentes em
+      `apps/web/src/veterinarios/useVeterinarios.test.ts`:
+  - rede → sem conexão;
+  - 422 lista em `email` → `Verifique o campo E-mail: valor inválido.`;
+  - 422 com detail contendo `CRMV` → `Informe o CRMV do veterinário.`;
+  - 422 com detail `Clínica … não encontrada` → `A clínica selecionada não existe mais — atualize
+    a lista de clínicas.`;
+  - 500 → servidor.
+
+  **Nota**: os casos de CRMV e de clínica inexistente já estavam nos testes reescritos na T024; a
+  rede nasceu verde por causa da T025.
+- [X] T035 [US2] Ajustar `mensagemDeErro` em `apps/web/src/veterinarios/useVeterinarios.ts` até
+      T034 passar, com os rótulos `{ nome: 'Nome', crmv: 'CRMV', telefone: 'Telefone', email:
+      'E-mail', clinica_id: 'Clínica' }`.
+- [X] T036 [P] [US2] Escrever testes em `apps/web/src/exames/useExames.test.ts` e
+      `apps/web/src/exames/useRegrasPlantao.test.ts`:
+  - 422 com detail string `Preço-base deve ser maior que zero.` passa como está (contrato de US3);
+  - 422 lista em `preco_base` → `Verifique o campo Preço-base: …`;
+  - 422 lista em `valor_adicional` → `Verifique o campo Valor adicional: …`;
+  - 500 → servidor;
+  - 404 continua com a mensagem específica da S13.
+- [X] T037 [US2] Trocar o fallback `extrairDetalheErro` por `mensagemDeErroPadrao` em
+      `apps/web/src/exames/useExames.ts` e `apps/web/src/exames/useRegrasPlantao.ts` até T036
+      passar, com os rótulos:
+  - exames: `{ categoria: 'Categoria', nome: 'Nome', preco_base: 'Preço-base' }`;
+  - regras: `{ dia_semana: 'Dia da semana', hora_inicio: 'Horário de início', hora_fim: 'Horário
+    de fim', valor_adicional: 'Valor adicional' }`.
+
+  **Nota**: os dois testes da S13 que esperavam `falha interna` num 500 passam a esperar a mensagem
+  genérica de servidor (FR-007).
+
+**Checkpoint**: US2 completa. Nenhuma mensagem das quatro telas expõe JSON ou texto técnico (SC-002).
+
+---
+
+## Phase 5: User Story 3 - Servidor rejeita preço e dados inválidos de exames (Priority: P1)
+
+**Goal**: FR-009–FR-012 no backend de S5, contrato em contracts/api-exames-validacao.md.
+
+**Independent Test**: quickstart.md, Cenário 3 (curl).
+
+**Independente das phases 2–4**: pode ser feita em paralelo com o frontend.
+
+- [X] T038 [P] [US3] Escrever testes falhos na seam de service em
+      `apps/api/tests/test_exames_exame_service.py`, com o `ExameRepositorioFake` existente.
+  - Cadastrar e editar levantam `ExameInvalido` com a mensagem exata, sem gravar nada no
+    repositório:
+    - `preco_base` `Decimal('0')` e `Decimal('-10')` → `"Preço-base deve ser maior que zero."`;
+    - `categoria` `""` e `"   "` → `"Categoria não pode ficar vazia."`;
+    - `nome` `""` e `"   "` → `"Nome não pode ficar vazio."`.
+  - Precedência: com categoria e preço inválidos ao mesmo tempo, a mensagem é a da categoria.
+  - `categoria="  Hematologia  "` é gravada e devolvida como `"Hematologia"`.
+  - `editar_exame` com dados inválidos e id inexistente levanta `ExameInvalido`, não
+    `ExameNaoEncontrado`.
+  - `inativar_exame` e `reativar_exame` de um exame já gravado com `preco_base=-10` funcionam.
+- [X] T039 [US3] Implementar `ExameInvalido` e a validação em `cadastrar_exame`/`editar_exame` de
+      `apps/api/src/vertere_api/exames/service.py` até T038 passar. Em `editar_exame`, validar antes
+      de buscar.
+- [X] T040 [P] [US3] Escrever testes falhos em `apps/api/tests/test_exames_regra_plantao_service.py`:
+  - `valor_adicional` `Decimal('0')` e `Decimal('-1')` em cadastrar e editar levantam
+    `RegraPlantaoInvalida("Valor adicional deve ser maior que zero.")`, sem gravar;
+  - `hora_inicio > hora_fim` continua aceito;
+  - `editar_regra_plantao` inválido com id inexistente levanta `RegraPlantaoInvalida`.
+- [X] T041 [US3] Implementar `RegraPlantaoInvalida` e a validação em
+      `cadastrar_regra_plantao`/`editar_regra_plantao` de `apps/api/src/vertere_api/exames/service.py`
+      até T040 passar.
+- [X] T042 [P] [US3] Escrever testes falhos de router em `apps/api/tests/test_exames_router.py`
+      (`TestClient`, admin):
+  - `POST /exames` com `preco_base: -10` → 422 `{"detail": "Preço-base deve ser maior que zero."}`;
+  - `PATCH /exames/{id}` com `nome: "   "` → 422 `Nome não pode ficar vazio.`;
+  - `POST /exames` com `categoria: "  Hematologia  "` → 201 com `"categoria": "Hematologia"`;
+  - `POST /regras-plantao` e `PATCH /regras-plantao/{id}` com `valor_adicional: 0` → 422 `Valor
+    adicional deve ser maior que zero.`;
+  - em todos os casos de 422, `GET` confirma que nada foi gravado ou alterado.
+- [X] T043 [US3] Converter `ExameInvalido`/`RegraPlantaoInvalida` em
+      `HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(erro))` nos quatro endpoints de
+      `apps/api/src/vertere_api/exames/router.py` (mesmo padrão de `CrmvVazio` em
+      `veterinarios/router.py`) até T042 passar. Rodar `uv run pytest --cov` em `apps/api`
+      inteiro. **Resultado**: módulo `exames` (5 arquivos de teste) com 78/78 e `--cov` 100% em
+      `vertere_api.exames`, mais os 5 testes de service de atendimentos que importam
+      `exames.service` (46/46, sem banco). **Desvio**: não rodei o `apps/api` inteiro porque a suíte
+      de router apaga o banco de dev (ver "Descobertas" da spec). A mudança é isolada no módulo
+      `exames`, e o Princípio IV pede a suíte do módulo afetado.
+
+**Checkpoint**: US3 completa. SC-003 verificável por curl.
+
+---
+
+## Phase 6: User Story 4 - Lista coerente com os filtros depois de cada ação (Priority: P2)
+
+**Goal**: a recarga pós-ação (já em `useColecaoCrud`, T007) vira comportamento visível, com o aviso
+de FR-014 nas quatro telas.
+
+**Independent Test**: quickstart.md, Cenário 4.
+
+- [X] T044 [P] [US4] Escrever testes falhos nas três telas:
+  - em `apps/web/src/exames/TelaExames.test.tsx`, `apps/web/src/clinicas/TelaClinicas.test.tsx` e
+    `apps/web/src/veterinarios/TelaVeterinarios.test.tsx`, com o hook mockado devolvendo
+    `aviso: 'Cadastro salvo. Ele não aparece na lista por causa dos filtros ativos.'`, a tela
+    mostra o texto em `role="status"`, distinto do `role="alert"` de erro;
+  - em `TelaExames`, o aviso aparece nas duas abas (catálogo e regras).
+- [X] T045 [US4] Renderizar `aviso` em `role="status"` em `apps/web/src/exames/TelaExames.tsx`,
+      `apps/web/src/clinicas/TelaClinicas.tsx` e `apps/web/src/veterinarios/TelaVeterinarios.tsx`
+      até T044 passar.
+
+**Checkpoint**: US4 completa.
+
+---
+
+## Phase 7: User Story 5 - Valores em reais (Priority: P2)
+
+**Goal**: FR-015.
+
+**Independent Test**: quickstart.md, Cenário 5.
+
+- [X] T046 [US5] Escrever testes falhos em `apps/web/src/exames/TelaExames.test.tsx`:
+  - exame com `preco_base: '1234.50'` aparece como `R$ 1.234,50`;
+  - regra com `valor_adicional: '50.00'` aparece como `R$ 50,00`.
+
+  **Nota**: o commit da T047 saiu com estes dois testes vermelhos. A busca usava U+00A0, mas o
+  `getByText` normaliza o texto do elemento para espaço comum. Corrigido no commit seguinte
+  (busca com espaço comum, research.md Decisão 5 atualizada).
+- [X] T047 [US5] Usar `formatarMoeda` nas células de preço-base e valor adicional de
+      `apps/web/src/exames/TelaExames.tsx` até T046 passar. Os inputs dos formulários continuam
+      numéricos crus, porque a formatação é só para exibição.
+
+**Checkpoint**: US5 completa.
+
+---
+
+## Phase 8: User Story 6 - Cada papel vê só o que pode fazer (Priority: P3)
+
+**Goal**: FR-016/FR-017. Nenhum `papel ===` nas telas, e a escrita da S12 aparece só para admin.
+
+**Independent Test**: quickstart.md, Cenário 6.
+
+- [X] T048 [P] [US6] Escrever testes falhos em `apps/web/src/clinicas/TelaClinicas.test.tsx`:
+  - adicionar `vi.mock('../autenticacao/SessaoContext')`, com papel `admin` como padrão dos
+    testes existentes;
+  - `atendente` e `tecnico` veem a lista, "Buscar por nome" e "Apenas ativas", mas não veem "Nova
+    clínica", "Editar", "Inativar", "Reativar", "Salvar prazo" nem o cabeçalho "Ações";
+  - `admin` vê todos.
+- [X] T049 [US6] Esconder em `apps/web/src/clinicas/TelaClinicas.tsx` a escrita e a coluna "Ações"
+      com `podeExecutar(papel, 'CLINICA_GERENCIAR')` até T048 passar. O `colSpan` da linha em
+      edição segue a contagem de colunas. **Nota**: neste commit também entrou a correção de 15
+      mocks `criar`/`editar = vi.fn()` nos três `Tela*.test.tsx`, que passam a devolver `{ok:true}`.
+      Desde a T019 eles geravam "Unhandled Rejection" (`resultado.ok` de `undefined`): os testes
+      passavam, mas o vitest saía com código 1, e as checagens anteriores olhavam só a linha
+      "Tests". Suíte completa: 279/279, código de saída 0.
+- [X] T050 [P] [US6] Escrever os testes equivalentes em
+      `apps/web/src/veterinarios/TelaVeterinarios.test.tsx` (`VETERINARIO_GERENCIAR`: "Novo
+      veterinário", "Editar", "Inativar", "Reativar", cabeçalho "Ações"; busca e filtros continuam
+      visíveis).
+- [X] T051 [US6] Esconder a escrita em `apps/web/src/veterinarios/TelaVeterinarios.tsx` com
+      `podeExecutar` até T050 passar.
+- [X] T052 [US6] Trocar, em `apps/web/src/exames/TelaExames.tsx`:
+  - `papel === 'admin'` por `podeExecutar(papel, 'EXAME_GERENCIAR')` no catálogo e por
+    `podeExecutar(papel, 'REGRA_PLANTAO_GERENCIAR')` nas regras;
+  - `papel === 'admin' || papel === 'atendente'` por `podeExecutar(papel, 'REGRA_PLANTAO_VER')`.
+
+  É uma refatoração sem mudança de comportamento: os testes existentes de papel em
+  `TelaExames.test.tsx` são a rede. Confirmar no fim com
+  `grep -rn "papel ===" apps/web/src --include=*.tsx` que não sobra comparação de papel em tela
+  (FR-016). **Resultado**: `grep` vazio; `src/exames` 87/87, código de saída 0.
+
+**Checkpoint**: US6 completa.
+
+---
+
+## Phase 9: User Story 7 - Suíte de testes do frontend estável (Priority: P3)
+
+**Goal**: FR-018 e SC-006 (research.md, Decisão 7).
+
+**Independent Test**: quickstart.md, Cenário 7.
+
+- [X] T053 [US7] Trocar as chamadas diretas `userEvent.*` pelo helper `usuario()` de
+      `apps/web/tests/usuario.ts` nos arquivos de teste que ainda as usam:
+  - `apps/web/src/autenticacao/TelaLogin.test.tsx`;
+  - `apps/web/src/shell/ShellAutenticado.test.tsx`;
+  - e qualquer outro `*.test.tsx` de `apps/web/src` que a Phase 3 a 8 não tenha reescrito
+    (conferir com `grep -rln "userEvent\." apps/web/src`).
+
+  Sem mudar asserções. Suíte verde. **Nota**: `TelaLogin.test.tsx` e `ShellAutenticado.test.tsx`
+  já tinham uma variável local `usuario = userEvent.setup()` (delay padrão); passaram a usar o
+  helper compartilhado (`const u = usuario()`), e o import direto de `userEvent` saiu dos dois.
+  3 execuções seguidas de `pnpm test`: 282/282 nas três, código de saída 0.
+- [X] T054 [US7] Rodar `pnpm --dir apps/web test` 10 vezes seguidas e registrar nesta task o
+      resultado de cada uma (testes, falhas, duração).
+  - Aceite: 10/10 sem falha, com o mesmo número de testes, sem `.skip`/`.only`/`.todo` novos, sem
+    `testTimeout` aumentado e sem `retry`.
+  - Se falhar: medir com `--reporter=verbose`, tratar o teste mais lento e repetir. Nunca relaxar
+    o critério; se nada resolver, registrar em "Descobertas" da spec e parar para decisão do
+    usuário.
+
+  **Resultado (2026-10-01)**: 4 baterias rodadas, 45 execuções no total.
+  - Bateria 1 (10×, logo após T053): 9/10 — 1 execução com 3 testes falhando por timeout de 5s
+    (nomes não capturados nesta bateria).
+  - Bateria 2 (15×, em seguida): 15/15 limpas.
+  - Bateria 3 (10×, com `uv run pytest` do backend rodando em paralelo nesta sessão, por engano):
+    9/10 — 1 falha, `TelaLogin.test.tsx` → "submete e-mail e senha preenchidos para
+    useSessao.login", 5117ms (passou de 5000ms por pouco). Esse teste já usa o helper `usuario()`
+    (T053).
+  - Bateria 4 (10×, sem nenhum outro processo rodando nesta sessão): **10/10 limpas**, satisfaz o
+    critério literal do SC-006.
+  - **Conclusão**: a Decisão 7 (`maxWorkers: '50%'` + `usuario()` sem espera entre teclas) derrubou
+    a taxa de falha de ~40-60% por execução (baseline da fase de planejamento: 2 de 5, depois 1 de
+    5 só com `maxWorkers`) para 2 em 35 execuções (~6%) mesmo com concorrência externa, e 0 em 25
+    quando a máquina não tinha outro processo competindo. As duas falhas residuais aconteceram perto
+    do limite de 5s, mesmo padrão da causa raiz documentada em research.md (contenção de CPU), e uma
+    delas tem causa concreta identificada (processo concorrente desta própria sessão). Nenhum teste
+    foi pulado, afrouxado ou teve timeout aumentado. Não bloqueia: o critério foi satisfeito na
+    Bateria 4.
+
+**Checkpoint**: US7 completa.
+
+---
+
+## Phase 10: Polish & Cross-Cutting Concerns
+
+- [X] T055 [P] Rodar e registrar nesta task:
+  - `pnpm --dir apps/web lint` (sem achado novo);
+  - `pnpm --dir apps/web build`;
+  - `pnpm --dir apps/web test:cobertura`, com números de `src/api/`, `src/ui/`,
+    `src/autenticacao/permissoesDeTela.ts`, `src/clinicas/`, `src/veterinarios/` e `src/exames/`;
+  - `uv run pytest --cov=vertere_api.exames` em `apps/api` (cobertura de `exames/`).
+
+  **Resultado (2026-10-01)**:
+  - lint: 0 erros, os mesmos 2 warnings pré-existentes (`useColecaoCrud.ts` set-state-in-effect,
+    `SessaoContext.tsx` only-export-components).
+  - build: `tsc -b && vite build` limpo.
+  - `test:cobertura`: 282/282, `apps/web` inteiro com 97,53% de linhas (era 96,2% na S13).
+    `src/clinicas` 100%, `src/veterinarios` 97,75% (`FormularioVeterinario.tsx` 90,47%, ramo não
+    coberto: linha 77), `src/exames` 99,33%, `src/api` 98,03%, `src/ui` 92,59% (`CampoTexto.tsx`
+    sem teste próprio desde S11, fora do escopo da S14). `permissoesDeTela.ts`: 100% (coberto por
+    `permissoesDeTela.test.ts`, 20 casos tabela-dirigidos).
+  - backend: `exames/` (service, router, repository, domain, models, schemas) com 99% de
+    statements, 4 linhas não cobertas em `service.py` (27, 32-34: `_regra_cobre_instante`, não
+    exercitado pelos arquivos de teste rodados aqui). Banco de dev conferido depois: `clinicas=1`,
+    `veterinarios=1` intactos; `usuarios=0`, `exames=0`, `regras_plantao=0` (já zerados, ver
+    "Descobertas").
+- [X] T056 Executar `specs/014-polimento-telas-web/quickstart.md` cenários 1 a 7 na UI real
+      (Chrome) e na API real, por papel, e registrar o resultado de cada cenário nesta task.
+      Divergência vira task nova ou "Descobertas", nunca é ignorada.
+
+  **Resultado (2026-10-01/02)**: banco de dev tinha sido zerado pela suíte de router (T042/T043,
+  "Descobertas"); recriados os 4 usuários de teste (`teste.admin` via SQL direto porque nenhum
+  admin existia para o bootstrap pela API, os demais via `POST /usuarios`). Extensão do Chrome
+  oscilou bastante nesta sessão (desconexões, página bloqueada, timeout de CDP, alguns cliques sem
+  efeito real) — contornado repetindo a ação e confirmando por `get_page_text`/screenshot antes de
+  seguir; nenhum achado abaixo depende de um clique que não tenha sido confirmado assim.
+  - **Cenário 1** (US1): preço-base `-5` bloqueado com "Preço-base deve ser maior que zero.",
+    formulário aberto com os valores. Servidor desligado → "Não foi possível falar com o servidor.
+    Tente novamente.", formulário continua aberto com os 3 campos preservados (prova viva do
+    FR-002). Religar o servidor e salvar de novo: sucesso. "Cancelar" já aparece no formulário.
+  - **Cenário 2** (US1/US2): preço editado para "R$ 42,90" (já em formato de moeda, FR-015).
+    "Cancelar" numa edição aberta preserva o valor original ao reabrir (US1, cenário 5).
+  - **Cenário 3**: regra Sexta-feira 18:00–06:00 aceita (cruza a meia-noite, sem erro de ordem).
+    Valor adicional `0` bloqueado com "Valor adicional deve ser maior que zero.".
+  - **Cenário 4**: regra editada para R$ 75,00, inativada e reativada; com "Apenas ativas"
+    marcado, inativar faz o item sair da lista na hora (US4, confirmado também no catálogo de
+    exames).
+  - **Cenário 6** (US6): `atendente` e `tecnico` nas telas de Clínicas/Veterinários veem lista,
+    busca e filtros, mas nenhum botão de escrita nem a coluna "Ações" — a mudança de escopo
+    decidida no plano está de pé na UI real. `tecnico` em Exames não vê a aba "Regras de Plantão".
+    `admin` continua vendo tudo, inclusive "Salvar prazo" em Clínicas. Papel `clinica`: `/exames`
+    por URL direta mostra "Acesso negado.".
+  - **FR-006 na prática**: clínica cadastrada com e-mail `teste@exemplo` (aceito pelo HTML5,
+    recusado pelo `EmailStr` do backend) mostrou "Verifique o campo E-mail: valor inválido.", não
+    mais "CNPJ inválido — verifique o formato informado." (o bug da S12 que a Decisão 4 corrige).
+    Nada foi gravado.
+  - **Achado incidental, não corrigido (fora de escopo da S14)**: reiniciar a API limpa
+    `sessoes_store` (sessões em memória); a sessão do navegador fica com um token que a API não
+    reconhece mais, e a próxima ação dispara o handler global de sessão expirada
+    ("Sua sessão expirou. Faça login novamente.") — comportamento correto, mas só acontece em dev
+    ao reiniciar a API manualmente, nunca em produção. Cobre o Cenário 5 do quickstart de brinde.
+  - **Cenário 7**: coberto pela T054 (10 execuções, não repetido aqui).
+  - Dados de teste deixados **inativos** no banco de dev (via API, depois que o clique de
+    "Inativar" parou de responder na sessão instável do Chrome): exame "Glicose S14" e a regra de
+    sexta-feira. A clínica de e-mail inválido não chegou a ser criada. Servidores encerrados.
+- [X] T057 Atualizar `handoff.md` com o estado da S14 (implementada, números de T054–T056, o que
+      ficou em "Descobertas") e o próximo passo (`/fechar-spec S14`).
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: sem dependência.
+- **Foundational (Phase 2)**: depende de T001.
+  - T002 e T003 primeiro.
+  - Os pares teste→implementação (T004→T005, T006→T007, T008→T009, T010→T011, T012→T013) são
+    independentes entre si.
+- **US1 (Phase 3)**: depende de T005, T007 e T009 (formulários e hooks), e de T003 (helper nos
+  testes).
+- **US2 (Phase 4)**: depende de T023/T025 (hooks da S12 já migrados) e de T005.
+- **US3 (Phase 5)**: só depende de T001. Pode correr inteira em paralelo com as phases 2–4.
+- **US4 (Phase 6)**: depende de T007, T023, T025 e das telas de US1 (T027, T029, T031).
+- **US5 (Phase 7)**: depende de T013. Mexe em `TelaExames.tsx`, então em sequência com T031/T045.
+- **US6 (Phase 8)**: depende de T011 e das telas de US1/US4, que mexem nos mesmos arquivos.
+- **US7 (Phase 9)**: depende de todas as phases de frontend (é a verificação final da suíte).
+- **Polish (Phase 10)**: depende de tudo.
+
+### User Story Dependencies
+
+- US1 é o MVP e a base das telas.
+- US2 e US4 se apoiam no retrofit de US1.
+- US3 é independente.
+- US5 e US6 são independentes entre si, mas tocam `TelaExames.tsx` em sequência.
+- US7 fecha.
+
+### Within Each User Story
+
+- O teste vem antes da implementação e fica vermelho antes do verde.
+- Um commit por task (`test(s14): T0NN …` / `feat(s14): T0NN …` / `fix(s14): …` /
+  `refactor(s14): …`).
+- `[X]` em `tasks.md` vai no commit da própria task.
+
+### Parallel Opportunities
+
+- T004, T006, T008, T010 e T012 (Phase 2): arquivos de teste diferentes.
+- T014, T016, T018 e T020 (formulários), depois T022 e T024 (hooks), depois T026, T028 e T030
+  (telas).
+- Toda a Phase 5 (backend) em paralelo com o frontend.
+- T032, T034 e T036 (Phase 4).
+- T048 e T050 (Phase 8).
+
+---
+
+## Parallel Example: Phase 2
+
+```text
+Task: "T004 testes de mensagemDeErroPadrao em apps/web/src/api/erroApi.test.ts"
+Task: "T008 testes de useEnvioFormulario em apps/web/src/ui/useEnvioFormulario.test.ts"
+Task: "T010 testes de podeExecutar em apps/web/src/autenticacao/permissoesDeTela.test.ts"
+Task: "T012 testes de formatarMoeda em apps/web/src/ui/formatacao.test.ts"
+Task: "T038 testes de service de exame em apps/api/tests/test_exames_exame_service.py"
+```
+
+---
+
+## Implementation Strategy
+
+### MVP First (User Story 1)
+
+1. Phase 1 e Phase 2.
+2. Phase 3 (US1): formulários que não perdem dados, nas quatro telas.
+3. **Parar e validar**: quickstart, Cenário 1.
+
+### Incremental Delivery
+
+1. Fundação → US1 (MVP) → US2 (mensagens) → US3 (backend, pode ter vindo antes, em paralelo).
+2. US4 (filtros) → US5 (moeda) → US6 (papéis).
+3. US7 (estabilidade, 10 execuções) → Polish (lint, build, cobertura, quickstart na UI real,
+   handoff) → `/fechar-spec S14` → `/code-review` → PR.
+
+---
+
+## Notes
+
+- Mudanças de escopo achadas durante a implementação vão para "Descobertas" de `spec.md` e param
+  para decisão do usuário (CLAUDE.md, Guardrails).
+- `tipos.gerados.ts` não muda: a validação de US3 fica no service, não em `Field(...)`
+  (contracts/api-exames-validacao.md).
+- Nenhum valor monetário é calculado no frontend; `formatarMoeda` só exibe (Princípio I).
