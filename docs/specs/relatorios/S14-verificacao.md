@@ -1,15 +1,17 @@
 # Verificação — S14
 
 **Veredito**: ✅ APROVADA
-**Data**: 2026-10-02
+**Data**: 2026-10-19 (reverificação final após as correções de concorrência em `useColecaoCrud` e de estabilidade da cobertura)
 **Testes**:
-- Frontend: `pnpm --dir apps/web test` → **282 passed (282)**, 27 arquivos, 0 falhas.
-- Backend (módulo `exames`, o único tocado por esta spec): `uv run pytest tests/test_exames_exame_service.py tests/test_exames_regra_plantao_service.py tests/test_exames_router.py` → **65 passed**.
+- Frontend, suíte padrão: `pnpm --dir apps/web test` → **285 passed (285)**, 27 arquivos, 0 falhas.
+- Frontend, cobertura: `pnpm --dir apps/web test:cobertura` → **285 passed (285)**, 27 arquivos, 0 falhas; 98,03% de linhas (498/508). Em seguida, bateria de **10/10 execuções** do mesmo comando: todas com 285/285, sem timeout de teste ou worker (15,1–15,9 s cada).
+- Backend, seams unitárias seguras do módulo `exames`: `uv run pytest tests/test_exames_exame_service.py tests/test_exames_regra_plantao_service.py` → **38 passed**.
+- Qualidade frontend: `pnpm --dir apps/web build` → sucesso; `pnpm --dir apps/web lint` → exit 0, com 2 warnings (um preexistente em `SessaoContext.tsx` e um em `useColecaoCrud.ts` por `setState` disparado pelo efeito de carga).
 - **Não rodei `uv run pytest` no `apps/api` inteiro**: confirmado nesta própria verificação que a suíte de router aponta para o banco de dev (`DATABASE_URL` do `.env`, `localhost:5434/vertere`) e apaga `usuarios`/`exames`/`regras_plantao` a cada execução (reproduzi o efeito colateral rodando só os três arquivos do módulo `exames` — zerou as três tabelas de novo). Já registrado em "Descobertas" da spec como achado de harness fora de escopo; rodar a suíte completa teria o mesmo efeito sem agregar sinal novo sobre a S14.
 
 ## Tasks
 
-57/57 marcadas `[X]` em `tasks.md`. Conferidas contra `git log --oneline --grep="(s14)"`: 64 commits, um por task (alguns T com commit extra de nota em "Descobertas"), todos os IDs T001–T057 presentes no histórico. Nenhuma task marcada sem commit correspondente. Checklist auditável e consistente com o código.
+57/57 marcadas `[X]` em `tasks.md`. Conferidas contra `git log origin/main..HEAD`: 72 commits no total; todos os IDs T001–T057 aparecem no histórico. Nenhuma task marcada sem commit correspondente. Os 7 commits posteriores à primeira verificação corrigem recargas concorrentes em `useColecaoCrud` e acrescentam três testes específicos; o único outro delta em `tasks.md` é whitespace. Checklist auditável e consistente com o código.
 
 ## User Stories
 
@@ -21,9 +23,9 @@
 | US4 | Lista coerente com filtros após ação | **Atendida** | `useColecaoCrud.ts::criar`/`salvarItem`/`executarAcaoSobreItem` recarregam a lista do servidor (que já aplica os filtros) depois de toda ação; `aviso` preenchido quando o item criado não volta na recarga, renderizado em `role="status"` nas três telas (`TelaClinicas.tsx`, `TelaVeterinarios.tsx`, `TelaExames.tsx`). Tasks T044–T045. |
 | US5 | Valores em reais | **Atendida** | `apps/web/src/ui/formatacao.ts::formatarMoeda` (`Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'})`), usado em `TelaExames.tsx` nas células de preço-base e valor adicional. Confirmado via teste e, no T056 registrado pelo autor, na UI real ("R$ 42,90" após editar). Tasks T046–T047. |
 | US6 | Cada papel vê só o que pode fazer, regra centralizada | **Atendida** | `apps/web/src/autenticacao/permissoesDeTela.ts::podeExecutar`, mapa `PAPEIS_POR_ACAO` conferido nesta verificação contra `apps/api/.../auth/service.py::_PERMISSOES` linha a linha: `CLINICA_GERENCIAR`/`VETERINARIO_GERENCIAR`/`EXAME_GERENCIAR`/`REGRA_PLANTAO_GERENCIAR` só `ADMIN`; `REGRA_PLANTAO_VER` em `ADMIN` e `ATENDENTE` (não em `TECNICO`) — espelho exato. `grep -rn "papel ===" apps/web/src --include=*.tsx --include=*.ts` → vazio (nenhuma comparação de papel sobrevive fora do módulo central). Tasks T048–T052. |
-| US7 | Suíte de testes estável | **Atendida** | `vite.config.ts::test.maxWorkers: '50%'`, `apps/web/tests/usuario.ts` (helper `usuario()` sem delay entre teclas), adotado em todos os `*.test.tsx` que digitam (`grep -rn "userEvent\." apps/web/src` não tem mais chamada direta fora do helper). Rodei a suíte completa 1x nesta verificação: 282/282, 0 falhas. T054 documenta 10/10 limpas sem concorrência externa (critério formal do SC-006), com histórico transparente das baterias com falha por contenção de CPU — nenhuma falha escondida, nenhum teste pulado/afrouxado (confirmado: `grep` não encontra `.skip(`/`.only(`/`.todo(`/`testTimeout`/`retry:` em nenhum teste tocado). Tasks T002/T003/T053/T054. |
+| US7 | Suíte de testes estável | **Atendida** | A suíte padrão passou nesta reverificação (285/285). Após `vite.config.ts` adotar `pool: 'vmThreads'`, a suíte com cobertura passou isoladamente e em uma bateria nova de 10/10 execuções consecutivas, sempre com 27 arquivos e 285 testes, sem timeout de teste ou worker. Não há `.skip`/`.only`/`.todo`, aumento de timeout ou retry escondendo falhas. Tasks T002/T003/T053/T054 e correção posterior `fb4e387`. |
 
-Nenhuma story parcial ou não atendida.
+Todas as sete stories estão atendidas e confirmadas nesta rodada.
 
 ## Seam de teste
 
@@ -40,16 +42,16 @@ Stack sem desvio: backend Python 3.13/FastAPI/SQLAlchemy/pytest (sem mudança); 
 
 ## Funcional de ponta a ponta
 
-Validado **de novo, nesta sessão de verificação**, com servidor real (`uvicorn` na porta 8010) e o mesmo Postgres de dev (`vertere_postgres_dev`, 5434) — não só confiando no relato de T056:
+O percurso HTTP abaixo foi validado na primeira rodada, em 2026-10-02, com servidor real (`uvicorn` na porta 8010) e o mesmo Postgres de dev (`vertere_postgres_dev`, 5434):
 - Criado usuário admin temporário via SQL direto (a suíte de testes já tinha zerado `usuarios` antes desta verificação começar, achado de harness já conhecido — ver acima). Login via `POST /auth/login` funcionou.
 - `POST /exames` com `preco_base: -10` e `0` → 422 com a mensagem exata esperada pela spec; `POST /regras-plantao` com `valor_adicional: 0` → 422 idem; categoria só com espaços → 422; `"  Hematologia  "`/nome com espaços → gravados sem espaço nas pontas (`GET /exames` confirma). Toda rejeição confirmada como **não gravada** via `GET` logo depois.
 - `POST /clinicas` com e-mail inválido devolve a estrutura 422 do Pydantic que `mensagemDeErroPadrao` (coberta por teste próprio) traduz para "Verifique o campo E-mail: valor inválido." — o bug da S12 ("todo 422 vira CNPJ inválido") não se repete nesta rejeição, porque `useClinicas.ts::mensagemDeErro` só usa a mensagem de CNPJ quando o `detail` contém "CNPJ".
 - Limpeza: usuário e exame de teste criados nesta verificação foram apagados via SQL ao final; servidor `uvicorn` encerrado. Estado das tabelas depois: `clinicas=1`, `veterinarios=1` (dados pré-existentes, intocados), `usuarios=0`, `exames=0`, `regras_plantao=0` (já zeradas pela suíte de testes antes mesmo desta verificação rodar qualquer coisa — mesmo achado de harness da "Descobertas", não uma regressão desta spec).
-- Não repeti o percurso clique-a-clique na UI (Chrome) que o autor já documentou no T056/handoff, por ser redundante com a verificação de API/mensagem acima e por essa checagem já ter sido descrita com evidência concreta (prints de texto de página, por papel) na própria sessão de implementação. A combinação de (a) testes de componente tabela-dirigidos por papel/cenário, (b) leitura do código de cada tela confirmando a ligação (`podeExecutar`, `colSpan`, `aviso`, `formatarMoeda`) e (c) a validação de API ao vivo acima cobre, com razoável confiança, os FRs de tela sem precisar reabrir o navegador. Registro isso como a única checagem desta rodada que não foi refeita de próprio punho — não como "funcional" sem ter checado nada.
+- Na reverificação de 2026-10-19, o caminho funcional não foi repetido: o delta desde a primeira rodada toca apenas a arbitragem de respostas concorrentes do hook compartilhado e seus testes, não os controles ou contratos HTTP. A integração renderizada desse delta foi exercitada pela suíte de componentes, mas esta rodada não declara uma nova validação manual de navegador.
 
 ## Pendências
 
-Nenhuma. Spec aprovada sem ressalva.
+Nenhuma. A falha de estabilidade registrada na rodada anterior foi corrigida e o gate de 10 execuções consecutivas passou integralmente.
 
 **Achados de harness que não bloqueiam a S14** (já registrados em "Descobertas" do `spec.md` e no `handoff.md` pelo autor, reconfirmados por esta verificação, ficam para decisão separada do usuário):
 - A suíte `test_*_router.py` do backend roda contra o banco de dev e apaga `usuarios`/`exames`/`regras_plantao` a cada execução — reproduzido de novo nesta verificação.
