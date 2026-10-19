@@ -83,6 +83,10 @@ export function useColecaoCrud<T extends { id: string }>(
         setErro(mensagemParaFalha(erroRequisicao))
       }
       return null
+    } finally {
+      if (versao === versaoDaCarga.current) {
+        setCarregando(false)
+      }
     }
   }, [mensagemParaFalha])
 
