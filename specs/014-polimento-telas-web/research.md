@@ -210,10 +210,18 @@ ambientes jsdom em paralelo) somada ao custo por tecla do `userEvent`. Cada tecl
     travado passa a demorar 3× mais para ser reportado. A spec proíbe "afrouxar" para esconder
     (FR-018). Rejeitado como solução; só seria aceitável como último recurso, registrado em
     "Descobertas".
-  - `pool: 'vmThreads'` ou `isolate: false` (sugestão do próprio vitest para reduzir a criação de
-    jsdom): `isolate: false` compartilha estado entre arquivos, com risco real de vazamento entre
-    os `vi.mock` de módulo que estes testes usam muito. `vmThreads` tem histórico de vazamento de
-    memória. Rejeitados para não trocar uma instabilidade por outra.
+  - `isolate: false` (sugestão do próprio Vitest para reduzir a criação de jsdom): compartilha
+    estado entre arquivos, com risco real de vazamento entre os `vi.mock` de módulo que estes
+    testes usam muito. Rejeitado para não trocar uma instabilidade por outra.
   - `fireEvent.change` em vez de `userEvent.type`: mais rápido, mas simula menos (sem
     keydown/keyup/input por tecla) e muda a natureza dos testes existentes. Rejeitado.
   - Retry automático (`retry: 2`): esconde a instabilidade. Rejeitado (FR-018).
+
+**Revisão da decisão — cobertura** (2026-10-19): a reverificação final revelou que o pool padrão
+ainda era instável sob instrumentação V8: `test:cobertura` teve timeout de teste e de worker, embora
+a suíte padrão passasse. A execução mostrava que recriar 27 ambientes jsdom consumia cerca de 49%
+do tempo total. O `pool: 'vmThreads'`, que preserva isolamento por arquivo, foi então reavaliado
+separadamente e reduziu a duração de aproximadamente 38 s para 15 s. Após fixá-lo em
+`vite.config.ts`, `test:cobertura` passou 10/10 vezes com 285/285 testes e sem crescimento anormal
+de memória observado. A evidência nova supera o risco teórico que motivou a rejeição inicial;
+`isolate: false` continua rejeitado. Nenhum timeout, retry ou skip foi adicionado.
