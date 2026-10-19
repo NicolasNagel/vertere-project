@@ -71,6 +71,7 @@ export function useColecaoCrud<T extends { id: string }>(
   const recarregarDepoisDeAcao = useCallback(async (): Promise<T[] | null> => {
     const versao = ++versaoDaCarga.current
     const carregar = carregarListaAtual.current
+    setErro(null)
     try {
       const lista = await carregar()
       if (versao === versaoDaCarga.current) {
