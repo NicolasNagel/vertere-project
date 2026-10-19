@@ -119,6 +119,34 @@ describe('useColecaoCrud — carga', () => {
     expect(hook.result.current.itens).toEqual([itemB])
     expect(hook.result.current.carregando).toBe(false)
   })
+
+  it('recarga pós-ação bem-sucedida limpa erro da carga de filtro anterior', async () => {
+    let resolverAcao!: (item: ItemFake) => void
+    const acao = new Promise<ItemFake>((resolver) => {
+      resolverAcao = resolver
+    })
+    const hook = await montar(vi.fn().mockResolvedValue([itemA]))
+
+    let acaoPendente!: Promise<unknown>
+    act(() => {
+      acaoPendente = hook.result.current.salvarItem(() => acao)
+    })
+
+    const carregarFiltroAtual = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce([itemB])
+    hook.rerender({ carregar: carregarFiltroAtual })
+    await waitFor(() => expect(hook.result.current.erro).toBe(MENSAGEM_SEM_CONEXAO))
+
+    await act(async () => {
+      resolverAcao(itemA)
+      await acaoPendente
+    })
+
+    expect(hook.result.current.itens).toEqual([itemB])
+    expect(hook.result.current.erro).toBeNull()
+  })
 })
 
 describe('useColecaoCrud — ações de formulário (criar, salvarItem)', () => {
