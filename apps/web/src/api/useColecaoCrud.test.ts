@@ -84,6 +84,41 @@ describe('useColecaoCrud — carga', () => {
 
     expect(hook.result.current.itens).toEqual([itemB])
   })
+
+  it('recarga pós-ação vencedora encerra carregamento iniciado pelo filtro', async () => {
+    let resolverAcao!: (item: ItemFake) => void
+    const acao = new Promise<ItemFake>((resolver) => {
+      resolverAcao = resolver
+    })
+    let resolverCargaDoFiltro!: (itens: ItemFake[]) => void
+    const cargaDoFiltro = new Promise<ItemFake[]>((resolver) => {
+      resolverCargaDoFiltro = resolver
+    })
+    const hook = await montar(vi.fn().mockResolvedValue([itemA]))
+
+    let acaoPendente!: Promise<unknown>
+    act(() => {
+      acaoPendente = hook.result.current.salvarItem(() => acao)
+    })
+
+    const carregarFiltroAtual = vi
+      .fn()
+      .mockReturnValueOnce(cargaDoFiltro)
+      .mockResolvedValueOnce([itemB])
+    hook.rerender({ carregar: carregarFiltroAtual })
+    await waitFor(() => expect(hook.result.current.carregando).toBe(true))
+
+    await act(async () => {
+      resolverAcao(itemA)
+      await acaoPendente
+    })
+    await act(async () => {
+      resolverCargaDoFiltro([itemA])
+    })
+
+    expect(hook.result.current.itens).toEqual([itemB])
+    expect(hook.result.current.carregando).toBe(false)
+  })
 })
 
 describe('useColecaoCrud — ações de formulário (criar, salvarItem)', () => {
